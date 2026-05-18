@@ -1,0 +1,60 @@
+{
+    "ILSVRC2015_train_01108000": [
+        {
+            "subject_track_id": "0",
+            "object_track_id": "1",
+            "relationship_type": "left",
+            "start_frame": 270,
+            "end_frame": 345
+        },
+        {
+            "subject_track_id": "0",
+            "object_track_id": "1",
+            "relationship_type": "behind",
+            "start_frame": 345,
+            "end_frame": 405
+        },
+        {
+            "subject_track_id": "0",
+            "object_track_id": "1",
+            "relationship_type": "right",
+            "start_frame": 405,
+            "end_frame": 464
+        },
+        {
+            "subject_track_id": "1",
+            "object_track_id": "0",
+            "relationship_type": "toward",
+            "start_frame": 270,
+            "end_frame": 315
+        },
+        {
+            "subject_track_id": "1",
+            "object_track_id": "0",
+            "relationship_type": "past",
+            "start_frame": 345,
+            "end_frame": 390
+        },
+        {
+            "subject_track_id": "1",
+            "object_track_id": "0",
+            "relationship_type": "right",
+            "start_frame": 270,
+            "end_frame": 345
+        },
+        {
+            "subject_track_id": "1",
+            "object_track_id": "0",
+            "relationship_type": "front",
+            "start_frame": 345,
+            "end_frame": 405
+        },
+        {
+            "subject_track_id": "1",
+            "object_track_id": "0",
+            "relationship_type": "left",
+            "start_frame": 405,
+            "end_frame": 464
+        }
+    ]
+}

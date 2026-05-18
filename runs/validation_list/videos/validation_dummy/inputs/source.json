@@ -1,0 +1,11 @@
+{
+  "source": "data/validation_dummy.mp4",
+  "source_type": "local",
+  "video_path": "C:\\Users\\35726\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+  "video_path_rel": "data/validation_dummy.mp4",
+  "materialized_at": "2026-05-02 16:35:04",
+  "downloaded": false,
+  "exists": true,
+  "file_size": 56,
+  "file_hash": "ab672b97c74649d5bcf6d9ce32d4212b32ae9941e8c3899b2c10fc9d12208871"
+}

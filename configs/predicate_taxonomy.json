@@ -1,0 +1,108 @@
+{
+  "predicates": {
+    "left": {
+      "zh": "在左侧",
+      "category": "spatial",
+      "inverse": "right",
+      "mutex_group": "horizontal",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "right": {
+      "zh": "在右侧",
+      "category": "spatial",
+      "inverse": "left",
+      "mutex_group": "horizontal",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "above": {
+      "zh": "在上方",
+      "category": "spatial",
+      "inverse": "below",
+      "mutex_group": "vertical",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "below": {
+      "zh": "在下方",
+      "category": "spatial",
+      "inverse": "above",
+      "mutex_group": "vertical",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "front": {
+      "zh": "在前方",
+      "category": "depth",
+      "inverse": "behind",
+      "mutex_group": "depth",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "behind": {
+      "zh": "在后方",
+      "category": "depth",
+      "inverse": "front",
+      "mutex_group": "depth",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "near": {
+      "zh": "靠近",
+      "category": "spatial",
+      "inverse": "near",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "overlap": {
+      "zh": "重叠",
+      "category": "spatial",
+      "inverse": "overlap",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": false
+    },
+    "contact": {
+      "zh": "接触",
+      "category": "interaction",
+      "inverse": "contact",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": false
+    },
+    "toward": {
+      "zh": "朝向/接近",
+      "category": "motion",
+      "inverse": "toward",
+      "mutex_group": "relative_motion",
+      "requires_contact": false,
+      "uses_motion": true
+    },
+    "away": {
+      "zh": "远离",
+      "category": "motion",
+      "inverse": "away",
+      "mutex_group": "relative_motion",
+      "requires_contact": false,
+      "uses_motion": true
+    },
+    "follow": {
+      "zh": "跟随",
+      "category": "motion",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": true
+    },
+    "moving_together": {
+      "zh": "共同移动",
+      "category": "motion",
+      "inverse": "moving_together",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": true
+    }
+  }
+}

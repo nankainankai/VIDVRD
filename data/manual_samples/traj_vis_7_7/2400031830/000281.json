@@ -1,0 +1,64 @@
+{
+    "version": "5.8.1",
+    "flags": {},
+    "shapes": [
+        {
+            "label": "person",
+            "points": [
+                [
+                    0,
+                    0
+                ],
+                [
+                    170,
+                    240
+                ]
+            ],
+            "group_id": 0,
+            "description": "",
+            "shape_type": "rectangle",
+            "flags": {},
+            "mask": null
+        },
+        {
+            "label": "person",
+            "points": [
+                [
+                    140,
+                    93
+                ],
+                [
+                    309,
+                    240
+                ]
+            ],
+            "group_id": 1,
+            "description": "",
+            "shape_type": "rectangle",
+            "flags": {},
+            "mask": null
+        },
+        {
+            "label": "person",
+            "points": [
+                [
+                    168,
+                    0
+                ],
+                [
+                    320,
+                    219
+                ]
+            ],
+            "group_id": 2,
+            "description": "",
+            "shape_type": "rectangle",
+            "flags": {},
+            "mask": null
+        }
+    ],
+    "imagePath": "000281.jpg",
+    "imageData": "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",
+    "imageHeight": 240,
+    "imageWidth": 320
+}

@@ -1,0 +1,11 @@
+{
+  "relations": {
+    "dry_run": false,
+    "max_windows": 0,
+    "sleep_sec": 0.2
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_json": "gold/relations_gold.json"
+  }
+}

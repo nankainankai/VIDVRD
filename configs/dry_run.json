@@ -1,0 +1,9 @@
+{
+  "relations": {
+    "dry_run": true,
+    "max_windows": 2
+  },
+  "evaluate": {
+    "enabled": false
+  }
+}

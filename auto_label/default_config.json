@@ -1,0 +1,57 @@
+{
+  "video_ingest": {
+    "download_timeout_sec": 120,
+    "overwrite_download": false
+  },
+  "detector": {
+    "backend": "rexomni",
+    "rex_model_path": "",
+    "rex_categories": "person",
+    "keyframe_interval": 25,
+    "interp_iou_thresh": 0.1,
+    "save_box_video": false,
+    "auto_install_rexomni": false,
+    "auto_install_torch": "skip"
+  },
+  "tracking": {
+    "window_size": 30,
+    "stride": 15
+  },
+  "keyframe_screen": {
+    "enabled": true,
+    "sample_frames": 8,
+    "max_frame_index": 240,
+    "min_objects": 2,
+    "min_confidence": 0.0,
+    "required_positive_frames": 1
+  },
+  "relation_rule": {
+    "enabled": true,
+    "min_vote_ratio": 0.6,
+    "axis_margin_ratio": 0.08,
+    "near_distance_ratio": 0.35,
+    "overlap_iou_threshold": 0.05,
+    "max_pairs_per_window": 0
+  },
+  "relations": {
+    "relations": "",
+    "group_size": 3,
+    "max_windows": 0,
+    "max_frames_per_window": 8,
+    "vggsound_label": "",
+    "retries": 2,
+    "backoff_sec": 1.5,
+    "sleep_sec": 0.0,
+    "dry_run": false
+  },
+  "relation_merge": {
+    "apply_coupling": true
+  },
+  "relation_verify": {
+    "low_confidence_threshold": 0.45
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_json": "gold/relations_gold.json"
+  }
+}
