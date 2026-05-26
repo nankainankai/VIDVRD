@@ -11,14 +11,28 @@ description: 运行 VIDVRD 全自动视频关系标注流程。用户要求基�
 
 ## 前置检查
 
+运行前执行环境检查（推荐）：
+
+```bash
+conda run -n vidvrd python scripts/check_openclaw_env.py
+```
+
+无 conda 时：
+
+```bash
+python scripts/check_openclaw_env.py
+```
+
 运行前确认：
 
-1. 使用 `vidvrd` conda 环境。
-2. 输入是单个视频路径、URL，或每行一个视频/URL 的文本文件。
+1. 使用 `vidvrd` conda 环境（或已 `pip install -e .` 的 Python 3.10+）。
+2. 输入是单个视频路径、URL，或每行一个视频/URL 的文本文件（示例列表：`data/videos.txt`）。
 3. `configs/default.json` 存在，或用户提供了自定义 JSON 配置。
-4. 非 dry-run 的关系标注需要设置 `DASHSCOPE_API_KEY`，或传入 `--api_key`。
-5. Rex-Omni 检测需要本地依赖和模型路径；DINO-X 检测需要 `DINOX_API_TOKEN`。
-6. 如果 `python -m vidvrd_auto.cli` 无法导入，先在仓库根目录运行 `conda run -n vidvrd python -m pip install -e .`，或使用 `python scripts/run_vidvrd_auto.py`。
+4. 首次 smoke test：生成测试视频 `python scripts/make_validation_dummy.py`。
+5. 非 dry-run 的关系标注需要设置 `DASHSCOPE_API_KEY`，或传入 `--api_key`。
+6. Rex-Omni 检测需要本地依赖和模型路径；DINO-X 检测需要 `DINOX_API_TOKEN`。
+7. **无 API/无 GPU 验证主链**：使用 `configs/dry_run.json`（`detector.backend=mock`、`tracking.backend=mock`），不调用检测模型与 VL API。
+8. 如果 `python -m vidvrd_auto.cli` 无法导入，先在仓库根目录运行 `conda run -n vidvrd python -m pip install -e .`，或使用 `python scripts/run_vidvrd_auto.py`。
 
 ## 主命令
 
@@ -34,10 +48,24 @@ conda run -n vidvrd python -m vidvrd_auto.cli --video <video_path> --run_dir run
 conda run -n vidvrd python -m vidvrd_auto.cli --videos <videos_txt> --run_dir runs/<run_id> --config configs/default.json --resume --api_key <key>
 ```
 
-不调用多模态模型的 dry-run：
+不调用多模态模型与检测模型的 dry-run（mock 检测/追踪 + 规则关系）：
 
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos <videos_txt> --run_dir runs/<run_id> --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+conda run -n vidvrd python scripts/make_validation_dummy.py
+conda run -n vidvrd python -m vidvrd_auto.cli --video data/validation_dummy.mp4 --run_dir runs/smoke001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+```
+
+批量列表：
+
+```bash
+conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/<run_id> --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+```
+
+mock 检测 + 全链路真实 VL（关键帧/轨迹/全局/片段关系均看图）：
+
+```bash
+conda run -n vidvrd python scripts/run_with_vl.ps1
+# 或: python scripts/run_vidvrd_auto.py --video data/validation_dummy.mp4 --run_dir runs/live_vl --config configs/run_with_vl.json --resume --api_key $DASHSCOPE_API_KEY
 ```
 
 ## Agent 工作流

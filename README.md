@@ -39,10 +39,30 @@ conda activate vidvrd
 conda run -n vidvrd python -m pip install -e .
 ```
 
-不调用多模态模型的 dry-run：
+OpenClaw 运行前环境检查：
 
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+python scripts/check_openclaw_env.py
+```
+
+不调用检测模型与多模态 API 的 dry-run（`configs/dry_run.json` 使用 mock 检测/追踪）：
+
+```bash
+python scripts/make_validation_dummy.py
+python -m vidvrd_auto.cli --video data/validation_dummy.mp4 --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+```
+
+批量：
+
+```bash
+python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+```
+
+mock 检测 + **全链路真实 VL**（需 `DASHSCOPE_API_KEY`）：
+
+```powershell
+$env:DASHSCOPE_API_KEY = "sk-你的key"
+.\scripts\run_with_vl.ps1 -RunDir runs/live_vl
 ```
 
 正式运行：
@@ -111,8 +131,16 @@ OpenClaw/Agent 的职责是调用稳定 CLI、检查 `run_manifest.json`、定�
 ## 验证
 
 ```bash
-$env:PYTHONPATH="src"
-conda run -n vidvrd python -m vidvrd_auto.cli --help
-conda run -n vidvrd python -m compileall -q src scripts tests
-conda run -n vidvrd python -m unittest discover -s tests
+python scripts/check_openclaw_env.py
+python -m pip install -e .
+python scripts/make_validation_dummy.py
+python -m vidvrd_auto.cli --help
+python -m compileall -q src scripts tests
+python -m unittest discover -s tests
+```
+
+端到端 smoke（mock，无需 API）：
+
+```bash
+python -m unittest tests.test_pipeline_smoke -v
 ```

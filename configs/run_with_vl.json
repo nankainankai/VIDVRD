@@ -1,0 +1,54 @@
+{
+  "detector": {
+    "backend": "mock",
+    "keyframe_interval": 5
+  },
+  "tracking": {
+    "backend": "mock",
+    "window_size": 20,
+    "stride": 10,
+    "enable_llm_qc": false,
+    "export_pair_viz_videos": false
+  },
+  "keyframe_screen": {
+    "enabled": true,
+    "sample_frames": 6,
+    "max_frame_index": 240,
+    "min_objects": 2,
+    "vl_enabled": true,
+    "vl_dry_run": false,
+    "vl_model": "qwen-vl-max",
+    "vl_tile_h": 320
+  },
+  "track_qc": {
+    "min_track_frames": 2,
+    "max_center_jump_ratio": 0.45,
+    "vl_enabled": true,
+    "vl_dry_run": false,
+    "vl_model": "qwen-vl-max",
+    "vl_max_frames": 6,
+    "vl_tile_h": 320
+  },
+  "relations": {
+    "dry_run": false,
+    "api_model": "qwen-vl-max",
+    "max_windows": 2,
+    "max_frames_per_window": 6,
+    "group_size": 3,
+    "sleep_sec": 0.2
+  },
+  "global_relation": {
+    "vl_enabled": true,
+    "vl_dry_run": false,
+    "vl_model": "qwen-vl-max",
+    "vl_sample_frames": 6,
+    "vl_tile_h": 320
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": false,
+    "strong_model_dry_run": false
+  },
+  "evaluate": {
+    "enabled": false
+  }
+}
