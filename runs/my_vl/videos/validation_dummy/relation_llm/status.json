@@ -1,0 +1,9 @@
+{
+  "node": "relation_llm",
+  "state": "succeeded",
+  "input_hash": "1e4cccfd7138e64fdfdd80fa4ad9a6b224d8b8ada621436a04b93fb250378f78",
+  "finished_at": "2026-05-26 14:39:42",
+  "outputs": {
+    "relations_llm_json": "runs/my_vl/videos/validation_dummy/relation_llm/relations_llm.json"
+  }
+}

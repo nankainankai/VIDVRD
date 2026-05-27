@@ -1,0 +1,10 @@
+{
+  "node": "step2_track",
+  "state": "succeeded",
+  "input_hash": "2783a0c803352bc35366ca66575be32c14847714d7b81de3f0ed1f82bf023c66",
+  "finished_at": "2026-05-26 14:12:54",
+  "outputs": {
+    "tracks_jsonl": "runs/smoke_eval/videos/validation_dummy/step2_track/tracks_full.jsonl",
+    "windows_json": "runs/smoke_eval/videos/validation_dummy/step2_track/windows.json"
+  }
+}

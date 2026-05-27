@@ -1,0 +1,174 @@
+{
+  "run_dir": "runs/live_api",
+  "started_at": "2026-05-26 13:53:19",
+  "config_path": "configs/run_with_api.json",
+  "config_hash": "3e0c6c1b79a807afc348ec7b3201fe2340db23be99675f9fa29d767960b6ff10",
+  "nodes": [
+    "video_ingest",
+    "audio_prior",
+    "step1_detect",
+    "keyframe_screen",
+    "step2_track",
+    "track_qc",
+    "relation_rule",
+    "relation_llm",
+    "relation_merge",
+    "global_relation",
+    "relation_verify",
+    "export"
+  ],
+  "args": {
+    "video": "data/validation_dummy.mp4",
+    "videos": "",
+    "from_node": "",
+    "to_node": "",
+    "resume": true,
+    "force": false,
+    "dry_run_relations": false,
+    "skip_eval": true,
+    "api_key_present": true
+  },
+  "videos": [
+    {
+      "video_id": "validation_dummy",
+      "source": "data/validation_dummy.mp4",
+      "source_type": "local",
+      "nodes": {
+        "video_ingest": {
+          "node": "video_ingest",
+          "state": "succeeded",
+          "input_hash": "c0cf21776e82e34f1906a65fd12e943b2d3d871161ff73d91127631b12c18969",
+          "finished_at": "2026-05-26 13:47:31",
+          "outputs": {
+            "source_json": "runs/live_api/videos/validation_dummy/inputs/source.json",
+            "video_path": "data/validation_dummy.mp4"
+          }
+        },
+        "audio_prior": {
+          "node": "audio_prior",
+          "state": "succeeded",
+          "input_hash": "95ed295b756c2e4ab9b9adf326170e08731de4d5afb246d89ded2c58f801d3c8",
+          "finished_at": "2026-05-26 13:47:31",
+          "outputs": {
+            "audio_prior_json": "runs/live_api/videos/validation_dummy/audio_prior/audio_prior.json"
+          }
+        },
+        "step1_detect": {
+          "node": "step1_detect",
+          "state": "succeeded",
+          "input_hash": "3db3f52f22e4c093a6db43027a92284adb42f791e0fadc254b1c13c7d8f19801",
+          "finished_at": "2026-05-26 13:47:32",
+          "outputs": {
+            "detections_jsonl": "runs/live_api/videos/validation_dummy/step1_detect/detections_full.jsonl",
+            "video_meta_json": "runs/live_api/videos/validation_dummy/step1_detect/video_meta.json"
+          }
+        },
+        "keyframe_screen": {
+          "node": "keyframe_screen",
+          "state": "succeeded",
+          "input_hash": "9812664156ea2dba788649a4a6373c131aecfe1255e8ed8e0daa67e13caa0b6b",
+          "finished_at": "2026-05-26 13:47:32",
+          "outputs": {
+            "screen_result_json": "runs/live_api/videos/validation_dummy/keyframe_screen/screen_result.json"
+          }
+        },
+        "step2_track": {
+          "node": "step2_track",
+          "state": "succeeded",
+          "input_hash": "08c358fd328be015d9d1b91272baa4d33cb7d86960e7b43ee8591362f222312e",
+          "finished_at": "2026-05-26 13:47:32",
+          "outputs": {
+            "tracks_jsonl": "runs/live_api/videos/validation_dummy/step2_track/tracks_full.jsonl",
+            "windows_json": "runs/live_api/videos/validation_dummy/step2_track/windows.json"
+          }
+        },
+        "track_qc": {
+          "node": "track_qc",
+          "state": "succeeded",
+          "input_hash": "0a972328c9b04538450099b855337c2aa6f79da269429e3f36c73b6a15e1740e",
+          "finished_at": "2026-05-26 13:47:32",
+          "outputs": {
+            "track_qc_json": "runs/live_api/videos/validation_dummy/track_qc/track_qc.json"
+          }
+        },
+        "relation_rule": {
+          "node": "relation_rule",
+          "state": "succeeded",
+          "input_hash": "cfd81e3d41cab23762f135991e10b3f64fdee60b9d12df743960d110efb0c64d",
+          "finished_at": "2026-05-26 13:47:32",
+          "outputs": {
+            "relations_rule_json": "runs/live_api/videos/validation_dummy/relation_rule/relations_rule.json"
+          }
+        },
+        "relation_llm": {
+          "node": "relation_llm",
+          "state": "succeeded",
+          "input_hash": "dc5baaffcf3337abeccfe48623d2810d898e0c9ff21976d803812d207d8be3f9",
+          "finished_at": "2026-05-26 13:50:45",
+          "outputs": {
+            "relations_llm_json": "runs/live_api/videos/validation_dummy/relation_llm/relations_llm.json"
+          }
+        },
+        "relation_merge": {
+          "node": "relation_merge",
+          "state": "succeeded",
+          "input_hash": "886d1a9c4ce5485e15b5a39e2c4925a7ffff76477cf24ac44238b9ad0867fc76",
+          "finished_at": "2026-05-26 13:50:45",
+          "outputs": {
+            "relations_merged_json": "runs/live_api/videos/validation_dummy/relation_merge/relations_merged.json"
+          }
+        },
+        "global_relation": {
+          "node": "global_relation",
+          "state": "succeeded",
+          "input_hash": "94ce16e1eeda1865fc9dd7e21f4e23c2851dedfb2f51e01571773cdf7eb3da07",
+          "finished_at": "2026-05-26 13:50:45",
+          "outputs": {
+            "relations_global_json": "runs/live_api/videos/validation_dummy/global_relation/relations_global.json"
+          }
+        },
+        "relation_verify": {
+          "node": "relation_verify",
+          "state": "succeeded",
+          "input_hash": "fa5c4dbcae5c491f679e31152564fcff898aa33df35c80c404014a9017cda214",
+          "finished_at": "2026-05-26 13:50:45",
+          "outputs": {
+            "relations_verified_json": "runs/live_api/videos/validation_dummy/relation_verify/relations_verified.json",
+            "relation_qc_json": "runs/live_api/videos/validation_dummy/relation_verify/relation_qc.json"
+          }
+        },
+        "export": {
+          "node": "export",
+          "state": "succeeded",
+          "input_hash": "c2dbb9c15897afcefafb95f51e8192db4b091d9997980ea0a0797808846cbf4b",
+          "finished_at": "2026-05-26 13:50:45",
+          "outputs": {
+            "relations_pred_json": "runs/live_api/videos/validation_dummy/export/relations_pred.json",
+            "trajectories_pred_json": "runs/live_api/videos/validation_dummy/export/trajectories_pred.json",
+            "relation_qc_json": "runs/live_api/videos/validation_dummy/export/relation_qc.json"
+          }
+        }
+      },
+      "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+      "path_rel": "data/validation_dummy.mp4",
+      "exists": true,
+      "file_hash": "10e7afb15219f62520bdace78ec310ced2c7308ada87058b8927b114be7592ac",
+      "state": "succeeded",
+      "outputs": {
+        "relations_pred_json": "runs/live_api/videos/validation_dummy/export/relations_pred.json",
+        "trajectories_pred_json": "runs/live_api/videos/validation_dummy/export/trajectories_pred.json"
+      }
+    }
+  ],
+  "finished_at": "2026-05-26 13:53:19",
+  "pred_relations_json": "runs/live_api/pred/relations_pred.json",
+  "pred_relation_count": 8,
+  "video_state_counts": {
+    "succeeded": 1
+  },
+  "evaluate": {
+    "enabled": false,
+    "state": "skipped",
+    "reason": "disabled"
+  }
+}

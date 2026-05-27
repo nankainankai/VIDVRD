@@ -1,0 +1,46 @@
+{
+  "enabled": true,
+  "passed": true,
+  "decision": "keep",
+  "reason": "ok",
+  "positive_frames": 2,
+  "required_positive_frames": 1,
+  "min_objects": 2,
+  "min_confidence": 0.0,
+  "max_frame_index": 240,
+  "sampled_frames": [
+    {
+      "frame": 0,
+      "valid_objects": 2,
+      "passed": true,
+      "crop_suggestion": [
+        38.4,
+        60.0,
+        281.6,
+        204.0
+      ]
+    },
+    {
+      "frame": 31,
+      "valid_objects": 2,
+      "passed": true,
+      "crop_suggestion": [
+        40.4,
+        60.0,
+        281.6,
+        204.0
+      ]
+    }
+  ],
+  "vl_screen": {
+    "enabled": false,
+    "state": "disabled",
+    "model": "qwen-vl-max"
+  },
+  "crop_suggestion": [
+    38.4,
+    60.0,
+    281.6,
+    204.0
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "node": "relation_verify",
+  "state": "succeeded",
+  "input_hash": "588a4f105acd5ff3435fc0b62d4a8080d3f458b93c411ba62674bee092e3a103",
+  "finished_at": "2026-05-27 09:24:08",
+  "outputs": {
+    "relations_verified_json": "runs/rexomni_full_test1/videos/test1_video/relation_verify/relations_verified.json",
+    "relation_qc_json": "runs/rexomni_full_test1/videos/test1_video/relation_verify/relation_qc.json"
+  }
+}

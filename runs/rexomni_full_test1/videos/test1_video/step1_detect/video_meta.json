@@ -1,0 +1,23 @@
+{
+  "video": {
+    "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+    "fps": 25,
+    "total_frames": 244,
+    "duration": 9.76
+  },
+  "detector_stats": {
+    "backend": "rexomni",
+    "model_path": "my_scripts/models/Rex-Omni-AWQ",
+    "engine": "transformers",
+    "categories": [
+      "person"
+    ],
+    "detection_interval": 1,
+    "frame_calls": 10,
+    "trigger_calls": 10,
+    "interval_skips": 0,
+    "detected_objects_total": 13
+  },
+  "detections_jsonl": "detections_full.jsonl",
+  "box_vis_video": "step1_detection_box_vis.mp4"
+}

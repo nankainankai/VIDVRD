@@ -4,9 +4,14 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from vidvrd_auto.models.vl_client import VLClient
 from vidvrd_auto.prompts.templates import relation_verify_prompt
 from vidvrd_auto.relations.taxonomy import coupling_inverse, mutex_pairs
+from vidvrd_auto.utils.vl_frames import (
+    build_storyboard_from_video,
+    call_vl_with_storyboard,
+    uniform_frame_indices,
+    video_path_from_windows,
+)
 
 
 COUPLING_INVERSE: Dict[str, str] = {
@@ -143,6 +148,10 @@ def generate_rule_relations(
 
         pair_stats: Dict[Tuple[int, int], Dict[str, int]] = {}
         pair_total: Dict[Tuple[int, int], int] = {}
+        pair_prev_dist: Dict[Tuple[int, int], float] = {}
+        pair_prev_center: Dict[Tuple[int, int], Tuple[float, float, float, float]] = {}
+        motion_align_min = float(config.get("motion_align_ratio", 0.35))
+        motion_dist_eps = float(config.get("motion_distance_eps_ratio", 0.02))
         for frame in range(start, end + 1):
             frame_tracks = tracks_by_frame.get(frame, {})
             for i, sid in enumerate(track_ids):
@@ -183,6 +192,34 @@ def generate_rule_relations(
                             stats["near"] = stats.get("near", 0) + 1
                         if iou >= overlap_thresh:
                             stats["overlap"] = stats.get("overlap", 0) + 1
+                            stats["contact"] = stats.get("contact", 0) + 1
+
+                        key_ab = (a, b)
+                        prev = pair_prev_dist.get(key_ab)
+                        if prev is not None and prev > 1e-6:
+                            rel_change = (dist - prev) / prev
+                            if rel_change <= -motion_dist_eps:
+                                stats["toward"] = stats.get("toward", 0) + 1
+                            elif rel_change >= motion_dist_eps:
+                                stats["away"] = stats.get("away", 0) + 1
+                        pair_prev_dist[key_ab] = float(dist)
+
+                        prev_centers = pair_prev_center.get(key_ab)
+                        if prev_centers is not None:
+                            psx, psy, pox, poy = prev_centers
+                            svx, svy = sx - psx, sy - psy
+                            ovx, ovy = ox - pox, oy - poy
+                            smag = (svx * svx + svy * svy) ** 0.5
+                            omag = (ovx * ovx + ovy * ovy) ** 0.5
+                            if smag > 1.0 and omag > 1.0:
+                                align = (svx * ovx + svy * ovy) / max(1e-6, smag * omag)
+                                if align >= motion_align_min:
+                                    stats["moving_together"] = stats.get("moving_together", 0) + 1
+                                if align >= motion_align_min and smag >= omag * 0.6 and dist <= near_dist * 1.2:
+                                    stats["follow"] = stats.get("follow", 0) + 1
+                                if align >= motion_align_min and smag >= omag * 1.1 and dist <= near_dist:
+                                    stats["chase"] = stats.get("chase", 0) + 1
+                        pair_prev_center[key_ab] = (sx, sy, ox, oy)
 
         for (sid, oid), stats in sorted(pair_stats.items()):
             total = max(1, pair_total.get((sid, oid), 0))
@@ -304,6 +341,8 @@ def verify_relations(
     out_relations_json: Path,
     out_qc_json: Path,
     config: Dict[str, Any],
+    windows_json: Optional[Path] = None,
+    api_key: str = "",
 ) -> Dict[str, Any]:
     obj = read_json(relations_json) if relations_json.exists() else {video_id: []}
     items = _relation_items(obj, video_id)
@@ -365,17 +404,43 @@ def verify_relations(
                 )
 
     final_actions: List[Dict[str, Any]] = []
+    strong_review_meta: Dict[str, Any] = {"used_images": False}
     if strong_review_enabled and (strong_model_review or conflicts):
-        client_cfg = {
-            "model": strong_model or "qwen-vl-max",
+        storyboard = None
+        if windows_json is not None and windows_json.exists():
+            video_path = video_path_from_windows(windows_json)
+            windows_obj = read_json(windows_json)
+            video_meta = windows_obj.get("video", {}) if isinstance(windows_obj, dict) else {}
+            total_frames = int(video_meta.get("total_frames", 0) or 0)
+            vl_sample = int(config.get("strong_model_sample_frames", 6) or 6)
+            if video_path is not None and total_frames > 0:
+                indices = uniform_frame_indices(total_frames=total_frames, count=vl_sample)
+                storyboard = build_storyboard_from_video(
+                    video_path=video_path,
+                    frame_indices=indices,
+                    tile_h=int(config.get("vl_tile_h", 320) or 320),
+                )
+                if storyboard is not None:
+                    strong_review_meta["used_images"] = True
+                    strong_review_meta["sampled_frames"] = indices
+                    strong_review_meta["video_path"] = str(video_path)
+
+        verify_cfg = {
+            "vl_model": strong_model or "qwen-vl-max",
             "api_key_env": str(config.get("api_key_env", "DASHSCOPE_API_KEY") or "DASHSCOPE_API_KEY"),
-            "retries": int(config.get("strong_model_retries", 2) or 2),
-            "backoff_sec": float(config.get("strong_model_backoff_sec", 2.0) or 2.0),
-            "sleep_sec": float(config.get("strong_model_sleep_sec", 0.0) or 0.0),
-            "dry_run": strong_model_dry_run,
+            "vl_retries": int(config.get("strong_model_retries", 2) or 2),
+            "vl_backoff_sec": float(config.get("strong_model_backoff_sec", 2.0) or 2.0),
+            "vl_sleep_sec": float(config.get("strong_model_sleep_sec", 0.0) or 0.0),
+            "vl_dry_run": strong_model_dry_run,
         }
         issues = [{"type": "low_confidence", **x} for x in strong_model_review] + [{"type": "conflict", **x} for x in conflicts]
-        vl_result = VLClient(client_cfg).call(prompt=relation_verify_prompt(items, issues), dry_run=strong_model_dry_run)
+        vl_result = call_vl_with_storyboard(
+            config=verify_cfg,
+            api_key=api_key,
+            prompt=relation_verify_prompt(items, issues, has_images=bool(storyboard is not None)),
+            storyboard_bgr=storyboard,
+        )
+        strong_review_meta.update(vl_result.to_dict())
         if vl_result.ok:
             try:
                 parsed = json.loads(vl_result.text)
@@ -408,6 +473,7 @@ def verify_relations(
         "strong_model_review_enabled": strong_review_enabled,
         "strong_model_review_count": len(strong_model_review),
         "strong_model_review_items": strong_model_review[:50],
+        "strong_model_review_vl": strong_review_meta if strong_review_enabled else {},
         "final_actions": final_actions[:100],
         "track_count": len(track_frames),
         "track_frame_counts": {str(k): v for k, v in sorted(track_frames.items())},

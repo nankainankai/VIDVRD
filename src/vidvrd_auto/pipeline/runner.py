@@ -30,6 +30,7 @@ from vidvrd_auto.pipeline.manifest import (
     now_text,
     should_skip,
 )
+from vidvrd_auto.pipeline.report import write_run_report
 from vidvrd_auto.relations.merge import merge_relations
 from vidvrd_auto.relations.rules import generate_rule_relations
 from vidvrd_auto.relations.verify import verify_relations
@@ -256,7 +257,12 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                     input_hash=screen_hash,
                     required_outputs=[screen_json],
                     outputs={"screen_result_json": safe_rel(screen_json)},
-                    fn=lambda: screen_keyframes(detections_jsonl=detections_jsonl, out_json=screen_json, config=screen_cfg),
+                    fn=lambda: screen_keyframes(
+                        detections_jsonl=detections_jsonl,
+                        out_json=screen_json,
+                        config=screen_cfg,
+                        api_key=api_key,
+                    ),
                 )
             if screen_json.exists():
                 screen_result = read_json(screen_json)
@@ -306,7 +312,13 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                     input_hash=track_qc_hash,
                     required_outputs=[track_qc_json],
                     outputs={"track_qc_json": safe_rel(track_qc_json)},
-                    fn=lambda: run_track_qc(tracks_jsonl=tracks_jsonl, windows_json=windows_json, out_json=track_qc_json, config=track_qc_cfg),
+                    fn=lambda: run_track_qc(
+                        tracks_jsonl=tracks_jsonl,
+                        windows_json=windows_json,
+                        out_json=track_qc_json,
+                        config=track_qc_cfg,
+                        api_key=api_key,
+                    ),
                 )
 
             rule_cfg = cfg.get("relation_rule", {}) if isinstance(cfg.get("relation_rule"), dict) else {}
@@ -407,6 +419,8 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                         relations_json=relations_merged_json,
                         out_json=relations_global_json,
                         config=global_cfg,
+                        windows_json=windows_json,
+                        api_key=api_key,
                     ),
                 )
 
@@ -434,6 +448,8 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                         out_relations_json=relations_verified_json,
                         out_qc_json=relation_qc_json,
                         config=verify_cfg,
+                        windows_json=windows_json,
+                        api_key=api_key,
                     ),
                 )
 
@@ -520,10 +536,13 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
         }
     )
     write_json(run_dir / "run_manifest.json", manifest)
+    run_report_path = run_dir / "reports" / "run_report.md"
+    write_run_report(manifest, run_report_path)
     print("=" * 80)
     print("DONE VIDVRD auto labeling")
     print(f"run_dir={run_dir}")
     print(f"pred={pred_relations}")
+    print(f"run_report={run_report_path}")
     if eval_state.get("report"):
-        print(f"report={report_path}")
+        print(f"presence_report={report_path}")
     print("=" * 80)

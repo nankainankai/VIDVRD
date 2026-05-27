@@ -1,0 +1,34 @@
+{
+  "detector": {
+    "backend": "dinox",
+    "dinox_detection_interval": 5,
+    "keyframe_interval": 25
+  },
+  "tracking": {
+    "backend": "legacy",
+    "enable_llm_qc": false,
+    "export_pair_viz_videos": true
+  },
+  "keyframe_screen": {
+    "enabled": true,
+    "vl_enabled": false
+  },
+  "track_qc": {
+    "vl_enabled": false
+  },
+  "relations": {
+    "dry_run": false,
+    "max_windows": 0,
+    "sleep_sec": 0.2
+  },
+  "global_relation": {
+    "vl_enabled": false
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": false
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_json": "gold/relations_gold.json"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "detector": {
+    "backend": "mock"
+  },
+  "tracking": {
+    "backend": "mock"
+  },
+  "relations": {
+    "dry_run": true,
+    "max_windows": 2
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_json": "gold/relations_gold.json"
+  }
+}

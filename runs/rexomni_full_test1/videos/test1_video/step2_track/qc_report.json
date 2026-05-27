@@ -1,0 +1,42 @@
+{
+  "video": {
+    "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+    "fps": 25,
+    "total_frames": 244,
+    "duration": 9.76
+  },
+  "llm_qc": {
+    "enabled": true,
+    "model": "qwen-vl-max",
+    "llm_counts": {
+      "person": 2
+    },
+    "track_counts_unique": {
+      "person": 7
+    },
+    "track_counts_max_observed": {
+      "person": 2
+    },
+    "track_counts_max_all": {
+      "person": 4
+    },
+    "sampled_frame_indices": [
+      0,
+      35,
+      69,
+      104,
+      139,
+      174,
+      208,
+      243
+    ],
+    "issues": [],
+    "summary": "视频中显示了两个人在森林小径上跑步。"
+  },
+  "pair_viz": {
+    "enabled": true,
+    "count": 55
+  },
+  "risk_tag": "normal",
+  "is_pass": true
+}

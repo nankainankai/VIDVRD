@@ -1,0 +1,42 @@
+{
+  "enabled": true,
+  "passed": true,
+  "decision": "keep",
+  "reason": "ok",
+  "positive_frames": 1,
+  "required_positive_frames": 1,
+  "min_objects": 2,
+  "min_confidence": 0.0,
+  "max_frame_index": 240,
+  "sampled_frames": [
+    {
+      "frame": 0,
+      "valid_objects": 2,
+      "passed": true,
+      "crop_suggestion": [
+        38.4,
+        60.0,
+        281.6,
+        204.0
+      ]
+    }
+  ],
+  "vl_screen": {
+    "enabled": true,
+    "state": "succeeded",
+    "model": "qwen-vl-max",
+    "used_images": true,
+    "video_path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+    "ok": true,
+    "text": "```json\n{\n  \"decision\": \"crop\",\n  \"reason\": \"画面中主体集中在局部区域，且关键帧统计建议裁剪，裁剪可提升标注质量。\",\n  \"crop_suggestion\": [38.4, 60.0, 281.6, 204.0]\n}\n```",
+    "dry_run": false,
+    "error": "",
+    "attempts": 1
+  },
+  "crop_suggestion": [
+    38.4,
+    60.0,
+    281.6,
+    204.0
+  ]
+}

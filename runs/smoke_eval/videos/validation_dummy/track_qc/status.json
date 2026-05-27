@@ -1,0 +1,9 @@
+{
+  "node": "track_qc",
+  "state": "succeeded",
+  "input_hash": "472f1ee46c16e47fa947f309bdabd2f9376cc8762bc8c482a6c953cbc07b0ef2",
+  "finished_at": "2026-05-26 14:12:54",
+  "outputs": {
+    "track_qc_json": "runs/smoke_eval/videos/validation_dummy/track_qc/track_qc.json"
+  }
+}

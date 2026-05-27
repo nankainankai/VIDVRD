@@ -75,7 +75,7 @@
     "toward": {
       "zh": "朝向/接近",
       "category": "motion",
-      "inverse": "toward",
+      "inverse": "away",
       "mutex_group": "relative_motion",
       "requires_contact": false,
       "uses_motion": true
@@ -83,10 +83,34 @@
     "away": {
       "zh": "远离",
       "category": "motion",
-      "inverse": "away",
+      "inverse": "toward",
       "mutex_group": "relative_motion",
       "requires_contact": false,
       "uses_motion": true
+    },
+    "chase": {
+      "zh": "追逐",
+      "category": "motion",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": true
+    },
+    "sing_with": {
+      "zh": "与…一起唱",
+      "category": "interaction",
+      "inverse": "sing_with",
+      "mutex_group": "sing",
+      "requires_contact": false,
+      "uses_motion": false
+    },
+    "sing_to": {
+      "zh": "向…唱",
+      "category": "interaction",
+      "inverse": "",
+      "mutex_group": "sing",
+      "requires_contact": false,
+      "uses_motion": false
     },
     "follow": {
       "zh": "跟随",

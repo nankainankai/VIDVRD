@@ -1,0 +1,120 @@
+{
+  "video_id": "test1_video",
+  "relation_count": 223,
+  "source_counts": {
+    "rule_geometry": 205,
+    "coupling": 3,
+    "semi_auto": 4,
+    "global_relation": 7,
+    "semi_auto+coupling": 4
+  },
+  "low_confidence_count": 0,
+  "low_confidence_examples": [],
+  "conflict_count": 8,
+  "conflicts": [
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "start_frame": 0,
+      "end_frame": 29,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "start_frame": 60,
+      "end_frame": 89,
+      "predicates": [
+        "away",
+        "toward"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "start_frame": 15,
+      "end_frame": 44,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "start_frame": 30,
+      "end_frame": 74,
+      "predicates": [
+        "away",
+        "toward"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "start_frame": 0,
+      "end_frame": 29,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "start_frame": 15,
+      "end_frame": 44,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "start_frame": 30,
+      "end_frame": 74,
+      "predicates": [
+        "away",
+        "toward"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "start_frame": 60,
+      "end_frame": 89,
+      "predicates": [
+        "away",
+        "toward"
+      ],
+      "type": "mutual_exclusion"
+    }
+  ],
+  "strong_model_review_enabled": false,
+  "strong_model_review_count": 0,
+  "strong_model_review_items": [],
+  "strong_model_review_vl": {},
+  "final_actions": [],
+  "track_count": 7,
+  "track_frame_counts": {
+    "0": 103,
+    "1": 53,
+    "2": 78,
+    "3": 78,
+    "4": 78,
+    "5": 78,
+    "6": 53
+  },
+  "passed": false
+}

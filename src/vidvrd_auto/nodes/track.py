@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from vidvrd_auto.tracking.legacy_step2 import run_legacy_step2
+from vidvrd_auto.tracking.mock_track import run_mock_track
 
 
 def run_track(
@@ -22,6 +23,16 @@ def run_track(
     api_key: str,
     log_path: Path,
 ) -> None:
+    backend = str(config.get("backend", "legacy")).strip().lower()
+    if backend == "mock":
+        run_mock_track(
+            video_path=video_path,
+            detections_jsonl=detections_jsonl,
+            out_dir=out_dir,
+            config=config,
+            log_path=log_path,
+        )
+        return
     run_legacy_step2(
         video_path=video_path,
         detections_jsonl=detections_jsonl,

@@ -1,0 +1,9 @@
+{
+  "node": "relation_llm",
+  "state": "succeeded",
+  "input_hash": "68be61d122b84582a6c1664f00e50dea1036b4069ea6fc040fe6d7b1237e1fe9",
+  "finished_at": "2026-05-27 09:23:24",
+  "outputs": {
+    "relations_llm_json": "runs/rexomni_full_test1/videos/test1_video/relation_llm/relations_llm.json"
+  }
+}

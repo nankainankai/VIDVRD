@@ -1,0 +1,9 @@
+{
+  "node": "relation_merge",
+  "state": "succeeded",
+  "input_hash": "2751da141d3975b3e79c92e4a6849fbb105e6c50271cb72acaf4a4ac2d59bb44",
+  "finished_at": "2026-05-26 14:12:58",
+  "outputs": {
+    "relations_merged_json": "runs/smoke_eval/videos/validation_dummy/relation_merge/relations_merged.json"
+  }
+}

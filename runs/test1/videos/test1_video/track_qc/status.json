@@ -1,0 +1,9 @@
+{
+  "node": "track_qc",
+  "state": "succeeded",
+  "input_hash": "f0bee38c81b9e6e884a9f34d332d9e0a3e79ea6e9877164f0c4c707f2013bc48",
+  "finished_at": "2026-05-26 16:48:48",
+  "outputs": {
+    "track_qc_json": "runs/test1/videos/test1_video/track_qc/track_qc.json"
+  }
+}

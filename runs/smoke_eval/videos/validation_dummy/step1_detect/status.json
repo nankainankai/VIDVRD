@@ -1,0 +1,10 @@
+{
+  "node": "step1_detect",
+  "state": "succeeded",
+  "input_hash": "e1312c37e0f9eb57c07ee69e93ece9865925098f582e1c9499fc40bea29dbb78",
+  "finished_at": "2026-05-26 14:12:54",
+  "outputs": {
+    "detections_jsonl": "runs/smoke_eval/videos/validation_dummy/step1_detect/detections_full.jsonl",
+    "video_meta_json": "runs/smoke_eval/videos/validation_dummy/step1_detect/video_meta.json"
+  }
+}

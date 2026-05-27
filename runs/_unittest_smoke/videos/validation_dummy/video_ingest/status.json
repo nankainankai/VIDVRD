@@ -1,0 +1,10 @@
+{
+  "node": "video_ingest",
+  "state": "succeeded",
+  "input_hash": "4adbf4596faf01a8c48921120389b8598a7075c78561eaecea45434f2f7af9a4",
+  "finished_at": "2026-05-26 14:33:31",
+  "outputs": {
+    "source_json": "runs/_unittest_smoke/videos/validation_dummy/inputs/source.json",
+    "video_path": "data/validation_dummy.mp4"
+  }
+}

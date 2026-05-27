@@ -1,0 +1,10 @@
+{
+  "node": "step1_detect",
+  "state": "succeeded",
+  "input_hash": "116039bc6486c8b1f6da549da0907ca8b4410d99af65ac083b524638ed6aecd7",
+  "finished_at": "2026-05-27 09:15:33",
+  "outputs": {
+    "detections_jsonl": "runs/rexomni_full/videos/validation_dummy/step1_detect/detections_full.jsonl",
+    "video_meta_json": "runs/rexomni_full/videos/validation_dummy/step1_detect/video_meta.json"
+  }
+}

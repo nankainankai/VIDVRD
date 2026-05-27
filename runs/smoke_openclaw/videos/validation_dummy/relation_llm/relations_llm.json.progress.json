@@ -1,0 +1,19 @@
+{
+  "processed_segments_llm": [],
+  "processed_segments_dry_run": [
+    1,
+    2
+  ],
+  "errors": [
+    {
+      "segment_id": 1,
+      "stage": "save_storyboard",
+      "error": "cv2.imwrite failed: C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\runs\\smoke_openclaw\\videos\\validation_dummy\\relation_llm\\storyboards\\seg_0001_0-19.jpg"
+    },
+    {
+      "segment_id": 2,
+      "stage": "save_storyboard",
+      "error": "cv2.imwrite failed: C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\runs\\smoke_openclaw\\videos\\validation_dummy\\relation_llm\\storyboards\\seg_0002_10-29.jpg"
+    }
+  ]
+}

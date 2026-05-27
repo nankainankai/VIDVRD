@@ -1,0 +1,9 @@
+{
+  "node": "relation_llm",
+  "state": "succeeded",
+  "input_hash": "7992c1876403f50807fc997072ebf40449c78d776438cef928c867c7df4236bf",
+  "finished_at": "2026-05-26 16:33:43",
+  "outputs": {
+    "relations_llm_json": "runs/openclaw_smoke2/videos/validation_dummy/relation_llm/relations_llm.json"
+  }
+}

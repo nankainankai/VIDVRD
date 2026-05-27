@@ -1,0 +1,9 @@
+{
+  "node": "audio_prior",
+  "state": "succeeded",
+  "input_hash": "e5c276ca13eefa5d218e121a4c0e9256488c2231a02db44c7cf85317064f0dfc",
+  "finished_at": "2026-05-26 16:48:46",
+  "outputs": {
+    "audio_prior_json": "runs/test1/videos/test1_video/audio_prior/audio_prior.json"
+  }
+}

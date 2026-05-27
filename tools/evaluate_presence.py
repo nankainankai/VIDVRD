@@ -149,8 +149,10 @@ def _markdown_report(
     lines: List[str] = []
     lines.append("# Presence Evaluation Report")
     lines.append("")
-    lines.append(f"- gold: {str(gold_path).replace('\\\\', '/')}")
-    lines.append(f"- pred: {str(pred_path).replace('\\\\', '/')}")
+    gold_disp = str(gold_path).replace("\\", "/")
+    pred_disp = str(pred_path).replace("\\", "/")
+    lines.append(f"- gold: {gold_disp}")
+    lines.append(f"- pred: {pred_disp}")
     lines.append("")
 
     lines.append("## Overall")

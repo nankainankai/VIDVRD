@@ -1,0 +1,11 @@
+{
+  "node": "export",
+  "state": "succeeded",
+  "input_hash": "5196e87846d4acc20a33d4d57ab6fc7c88f11624acc353e20fd0dc5a79607d0e",
+  "finished_at": "2026-05-26 14:12:58",
+  "outputs": {
+    "relations_pred_json": "runs/smoke_eval/videos/validation_dummy/export/relations_pred.json",
+    "trajectories_pred_json": "runs/smoke_eval/videos/validation_dummy/export/trajectories_pred.json",
+    "relation_qc_json": "runs/smoke_eval/videos/validation_dummy/export/relation_qc.json"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "node": "global_relation",
+  "state": "succeeded",
+  "input_hash": "b583b838f5b834bc5981c16fbd29ba45f2187984618ad7452c4961e73785e453",
+  "finished_at": "2026-05-26 14:12:58",
+  "outputs": {
+    "relations_global_json": "runs/smoke_eval/videos/validation_dummy/global_relation/relations_global.json"
+  }
+}

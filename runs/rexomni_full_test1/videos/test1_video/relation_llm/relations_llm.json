@@ -1,0 +1,228 @@
+{
+  "test1_video": [
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene.",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "behind",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned further back in the scene compared to ID 1",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "follow",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 出现在 ID 1 后方并沿相同路径移动，表明跟随关系",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "toward",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is moving in the direction of ID 1 across the frames",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene.",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "front",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned further back in the scene compared to ID 1",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is moving in the direction of ID 1 across the frames",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently positioned to the left of ID 1 across all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "behind",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently behind ID 1 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "follow",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 出现在 ID 1 后方并持续跟随移动",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "toward",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is moving closer to ID 1 over time in the sequence",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently positioned to the left of ID 1 across all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "front",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently behind ID 1 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is moving closer to ID 1 over time in the sequence",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    }
+  ]
+}

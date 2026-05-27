@@ -1,0 +1,11 @@
+{
+  "node": "export",
+  "state": "succeeded",
+  "input_hash": "a9ec858908ad3a5aa09a028c4a981f7610f4ffdddbdb9c7abf4b36be8fb79cec",
+  "finished_at": "2026-05-26 16:48:50",
+  "outputs": {
+    "relations_pred_json": "runs/test1/videos/test1_video/export/relations_pred.json",
+    "trajectories_pred_json": "runs/test1/videos/test1_video/export/trajectories_pred.json",
+    "relation_qc_json": "runs/test1/videos/test1_video/export/relation_qc.json"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "node": "keyframe_screen",
+  "state": "succeeded",
+  "input_hash": "9812664156ea2dba788649a4a6373c131aecfe1255e8ed8e0daa67e13caa0b6b",
+  "finished_at": "2026-05-26 13:41:31",
+  "outputs": {
+    "screen_result_json": "runs/smoke_openclaw/videos/validation_dummy/keyframe_screen/screen_result.json"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "node": "step2_track",
+  "state": "succeeded",
+  "input_hash": "5b723216191d107a45b28ba8759fec0045d958579626329b9ba1992d6ed53f5f",
+  "finished_at": "2026-05-27 09:19:27",
+  "outputs": {
+    "tracks_jsonl": "runs/rexomni_full_test1/videos/test1_video/step2_track/tracks_full.jsonl",
+    "windows_json": "runs/rexomni_full_test1/videos/test1_video/step2_track/windows.json"
+  }
+}

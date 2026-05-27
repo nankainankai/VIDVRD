@@ -1,0 +1,9 @@
+{
+  "node": "relation_merge",
+  "state": "succeeded",
+  "input_hash": "fad101846c6a5d4f9a609debd189cd053ab396a36d7b77ad3971a1e60c0b47d7",
+  "finished_at": "2026-05-26 16:29:51",
+  "outputs": {
+    "relations_merged_json": "runs/openclaw_smoke_fix/videos/validation_dummy/relation_merge/relations_merged.json"
+  }
+}

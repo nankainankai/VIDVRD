@@ -1,0 +1,9 @@
+{
+  "node": "track_qc",
+  "state": "succeeded",
+  "input_hash": "0a972328c9b04538450099b855337c2aa6f79da269429e3f36c73b6a15e1740e",
+  "finished_at": "2026-05-26 13:41:31",
+  "outputs": {
+    "track_qc_json": "runs/smoke_openclaw/videos/validation_dummy/track_qc/track_qc.json"
+  }
+}

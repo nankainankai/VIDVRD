@@ -1,0 +1,103 @@
+{
+  "run_dir": "runs/rexomni_full",
+  "started_at": "2026-05-27 09:14:54",
+  "config_path": "configs/rexomni_full.json",
+  "config_hash": "961665811d29612513f49f974b5e7795df10718b5f008cf111f482a4a3649ffd",
+  "nodes": [
+    "video_ingest",
+    "audio_prior",
+    "step1_detect",
+    "keyframe_screen",
+    "step2_track",
+    "track_qc",
+    "relation_rule",
+    "relation_llm",
+    "relation_merge",
+    "global_relation",
+    "relation_verify",
+    "export"
+  ],
+  "args": {
+    "video": "data/validation_dummy.mp4",
+    "videos": "",
+    "from_node": "",
+    "to_node": "",
+    "resume": true,
+    "force": false,
+    "dry_run_relations": false,
+    "skip_eval": true,
+    "api_key_present": true
+  },
+  "videos": [
+    {
+      "video_id": "validation_dummy",
+      "source": "data/validation_dummy.mp4",
+      "source_type": "local",
+      "nodes": {
+        "video_ingest": {
+          "node": "video_ingest",
+          "state": "succeeded",
+          "input_hash": "c0cf21776e82e34f1906a65fd12e943b2d3d871161ff73d91127631b12c18969",
+          "finished_at": "2026-05-27 09:14:54",
+          "outputs": {
+            "source_json": "runs/rexomni_full/videos/validation_dummy/inputs/source.json",
+            "video_path": "data/validation_dummy.mp4"
+          }
+        },
+        "audio_prior": {
+          "node": "audio_prior",
+          "state": "succeeded",
+          "input_hash": "95ed295b756c2e4ab9b9adf326170e08731de4d5afb246d89ded2c58f801d3c8",
+          "finished_at": "2026-05-27 09:14:54",
+          "outputs": {
+            "audio_prior_json": "runs/rexomni_full/videos/validation_dummy/audio_prior/audio_prior.json"
+          }
+        },
+        "step1_detect": {
+          "node": "step1_detect",
+          "state": "succeeded",
+          "input_hash": "116039bc6486c8b1f6da549da0907ca8b4410d99af65ac083b524638ed6aecd7",
+          "finished_at": "2026-05-27 09:15:33",
+          "outputs": {
+            "detections_jsonl": "runs/rexomni_full/videos/validation_dummy/step1_detect/detections_full.jsonl",
+            "video_meta_json": "runs/rexomni_full/videos/validation_dummy/step1_detect/video_meta.json"
+          }
+        },
+        "keyframe_screen": {
+          "node": "keyframe_screen",
+          "state": "succeeded",
+          "input_hash": "b923709e6fcfe0d26c3f2ebc0231245c8dee719b6754329fd05272974e475e95",
+          "finished_at": "2026-05-27 09:15:33",
+          "outputs": {
+            "screen_result_json": "runs/rexomni_full/videos/validation_dummy/keyframe_screen/screen_result.json"
+          }
+        },
+        "step2_track": {},
+        "track_qc": {},
+        "relation_rule": {},
+        "relation_llm": {},
+        "relation_merge": {},
+        "global_relation": {},
+        "relation_verify": {},
+        "export": {}
+      },
+      "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+      "path_rel": "data/validation_dummy.mp4",
+      "exists": true,
+      "file_hash": "10e7afb15219f62520bdace78ec310ced2c7308ada87058b8927b114be7592ac",
+      "state": "skipped",
+      "skip_reason": "not_enough_valid_objects"
+    }
+  ],
+  "finished_at": "2026-05-27 09:15:33",
+  "pred_relations_json": "runs/rexomni_full/pred/relations_pred.json",
+  "pred_relation_count": 0,
+  "video_state_counts": {
+    "skipped": 1
+  },
+  "evaluate": {
+    "enabled": false,
+    "state": "skipped",
+    "reason": "disabled"
+  }
+}

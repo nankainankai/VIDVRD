@@ -1,0 +1,11 @@
+{
+  "node": "export",
+  "state": "succeeded",
+  "input_hash": "ee7796d02b2dc53e2729a289124a89f1de6a977cebc493135cfa414edad2a235",
+  "finished_at": "2026-05-26 16:33:43",
+  "outputs": {
+    "relations_pred_json": "runs/openclaw_smoke2/videos/validation_dummy/export/relations_pred.json",
+    "trajectories_pred_json": "runs/openclaw_smoke2/videos/validation_dummy/export/trajectories_pred.json",
+    "relation_qc_json": "runs/openclaw_smoke2/videos/validation_dummy/export/relation_qc.json"
+  }
+}

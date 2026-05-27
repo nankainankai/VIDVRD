@@ -1,0 +1,22 @@
+{
+  "video_id": "test1_video",
+  "relation_count": 46,
+  "source_counts": {
+    "rule_geometry": 46
+  },
+  "low_confidence_count": 0,
+  "low_confidence_examples": [],
+  "conflict_count": 0,
+  "conflicts": [],
+  "strong_model_review_enabled": false,
+  "strong_model_review_count": 0,
+  "strong_model_review_items": [],
+  "strong_model_review_vl": {},
+  "final_actions": [],
+  "track_count": 2,
+  "track_frame_counts": {
+    "1": 244,
+    "2": 244
+  },
+  "passed": true
+}

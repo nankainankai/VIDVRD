@@ -1,0 +1,10 @@
+{
+  "node": "relation_verify",
+  "state": "succeeded",
+  "input_hash": "bc3e533631e5e8681c3f9d077583081aff402431f2ada1e4670eed8f1e916ec8",
+  "finished_at": "2026-05-26 13:41:34",
+  "outputs": {
+    "relations_verified_json": "runs/smoke_openclaw/videos/validation_dummy/relation_verify/relations_verified.json",
+    "relation_qc_json": "runs/smoke_openclaw/videos/validation_dummy/relation_verify/relation_qc.json"
+  }
+}

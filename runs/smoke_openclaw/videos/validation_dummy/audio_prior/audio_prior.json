@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "video_id": "validation_dummy",
+  "label": "",
+  "confidence": 0.0,
+  "source": "none",
+  "matched_key": "",
+  "warning": "csv not found: C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\vggsound\\vggsound.csv"
+}

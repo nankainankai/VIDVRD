@@ -1,0 +1,3172 @@
+{
+  "test1_video": [
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "away",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.6667,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 2/3 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "away",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.8462,
+      "source": "coupling",
+      "segment_id": 5,
+      "evidence": "coupled from 3-toward-0",
+      "sources": [
+        "rule_geometry",
+        "coupling"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "behind",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned further back in the scene compared to ID 1",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "behind",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently behind ID 1 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 3/3 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "contact",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.6,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 18/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "contact",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "contact",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "contact",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "contact",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "contact",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "predicate": "follow",
+      "object_track_id": 1,
+      "start_frame": 0,
+      "end_frame": 44,
+      "confidence": 0.9500000000000001,
+      "source": "global_relation",
+      "sources": [
+        "semi_auto"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene.",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently positioned to the left of ID 1 across all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 3/3 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "near",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "overlap",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.6,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 18/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "overlap",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "overlap",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "overlap",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "overlap",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "overlap",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 3/3 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 18/18 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 30/30 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 30/30 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 20/20 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 5/5 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 8/8 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 23/23 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 30/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "predicate": "toward",
+      "object_track_id": 1,
+      "start_frame": 0,
+      "end_frame": 44,
+      "confidence": 0.9500000000000001,
+      "source": "global_relation",
+      "sources": [
+        "semi_auto"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 3,
+      "predicate": "toward",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.8462,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 11/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "predicate": "away",
+      "object_track_id": 0,
+      "start_frame": 0,
+      "end_frame": 44,
+      "confidence": 1.0,
+      "source": "global_relation",
+      "sources": [
+        "rule_geometry",
+        "semi_auto+coupling"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 1,
+      "predicate": "away",
+      "object_track_id": 2,
+      "start_frame": 30,
+      "end_frame": 74,
+      "confidence": 0.925,
+      "source": "global_relation",
+      "sources": [
+        "rule_geometry"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 3/3 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "front",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned further back in the scene compared to ID 1",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "front",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently behind ID 1 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 3/3 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 18/18 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 30/30 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 30/30 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 20/20 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 5/5 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 8/8 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 23/23 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 20/20 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 5/5 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 3/3 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene.",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently positioned to the left of ID 1 across all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "toward",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.6667,
+      "source": "coupling",
+      "segment_id": 1,
+      "evidence": "coupled from 0-away-1",
+      "sources": [
+        "rule_geometry",
+        "coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "predicate": "toward",
+      "object_track_id": 2,
+      "start_frame": 30,
+      "end_frame": 74,
+      "confidence": 0.925,
+      "source": "global_relation",
+      "sources": [
+        "coupling",
+        "rule_geometry"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 2,
+      "predicate": "away",
+      "object_track_id": 1,
+      "start_frame": 30,
+      "end_frame": 74,
+      "confidence": 0.925,
+      "source": "global_relation",
+      "sources": [
+        "rule_geometry"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 30/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "below",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 18/18 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 5,
+      "predicate": "below",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 3/3 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 5,
+      "predicate": "below",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 3/3 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.6,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 18/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 8/8 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 23/23 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 30/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 30/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 3,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 18/18 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 3/3 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 3/3 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.6,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 18/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 8/8 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 23/23 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 20/20 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 5/5 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "predicate": "toward",
+      "object_track_id": 1,
+      "start_frame": 30,
+      "end_frame": 74,
+      "confidence": 0.925,
+      "source": "global_relation",
+      "sources": [
+        "coupling",
+        "rule_geometry"
+      ],
+      "evidence": "aggregated 2 segments",
+      "segment_count": 2
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "above",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "above",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "above",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 1,
+      "predicate": "above",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 3/3 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 1,
+      "predicate": "above",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 30/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.8462,
+      "source": "coupling",
+      "segment_id": 5,
+      "evidence": "coupled from 0-toward-3",
+      "sources": [
+        "rule_geometry",
+        "coupling"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 0.7,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 21/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 30/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "below",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 5,
+      "predicate": "below",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 8/8 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 5,
+      "predicate": "below",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.6087,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 14/23 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "contact",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 27/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "contact",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "contact",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 18/18 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 30/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 30/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 8/8 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 23/23 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 3/3 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 3/3 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "near",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "overlap",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 27/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "overlap",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 4,
+      "predicate": "overlap",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 15/15 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 3/3 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 13/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 28/28 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 30/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 3,
+      "object_track_id": 0,
+      "predicate": "toward",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 0.8462,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 11/13 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 0,
+      "predicate": "above",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 0,
+      "predicate": "above",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 3/3 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 18/18 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "above",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 0.7,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 21/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "above",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 30/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "above",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "above",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "contact",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 27/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "contact",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "contact",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 8/8 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 23/23 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 30/30 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 30/30 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 5,
+      "predicate": "left",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 15/15 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 13/13 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 28/28 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 15/15 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "overlap",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 27/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "overlap",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "overlap",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 3/3 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 18/18 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 25/25 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 10/10 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 3/3 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 18/18 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 30/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 30/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 4,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 3/3 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 2,
+      "predicate": "above",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 3/3 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 3,
+      "predicate": "above",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 8/8 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 3,
+      "predicate": "above",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.6087,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 14/23 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 13/13 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 28/28 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 30/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 25/25 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 6,
+      "predicate": "left",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 10/10 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 3/3 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 2,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 3/3 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 8/8 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 23/23 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 5/5 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 8/8 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 23/23 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 30/30 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 30/30 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 5,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 15/15 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 3/3 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 3,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 3/3 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 13/13 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 28/28 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 4,
+      "predicate": "right",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 15/15 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 5,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 13/13 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 5,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 28/28 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 5,
+      "predicate": "right",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 30/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 5,
+      "predicate": "right",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 25/25 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 6,
+      "object_track_id": 5,
+      "predicate": "right",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 10/10 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    }
+  ]
+}

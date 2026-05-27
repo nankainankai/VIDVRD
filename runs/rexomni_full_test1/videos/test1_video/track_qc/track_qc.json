@@ -1,0 +1,19 @@
+{
+  "track_count": 7,
+  "frame_count": 244,
+  "window_count": 15,
+  "short_track_count": 0,
+  "short_tracks": [],
+  "class_drift_count": 0,
+  "class_drift": [],
+  "large_jump_count": 0,
+  "large_jumps": [],
+  "risk_items": [],
+  "vl_review": {
+    "enabled": true,
+    "state": "disabled",
+    "items": [],
+    "used_images": false
+  },
+  "passed": true
+}

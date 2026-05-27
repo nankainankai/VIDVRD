@@ -1,0 +1,10 @@
+{
+  "node": "step2_track",
+  "state": "succeeded",
+  "input_hash": "08c358fd328be015d9d1b91272baa4d33cb7d86960e7b43ee8591362f222312e",
+  "finished_at": "2026-05-26 16:33:43",
+  "outputs": {
+    "tracks_jsonl": "runs/openclaw_smoke2/videos/validation_dummy/step2_track/tracks_full.jsonl",
+    "windows_json": "runs/openclaw_smoke2/videos/validation_dummy/step2_track/windows.json"
+  }
+}

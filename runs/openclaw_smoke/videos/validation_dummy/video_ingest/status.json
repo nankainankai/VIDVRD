@@ -1,0 +1,10 @@
+{
+  "node": "video_ingest",
+  "state": "succeeded",
+  "input_hash": "c0cf21776e82e34f1906a65fd12e943b2d3d871161ff73d91127631b12c18969",
+  "finished_at": "2026-05-26 16:07:58",
+  "outputs": {
+    "source_json": "runs/openclaw_smoke/videos/validation_dummy/inputs/source.json",
+    "video_path": "data/validation_dummy.mp4"
+  }
+}

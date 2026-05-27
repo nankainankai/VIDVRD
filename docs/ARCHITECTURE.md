@@ -2,6 +2,8 @@
 
 本项目当前采用 OpenClaw-first 的工程结构：OpenClaw/Agent 只负责调用、恢复和汇报，实际业务逻辑全部落在 `src/vidvrd_auto/`。
 
+`relation_llm` 已迁入 `vidvrd_auto.relations.clip_relation`（storyboard 生成 + DashScope VL 分组询问）；`my_scripts/semi_auto_label_relations.py` 仅保留兼容 CLI。检测/追踪仍通过 `legacy_step1` / `legacy_step2` 适配旧脚本。
+
 ## 主入口
 
 安装 editable 包后的推荐命令：

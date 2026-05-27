@@ -1,0 +1,36 @@
+{
+  "validation_dummy": [
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "behind",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 1 is consistently positioned behind ID 2 across all frames",
+      "frames": [
+        0,
+        10,
+        19
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "front",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 1 is consistently positioned behind ID 2 across all frames",
+      "frames": [
+        0,
+        10,
+        19
+      ]
+    }
+  ]
+}

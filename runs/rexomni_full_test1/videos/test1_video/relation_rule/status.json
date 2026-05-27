@@ -1,0 +1,9 @@
+{
+  "node": "relation_rule",
+  "state": "succeeded",
+  "input_hash": "54ae3d219e03b752c13863fb38e2ba92fb6172110bb4f6d7261f6c01231e3bd1",
+  "finished_at": "2026-05-27 09:19:27",
+  "outputs": {
+    "relations_rule_json": "runs/rexomni_full_test1/videos/test1_video/relation_rule/relations_rule.json"
+  }
+}

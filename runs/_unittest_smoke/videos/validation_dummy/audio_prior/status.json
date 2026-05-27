@@ -1,0 +1,9 @@
+{
+  "node": "audio_prior",
+  "state": "succeeded",
+  "input_hash": "2806ed8369fb1dd27ad15da64c7b25746200c849fc98c2877cb653509cdf4406",
+  "finished_at": "2026-05-26 14:33:31",
+  "outputs": {
+    "audio_prior_json": "runs/_unittest_smoke/videos/validation_dummy/audio_prior/audio_prior.json"
+  }
+}

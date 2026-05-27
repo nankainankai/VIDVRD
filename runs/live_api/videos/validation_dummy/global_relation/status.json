@@ -1,0 +1,9 @@
+{
+  "node": "global_relation",
+  "state": "succeeded",
+  "input_hash": "94ce16e1eeda1865fc9dd7e21f4e23c2851dedfb2f51e01571773cdf7eb3da07",
+  "finished_at": "2026-05-26 13:50:45",
+  "outputs": {
+    "relations_global_json": "runs/live_api/videos/validation_dummy/global_relation/relations_global.json"
+  }
+}

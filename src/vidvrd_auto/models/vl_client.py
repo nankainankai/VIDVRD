@@ -42,6 +42,31 @@ def _image_to_data_uri(path: Path) -> str:
     return f"data:image/{suffix};base64,{data}"
 
 
+def _bgr_to_data_uri(image_bgr: Any, *, quality: int = 90) -> str:
+    import cv2  # type: ignore
+
+    ok, buf = cv2.imencode(".jpg", image_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
+    if not ok:
+        raise RuntimeError("cv2.imencode failed for storyboard image")
+    data = base64.b64encode(buf.tobytes()).decode("ascii")
+    return f"data:image/jpeg;base64,{data}"
+
+
+def _extract_message_text(message_content: Any) -> str:
+    if isinstance(message_content, str):
+        return message_content
+    if isinstance(message_content, list):
+        parts: List[str] = []
+        for item in message_content:
+            if isinstance(item, dict):
+                if "text" in item:
+                    parts.append(str(item.get("text") or ""))
+                elif item.get("type") == "text":
+                    parts.append(str(item.get("content") or item.get("text") or ""))
+        return "".join(parts)
+    return str(message_content or "")
+
+
 class VLClient:
     def __init__(self, config: Dict[str, Any] | None = None, *, api_key: str = "") -> None:
         cfg = config or {}
@@ -79,7 +104,41 @@ class VLClient:
                 if self.sleep_sec > 0:
                     time.sleep(self.sleep_sec)
                 resp = MultiModalConversation.call(model=self.model, messages=messages)
-                text = str(resp.output.choices[0].message.content[0].get("text", "")).strip()
+                text = _extract_message_text(resp.output.choices[0].message.content).strip()
+                return VLResult(ok=True, text=text, model=self.model, attempts=attempt)
+            except Exception as exc:
+                last_error = str(exc)
+                if attempt <= self.retries:
+                    time.sleep(self.backoff_sec * attempt)
+        return VLResult(ok=False, text="", model=self.model, error=last_error, attempts=self.retries + 1)
+
+    def call_bgr(self, *, prompt: str, image_bgr: Any, dry_run: bool | None = None) -> VLResult:
+        """对内存中的 BGR 拼图调用多模态模型（用于 relation_llm storyboard）。"""
+        effective_dry_run = self.dry_run if dry_run is None else bool(dry_run)
+        if effective_dry_run:
+            return VLResult(ok=True, text='{"triples":[]}', model=self.model, dry_run=True, attempts=0)
+        if not self.api_key:
+            return VLResult(ok=False, text="", model=self.model, error="missing DASHSCOPE api key", attempts=0)
+
+        try:
+            import dashscope  # type: ignore
+            from dashscope import MultiModalConversation  # type: ignore
+        except Exception as exc:
+            return VLResult(ok=False, text="", model=self.model, error=f"dashscope unavailable: {exc}", attempts=0)
+
+        dashscope.api_key = self.api_key
+        image_data = _bgr_to_data_uri(image_bgr)
+        messages: List[Dict[str, Any]] = [
+            {"role": "user", "content": [{"image": image_data}, {"text": prompt}]}
+        ]
+
+        last_error = ""
+        for attempt in range(1, self.retries + 2):
+            try:
+                if self.sleep_sec > 0:
+                    time.sleep(self.sleep_sec)
+                resp = MultiModalConversation.call(model=self.model, messages=messages)
+                text = _extract_message_text(resp.output.choices[0].message.content).strip()
                 return VLResult(ok=True, text=text, model=self.model, attempts=attempt)
             except Exception as exc:
                 last_error = str(exc)

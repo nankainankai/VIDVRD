@@ -1,0 +1,9 @@
+{
+  "node": "keyframe_screen",
+  "state": "succeeded",
+  "input_hash": "bec97b2f4b6139e1efe77dd80b6668407911b38ba616bdc942bff419ebd3c706",
+  "finished_at": "2026-05-26 16:48:48",
+  "outputs": {
+    "screen_result_json": "runs/test1/videos/test1_video/keyframe_screen/screen_result.json"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "validation_dummy": [
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "behind",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 1 is consistently positioned behind ID 2 across all frames",
+      "frames": [
+        0,
+        10,
+        19
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 20/20 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 10,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 20/20 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 20,
+      "end_frame": 39,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 20/20 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "front",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 1 is consistently positioned behind ID 2 across all frames",
+      "frames": [
+        0,
+        10,
+        19
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 20/20 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 10,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 20/20 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 20,
+      "end_frame": 39,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 20/20 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    }
+  ]
+}

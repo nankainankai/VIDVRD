@@ -1,0 +1,14 @@
+{
+  "video": {
+    "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+    "fps": 10,
+    "total_frames": 40,
+    "duration": 4.0
+  },
+  "detector_stats": {
+    "backend": "mock",
+    "frames_written": 40
+  },
+  "detections_jsonl": "detections_full.jsonl",
+  "box_vis_video": ""
+}

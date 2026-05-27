@@ -1,0 +1,9 @@
+{
+  "node": "relation_rule",
+  "state": "succeeded",
+  "input_hash": "cfd81e3d41cab23762f135991e10b3f64fdee60b9d12df743960d110efb0c64d",
+  "finished_at": "2026-05-26 16:29:51",
+  "outputs": {
+    "relations_rule_json": "runs/openclaw_smoke_fix/videos/validation_dummy/relation_rule/relations_rule.json"
+  }
+}

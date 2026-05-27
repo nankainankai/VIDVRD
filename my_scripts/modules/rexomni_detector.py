@@ -110,7 +110,7 @@ def _pick_attn_implementation(requested: Optional[str] = None) -> str:
     return "sdpa"
 
 
-def _pick_torch_dtype(requested: Any = None) -> Any:
+def _pick_torch_dtype(requested: Any = None, *, model_path: str = "") -> Any:
     """Choose a default dtype that works on CPU-only machines."""
 
     if requested is not None:
@@ -119,10 +119,65 @@ def _pick_torch_dtype(requested: Any = None) -> Any:
         import torch  # type: ignore
 
         if getattr(torch, "cuda", None) is not None and torch.cuda.is_available():
+            # AWQ weights load reliably with float16 (transformers recommendation).
+            if "awq" in str(model_path or "").lower():
+                return torch.float16
             return torch.bfloat16
         return torch.float32
     except Exception:
         return None
+
+
+def _load_transformers_wrapper_safe(
+    *,
+    model_path: str,
+    attn_impl: str,
+    torch_dtype: Any,
+    gen_kwargs: Dict[str, Any],
+) -> Any:
+    """Load AWQ weights before importing rex_omni (import order matters on Windows)."""
+
+    import torch
+    from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
+
+    device_map = "cuda:0" if getattr(torch, "cuda", None) is not None and torch.cuda.is_available() else "auto"
+    print("[RexOmni] loading weights (direct transformers)...", flush=True)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        model_path,
+        torch_dtype=torch_dtype,
+        attn_implementation=attn_impl,
+        device_map=device_map,
+        trust_remote_code=True,
+    )
+    print("[RexOmni] loading processor...", flush=True)
+    processor = AutoProcessor.from_pretrained(
+        model_path,
+        min_pixels=16 * 28 * 28,
+        max_pixels=2560 * 28 * 28,
+        use_fast=False,
+    )
+    processor.tokenizer.padding_side = "left"
+
+    # Import rex_omni only after CUDA weights are loaded (avoids Windows access violation).
+    deps = _load_rexomni_deps()
+    wrapper = deps.RexOmniWrapper.__new__(deps.RexOmniWrapper)
+    wrapper.model_path = model_path
+    wrapper.backend = "transformers"
+    wrapper.system_prompt = "You are a helpful assistant"
+    wrapper.min_pixels = 16 * 28 * 28
+    wrapper.max_pixels = 2560 * 28 * 28
+    wrapper.max_tokens = int(gen_kwargs.get("max_tokens", 2048))
+    wrapper.temperature = float(gen_kwargs.get("temperature", 0.0))
+    wrapper.top_p = float(gen_kwargs.get("top_p", 0.8))
+    wrapper.top_k = int(gen_kwargs.get("top_k", 1))
+    wrapper.repetition_penalty = float(gen_kwargs.get("repetition_penalty", 1.05))
+    wrapper.skip_special_tokens = False
+    wrapper.stop = ["<|im_end|>"]
+    wrapper.quantization = None
+    wrapper.model = model
+    wrapper.processor = processor
+    wrapper.model_type = "transformers"
+    return wrapper
 
 
 class RexOmniObjectDetector:
@@ -156,27 +211,42 @@ class RexOmniObjectDetector:
         self._class_name_to_id: Dict[str, int] = {}
 
     def load_model(self) -> None:
-        deps = _load_rexomni_deps()
-        self._deps = deps
-
         attn_impl = _pick_attn_implementation(self.kwargs.get("attn_implementation"))
-        torch_dtype = _pick_torch_dtype(self.kwargs.get("torch_dtype"))
-
-        # RexOmniWrapper init loads model.
-        self._model = deps.RexOmniWrapper(
-            model_path=self.model_path,
-            backend=self.backend,
-            torch_dtype=torch_dtype,
-            attn_implementation=attn_impl,
-            temperature=float(self.kwargs.get("temperature", 0.0)),
-            top_p=float(self.kwargs.get("top_p", 0.8)),
-            top_k=int(self.kwargs.get("top_k", 1)),
-            repetition_penalty=float(self.kwargs.get("repetition_penalty", 1.05)),
-            max_tokens=int(self.kwargs.get("max_tokens", 2048)),
-        )
+        torch_dtype = _pick_torch_dtype(self.kwargs.get("torch_dtype"), model_path=self.model_path)
 
         print(
-            f"[RexOmni] initialized (backend={self.backend}, attn={attn_impl}, dtype={torch_dtype}, categories={self.categories})"
+            f"[RexOmni] loading model from {self.model_path} (may take 1-3 min, GPU memory ~4-6GB)...",
+            flush=True,
+        )
+        gen_kwargs = {
+            "temperature": float(self.kwargs.get("temperature", 0.0)),
+            "top_p": float(self.kwargs.get("top_p", 0.8)),
+            "top_k": int(self.kwargs.get("top_k", 1)),
+            "repetition_penalty": float(self.kwargs.get("repetition_penalty", 1.05)),
+            "max_tokens": int(self.kwargs.get("max_tokens", 2048)),
+        }
+        if self.backend == "transformers":
+            self._model = _load_transformers_wrapper_safe(
+                model_path=self.model_path,
+                attn_impl=attn_impl,
+                torch_dtype=torch_dtype,
+                gen_kwargs=gen_kwargs,
+            )
+            self._deps = _load_rexomni_deps()
+        else:
+            deps = _load_rexomni_deps()
+            self._deps = deps
+            self._model = deps.RexOmniWrapper(
+                model_path=self.model_path,
+                backend=self.backend,
+                torch_dtype=torch_dtype,
+                attn_implementation=attn_impl,
+                **gen_kwargs,
+            )
+
+        print(
+            f"[RexOmni] initialized (backend={self.backend}, attn={attn_impl}, dtype={torch_dtype}, categories={self.categories})",
+            flush=True,
         )
 
     def _class_id(self, name: str) -> int:

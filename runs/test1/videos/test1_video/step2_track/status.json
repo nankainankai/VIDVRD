@@ -1,0 +1,10 @@
+{
+  "node": "step2_track",
+  "state": "succeeded",
+  "input_hash": "c07464a13087f301965216a0babcca141095660ab7a40a4d2b4f1de012976606",
+  "finished_at": "2026-05-26 16:48:48",
+  "outputs": {
+    "tracks_jsonl": "runs/test1/videos/test1_video/step2_track/tracks_full.jsonl",
+    "windows_json": "runs/test1/videos/test1_video/step2_track/windows.json"
+  }
+}

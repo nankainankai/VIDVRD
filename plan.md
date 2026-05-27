@@ -23,6 +23,14 @@ video_ingest
 
 但项目还不是最终完整形态：检测、追踪、片段关系分类仍有旧脚本适配层；关键帧粗筛、轨迹质检、全局关系、强模型复核虽然已接入 VL/强模型调用入口，但仍需要真实视频验证、Prompt 调优和规则完善。
 
+**2026-05-26 工程闭环更新**：已支持 `detector.backend=mock` / `tracking.backend=mock` 的端到端 dry-run（无需 GPU/API）；`scripts/check_openclaw_env.py`、`scripts/make_validation_dummy.py`、`tests/test_pipeline_smoke.py` 已加入；OpenClaw Skill 与 README 已补充 smoke 命令。
+
+**2026-05-26 plan 续做**：`gold/` 样例 + Presence 评测链路；`pipeline/report.py` 自动生成 `reports/run_report.md`；`configs/production_full.json` + `scripts/run_production.ps1`；storyboard `imwrite` 修复（中文路径）；规则关系扩展 motion（toward/away/follow/chase 等）；`configs/CONFIGS.md`。
+
+**2026-05-26 选项1**：`relation_llm` 迁入主包（`relations/clip_relation.py` 等）；`semi_auto_label_relations.py` 改为薄 CLI 包装。
+
+**2026-05-26 选项2**：`keyframe_screen` / `track_qc` / `global_relation` / `relation_verify` 在 `vl_enabled` 时从视频抽帧拼图并 `call_bgr` 调用 VL；`utils/vl_frames.py`；`dry_run.json` 默认 `vl_dry_run=true` 可本地验证传图链路。
+
 ## 分工原则
 
 - 所有新代码默认进入 `src/vidvrd_auto/`。

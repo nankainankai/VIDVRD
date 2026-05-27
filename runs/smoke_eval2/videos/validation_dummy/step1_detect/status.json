@@ -1,0 +1,7 @@
+{
+  "node": "step1_detect",
+  "state": "failed",
+  "input_hash": "7fa5316d1f1c58885dba60ab091526b79cac9032ca099529b3cc58ba5cc684e4",
+  "finished_at": "2026-05-26 14:12:41",
+  "error": "required output missing: C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\runs\\smoke_eval2\\videos\\validation_dummy\\step1_detect\\detections_full.jsonl"
+}

@@ -1,0 +1,9 @@
+{
+  "node": "keyframe_screen",
+  "state": "succeeded",
+  "input_hash": "b923709e6fcfe0d26c3f2ebc0231245c8dee719b6754329fd05272974e475e95",
+  "finished_at": "2026-05-27 09:15:33",
+  "outputs": {
+    "screen_result_json": "runs/rexomni_full/videos/validation_dummy/keyframe_screen/screen_result.json"
+  }
+}

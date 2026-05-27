@@ -1,0 +1,20 @@
+{
+  "validation_dummy": [
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "toward",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 1 的轨迹框在逐渐向 ID 2 靠近",
+      "frames": [
+        0,
+        10,
+        19
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "video": {
+    "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+    "fps": 10,
+    "total_frames": 40,
+    "duration": 4.0
+  },
+  "window_size_frames": 20,
+  "stride_frames": 10,
+  "windows": [
+    {
+      "window_id": 1,
+      "start_frame": 0,
+      "end_frame": 19,
+      "start_time": 0.0,
+      "end_time": 1.9,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 2,
+      "start_frame": 10,
+      "end_frame": 29,
+      "start_time": 1.0,
+      "end_time": 2.9,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 3,
+      "start_frame": 20,
+      "end_frame": 39,
+      "start_time": 2.0,
+      "end_time": 3.9,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    }
+  ]
+}

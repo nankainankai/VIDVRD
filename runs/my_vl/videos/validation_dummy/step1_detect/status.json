@@ -1,0 +1,10 @@
+{
+  "node": "step1_detect",
+  "state": "succeeded",
+  "input_hash": "3db3f52f22e4c093a6db43027a92284adb42f791e0fadc254b1c13c7d8f19801",
+  "finished_at": "2026-05-26 14:34:41",
+  "outputs": {
+    "detections_jsonl": "runs/my_vl/videos/validation_dummy/step1_detect/detections_full.jsonl",
+    "video_meta_json": "runs/my_vl/videos/validation_dummy/step1_detect/video_meta.json"
+  }
+}

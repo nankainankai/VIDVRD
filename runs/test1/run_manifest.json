@@ -1,0 +1,174 @@
+{
+  "run_dir": "runs/test1",
+  "started_at": "2026-05-26 16:48:44",
+  "config_path": "configs/dry_run.json",
+  "config_hash": "af432a6a23583d1c65c1193fc6bafb7dcd3e7864c552d58f1fe247a298cd5ac4",
+  "nodes": [
+    "video_ingest",
+    "audio_prior",
+    "step1_detect",
+    "keyframe_screen",
+    "step2_track",
+    "track_qc",
+    "relation_rule",
+    "relation_llm",
+    "relation_merge",
+    "global_relation",
+    "relation_verify",
+    "export"
+  ],
+  "args": {
+    "video": "data/test1_video.mp4",
+    "videos": "",
+    "from_node": "",
+    "to_node": "",
+    "resume": true,
+    "force": false,
+    "dry_run_relations": true,
+    "skip_eval": true,
+    "api_key_present": true
+  },
+  "videos": [
+    {
+      "video_id": "test1_video",
+      "source": "data/test1_video.mp4",
+      "source_type": "local",
+      "nodes": {
+        "video_ingest": {
+          "node": "video_ingest",
+          "state": "succeeded",
+          "input_hash": "ac8cc3e32db8227353347ade55ddb47719feb3254f2971be78111ceafd5ca662",
+          "finished_at": "2026-05-26 16:48:44",
+          "outputs": {
+            "source_json": "runs/test1/videos/test1_video/inputs/source.json",
+            "video_path": "data/test1_video.mp4"
+          }
+        },
+        "audio_prior": {
+          "node": "audio_prior",
+          "state": "succeeded",
+          "input_hash": "e5c276ca13eefa5d218e121a4c0e9256488c2231a02db44c7cf85317064f0dfc",
+          "finished_at": "2026-05-26 16:48:46",
+          "outputs": {
+            "audio_prior_json": "runs/test1/videos/test1_video/audio_prior/audio_prior.json"
+          }
+        },
+        "step1_detect": {
+          "node": "step1_detect",
+          "state": "succeeded",
+          "input_hash": "7fca8326c3e3d56b4e9f04ffc6b0a657448d7e3b9ea9cfd2a36f7babdffb9a30",
+          "finished_at": "2026-05-26 16:48:46",
+          "outputs": {
+            "detections_jsonl": "runs/test1/videos/test1_video/step1_detect/detections_full.jsonl",
+            "video_meta_json": "runs/test1/videos/test1_video/step1_detect/video_meta.json"
+          }
+        },
+        "keyframe_screen": {
+          "node": "keyframe_screen",
+          "state": "succeeded",
+          "input_hash": "bec97b2f4b6139e1efe77dd80b6668407911b38ba616bdc942bff419ebd3c706",
+          "finished_at": "2026-05-26 16:48:48",
+          "outputs": {
+            "screen_result_json": "runs/test1/videos/test1_video/keyframe_screen/screen_result.json"
+          }
+        },
+        "step2_track": {
+          "node": "step2_track",
+          "state": "succeeded",
+          "input_hash": "c07464a13087f301965216a0babcca141095660ab7a40a4d2b4f1de012976606",
+          "finished_at": "2026-05-26 16:48:48",
+          "outputs": {
+            "tracks_jsonl": "runs/test1/videos/test1_video/step2_track/tracks_full.jsonl",
+            "windows_json": "runs/test1/videos/test1_video/step2_track/windows.json"
+          }
+        },
+        "track_qc": {
+          "node": "track_qc",
+          "state": "succeeded",
+          "input_hash": "f0bee38c81b9e6e884a9f34d332d9e0a3e79ea6e9877164f0c4c707f2013bc48",
+          "finished_at": "2026-05-26 16:48:48",
+          "outputs": {
+            "track_qc_json": "runs/test1/videos/test1_video/track_qc/track_qc.json"
+          }
+        },
+        "relation_rule": {
+          "node": "relation_rule",
+          "state": "succeeded",
+          "input_hash": "f09c5c91d9dc1d261644be4be9e031b53ee51f563c48ccb7dec272606dd7a76e",
+          "finished_at": "2026-05-26 16:48:48",
+          "outputs": {
+            "relations_rule_json": "runs/test1/videos/test1_video/relation_rule/relations_rule.json"
+          }
+        },
+        "relation_llm": {
+          "node": "relation_llm",
+          "state": "succeeded",
+          "input_hash": "8882ae7865b877dc6f9803841b3aa4d66ac95ae67c4e8df097de684e6e91eb8a",
+          "finished_at": "2026-05-26 16:48:48",
+          "outputs": {
+            "relations_llm_json": "runs/test1/videos/test1_video/relation_llm/relations_llm.json"
+          }
+        },
+        "relation_merge": {
+          "node": "relation_merge",
+          "state": "succeeded",
+          "input_hash": "22e296743bfb0033ea566ace20699d371dfd84e5e8f419891b038323049e1ab4",
+          "finished_at": "2026-05-26 16:48:48",
+          "outputs": {
+            "relations_merged_json": "runs/test1/videos/test1_video/relation_merge/relations_merged.json"
+          }
+        },
+        "global_relation": {
+          "node": "global_relation",
+          "state": "succeeded",
+          "input_hash": "3dcc2cd76696c548c13f8960d84b39214b1b44498a032e8a22290d5cb954ecb3",
+          "finished_at": "2026-05-26 16:48:50",
+          "outputs": {
+            "relations_global_json": "runs/test1/videos/test1_video/global_relation/relations_global.json"
+          }
+        },
+        "relation_verify": {
+          "node": "relation_verify",
+          "state": "succeeded",
+          "input_hash": "7bb4f85c91f747d4fa7ecdedda466f435f97da379b81ab510962dc08d632fe83",
+          "finished_at": "2026-05-26 16:48:50",
+          "outputs": {
+            "relations_verified_json": "runs/test1/videos/test1_video/relation_verify/relations_verified.json",
+            "relation_qc_json": "runs/test1/videos/test1_video/relation_verify/relation_qc.json"
+          }
+        },
+        "export": {
+          "node": "export",
+          "state": "succeeded",
+          "input_hash": "a9ec858908ad3a5aa09a028c4a981f7610f4ffdddbdb9c7abf4b36be8fb79cec",
+          "finished_at": "2026-05-26 16:48:50",
+          "outputs": {
+            "relations_pred_json": "runs/test1/videos/test1_video/export/relations_pred.json",
+            "trajectories_pred_json": "runs/test1/videos/test1_video/export/trajectories_pred.json",
+            "relation_qc_json": "runs/test1/videos/test1_video/export/relation_qc.json"
+          }
+        }
+      },
+      "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+      "path_rel": "data/test1_video.mp4",
+      "exists": true,
+      "file_hash": "7b28ea37c23ab6be3b7defa23eab94a7c5536b11ccb7e76bda857e95d6d5e019",
+      "state": "succeeded",
+      "outputs": {
+        "relations_pred_json": "runs/test1/videos/test1_video/export/relations_pred.json",
+        "trajectories_pred_json": "runs/test1/videos/test1_video/export/trajectories_pred.json"
+      }
+    }
+  ],
+  "finished_at": "2026-05-26 16:48:50",
+  "pred_relations_json": "runs/test1/pred/relations_pred.json",
+  "pred_relation_count": 46,
+  "video_state_counts": {
+    "succeeded": 1
+  },
+  "evaluate": {
+    "enabled": false,
+    "state": "skipped",
+    "reason": "disabled"
+  }
+}

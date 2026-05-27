@@ -86,7 +86,11 @@
     "min_confidence": 0.0,
     "required_positive_frames": 1,
     "vl_enabled": false,
-    "vl_model": "qwen-vl-max"
+    "vl_dry_run": false,
+    "vl_model": "qwen-vl-max",
+    "vl_tile_h": 320,
+    "vl_retries": 2,
+    "vl_backoff_sec": 1.5
   },
   "track_qc": {
     "min_track_frames": 2,
@@ -94,7 +98,9 @@
     "max_center_jump_ratio": 0.45,
     "vl_enabled": false,
     "vl_dry_run": false,
-    "vl_model": "qwen-vl-max"
+    "vl_model": "qwen-vl-max",
+    "vl_max_frames": 6,
+    "vl_tile_h": 320
   },
   "relation_rule": {
     "enabled": true,
@@ -124,14 +130,18 @@
     "dynamic_predicates": ["toward", "away", "follow", "chase"],
     "vl_enabled": false,
     "vl_dry_run": false,
-    "vl_model": "qwen-vl-max"
+    "vl_model": "qwen-vl-max",
+    "vl_sample_frames": 8,
+    "vl_tile_h": 320
   },
   "relation_verify": {
     "low_confidence_threshold": 0.45,
     "strong_model_review_enabled": false,
     "strong_model": "qwen-vl-max",
     "strong_model_confidence_threshold": 0.35,
-    "strong_model_dry_run": false
+    "strong_model_dry_run": false,
+    "strong_model_sample_frames": 6,
+    "vl_tile_h": 320
   },
   "evaluate": {
     "enabled": true,

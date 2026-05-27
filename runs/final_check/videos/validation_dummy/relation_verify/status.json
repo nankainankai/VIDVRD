@@ -1,0 +1,10 @@
+{
+  "node": "relation_verify",
+  "state": "succeeded",
+  "input_hash": "7ddb6eb8c993ee51db8d4e2361a133cc179855258713f681567bd6be80dcebe8",
+  "finished_at": "2026-05-26 14:33:31",
+  "outputs": {
+    "relations_verified_json": "runs/final_check/videos/validation_dummy/relation_verify/relations_verified.json",
+    "relation_qc_json": "runs/final_check/videos/validation_dummy/relation_verify/relation_qc.json"
+  }
+}

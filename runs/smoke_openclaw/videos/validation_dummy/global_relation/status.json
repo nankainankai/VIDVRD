@@ -1,0 +1,9 @@
+{
+  "node": "global_relation",
+  "state": "succeeded",
+  "input_hash": "09bc8d2ef7ac123fc4a7ccdbb4c1167662fe80facc96369a38f3f99933dc83b0",
+  "finished_at": "2026-05-26 13:41:34",
+  "outputs": {
+    "relations_global_json": "runs/smoke_openclaw/videos/validation_dummy/global_relation/relations_global.json"
+  }
+}

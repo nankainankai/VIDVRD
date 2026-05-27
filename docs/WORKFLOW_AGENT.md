@@ -4,14 +4,15 @@
 
 ## 标准流程
 
-1. 确认使用 `vidvrd` conda 环境。
-2. 检查输入是单个视频、URL，或视频列表文本。
-3. 检查配置文件，默认使用 `configs/default.json`。
-4. 先执行 dry-run 或局部节点验证。
-5. 正式调用 `vidvrd_auto.cli`。
-6. 读取 `runs/<run_id>/run_manifest.json`。
-7. 如果有失败视频，查看对应节点的 `status.json` 和 `run.log`。
-8. 修复环境、配置或数据问题后，用同一命令加 `--resume` 恢复。
+1. 运行 `python scripts/check_openclaw_env.py` 做环境检查。
+2. 确认使用 `vidvrd` conda 环境（或已 `pip install -e .`）。
+3. 检查输入是单个视频、URL，或视频列表文本（`data/videos.txt`）。
+4. 检查配置文件，默认使用 `configs/default.json`。
+5. 先执行 dry-run 或局部节点验证。
+6. 正式调用 `vidvrd_auto.cli`。
+7. 读取 `runs/<run_id>/run_manifest.json`。
+8. 如果有失败视频，查看对应节点的 `status.json` 和 `run.log`。
+9. 修复环境、配置或数据问题后，用同一命令加 `--resume` 恢复。
 
 ## 推荐命令
 
@@ -19,10 +20,11 @@
 conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume --api_key YOUR_DASHSCOPE_KEY
 ```
 
-无模型 dry-run：
+无检测模型、无 VL API 的 dry-run（`configs/dry_run.json` 使用 mock 后端）：
 
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+python scripts/make_validation_dummy.py
+conda run -n vidvrd python -m vidvrd_auto.cli --video data/validation_dummy.mp4 --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
 ```
 
 局部恢复：

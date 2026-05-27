@@ -1,0 +1,174 @@
+{
+  "run_dir": "runs/rexomni_full_test1",
+  "started_at": "2026-05-27 09:16:53",
+  "config_path": "configs/rexomni_full.json",
+  "config_hash": "9b9722319e95abce54da11428ddca2ebf3f2005103961c52ee583e21cb98f856",
+  "nodes": [
+    "video_ingest",
+    "audio_prior",
+    "step1_detect",
+    "keyframe_screen",
+    "step2_track",
+    "track_qc",
+    "relation_rule",
+    "relation_llm",
+    "relation_merge",
+    "global_relation",
+    "relation_verify",
+    "export"
+  ],
+  "args": {
+    "video": "data/test1_video.mp4",
+    "videos": "",
+    "from_node": "",
+    "to_node": "",
+    "resume": true,
+    "force": false,
+    "dry_run_relations": false,
+    "skip_eval": true,
+    "api_key_present": true
+  },
+  "videos": [
+    {
+      "video_id": "test1_video",
+      "source": "data/test1_video.mp4",
+      "source_type": "local",
+      "nodes": {
+        "video_ingest": {
+          "node": "video_ingest",
+          "state": "succeeded",
+          "input_hash": "ac8cc3e32db8227353347ade55ddb47719feb3254f2971be78111ceafd5ca662",
+          "finished_at": "2026-05-27 09:16:53",
+          "outputs": {
+            "source_json": "runs/rexomni_full_test1/videos/test1_video/inputs/source.json",
+            "video_path": "data/test1_video.mp4"
+          }
+        },
+        "audio_prior": {
+          "node": "audio_prior",
+          "state": "succeeded",
+          "input_hash": "e5c276ca13eefa5d218e121a4c0e9256488c2231a02db44c7cf85317064f0dfc",
+          "finished_at": "2026-05-27 09:16:53",
+          "outputs": {
+            "audio_prior_json": "runs/rexomni_full_test1/videos/test1_video/audio_prior/audio_prior.json"
+          }
+        },
+        "step1_detect": {
+          "node": "step1_detect",
+          "state": "succeeded",
+          "input_hash": "d81f63f8e997acd2b398da411482430e7f1f08469047a1a4ac262f0c10cd417a",
+          "finished_at": "2026-05-27 09:18:15",
+          "outputs": {
+            "detections_jsonl": "runs/rexomni_full_test1/videos/test1_video/step1_detect/detections_full.jsonl",
+            "video_meta_json": "runs/rexomni_full_test1/videos/test1_video/step1_detect/video_meta.json"
+          }
+        },
+        "keyframe_screen": {
+          "node": "keyframe_screen",
+          "state": "succeeded",
+          "input_hash": "9aa1212b3c7160fe1d500c6d88498a8ff22a1ea8a21f21bd5eda593a44ae2ac5",
+          "finished_at": "2026-05-27 09:18:15",
+          "outputs": {
+            "screen_result_json": "runs/rexomni_full_test1/videos/test1_video/keyframe_screen/screen_result.json"
+          }
+        },
+        "step2_track": {
+          "node": "step2_track",
+          "state": "succeeded",
+          "input_hash": "5b723216191d107a45b28ba8759fec0045d958579626329b9ba1992d6ed53f5f",
+          "finished_at": "2026-05-27 09:19:27",
+          "outputs": {
+            "tracks_jsonl": "runs/rexomni_full_test1/videos/test1_video/step2_track/tracks_full.jsonl",
+            "windows_json": "runs/rexomni_full_test1/videos/test1_video/step2_track/windows.json"
+          }
+        },
+        "track_qc": {
+          "node": "track_qc",
+          "state": "succeeded",
+          "input_hash": "d8dd54fb2bcf8fc386ca35efb3c96aada6c3fa9033f34e7d45281852ec052555",
+          "finished_at": "2026-05-27 09:19:27",
+          "outputs": {
+            "track_qc_json": "runs/rexomni_full_test1/videos/test1_video/track_qc/track_qc.json"
+          }
+        },
+        "relation_rule": {
+          "node": "relation_rule",
+          "state": "succeeded",
+          "input_hash": "54ae3d219e03b752c13863fb38e2ba92fb6172110bb4f6d7261f6c01231e3bd1",
+          "finished_at": "2026-05-27 09:19:27",
+          "outputs": {
+            "relations_rule_json": "runs/rexomni_full_test1/videos/test1_video/relation_rule/relations_rule.json"
+          }
+        },
+        "relation_llm": {
+          "node": "relation_llm",
+          "state": "succeeded",
+          "input_hash": "68be61d122b84582a6c1664f00e50dea1036b4069ea6fc040fe6d7b1237e1fe9",
+          "finished_at": "2026-05-27 09:23:24",
+          "outputs": {
+            "relations_llm_json": "runs/rexomni_full_test1/videos/test1_video/relation_llm/relations_llm.json"
+          }
+        },
+        "relation_merge": {
+          "node": "relation_merge",
+          "state": "succeeded",
+          "input_hash": "540c5538e1191c6807b973ea1bde7b6312ce6b5585818b7246d6990edfa61b03",
+          "finished_at": "2026-05-27 09:23:24",
+          "outputs": {
+            "relations_merged_json": "runs/rexomni_full_test1/videos/test1_video/relation_merge/relations_merged.json"
+          }
+        },
+        "global_relation": {
+          "node": "global_relation",
+          "state": "succeeded",
+          "input_hash": "2f074603f3b5fad0ff4627e59100913435e4828c054914866f49be6f0ce1a6fd",
+          "finished_at": "2026-05-27 09:24:08",
+          "outputs": {
+            "relations_global_json": "runs/rexomni_full_test1/videos/test1_video/global_relation/relations_global.json"
+          }
+        },
+        "relation_verify": {
+          "node": "relation_verify",
+          "state": "succeeded",
+          "input_hash": "588a4f105acd5ff3435fc0b62d4a8080d3f458b93c411ba62674bee092e3a103",
+          "finished_at": "2026-05-27 09:24:08",
+          "outputs": {
+            "relations_verified_json": "runs/rexomni_full_test1/videos/test1_video/relation_verify/relations_verified.json",
+            "relation_qc_json": "runs/rexomni_full_test1/videos/test1_video/relation_verify/relation_qc.json"
+          }
+        },
+        "export": {
+          "node": "export",
+          "state": "succeeded",
+          "input_hash": "fe6b0180dbaf494333ff66389a13db14b042ac719b989d0968c6ee002a7ea2a6",
+          "finished_at": "2026-05-27 09:24:08",
+          "outputs": {
+            "relations_pred_json": "runs/rexomni_full_test1/videos/test1_video/export/relations_pred.json",
+            "trajectories_pred_json": "runs/rexomni_full_test1/videos/test1_video/export/trajectories_pred.json",
+            "relation_qc_json": "runs/rexomni_full_test1/videos/test1_video/export/relation_qc.json"
+          }
+        }
+      },
+      "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+      "path_rel": "data/test1_video.mp4",
+      "exists": true,
+      "file_hash": "7b28ea37c23ab6be3b7defa23eab94a7c5536b11ccb7e76bda857e95d6d5e019",
+      "state": "succeeded",
+      "outputs": {
+        "relations_pred_json": "runs/rexomni_full_test1/videos/test1_video/export/relations_pred.json",
+        "trajectories_pred_json": "runs/rexomni_full_test1/videos/test1_video/export/trajectories_pred.json"
+      }
+    }
+  ],
+  "finished_at": "2026-05-27 09:24:08",
+  "pred_relations_json": "runs/rexomni_full_test1/pred/relations_pred.json",
+  "pred_relation_count": 223,
+  "video_state_counts": {
+    "succeeded": 1
+  },
+  "evaluate": {
+    "enabled": false,
+    "state": "skipped",
+    "reason": "disabled"
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "run_dir": "runs/_unittest_smoke",
+  "started_at": "2026-05-26 14:33:31",
+  "config_path": "configs/dry_run.json",
+  "config_hash": "af432a6a23583d1c65c1193fc6bafb7dcd3e7864c552d58f1fe247a298cd5ac4",
+  "nodes": [
+    "video_ingest",
+    "audio_prior",
+    "step1_detect",
+    "keyframe_screen",
+    "step2_track",
+    "track_qc",
+    "relation_rule",
+    "relation_llm",
+    "relation_merge",
+    "global_relation",
+    "relation_verify",
+    "export"
+  ],
+  "args": {
+    "video": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+    "videos": "",
+    "from_node": "",
+    "to_node": "",
+    "resume": false,
+    "force": true,
+    "dry_run_relations": true,
+    "skip_eval": true,
+    "api_key_present": true
+  },
+  "videos": [
+    {
+      "video_id": "validation_dummy",
+      "source": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+      "source_type": "local",
+      "nodes": {
+        "video_ingest": {
+          "node": "video_ingest",
+          "state": "succeeded",
+          "input_hash": "4adbf4596faf01a8c48921120389b8598a7075c78561eaecea45434f2f7af9a4",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "source_json": "runs/_unittest_smoke/videos/validation_dummy/inputs/source.json",
+            "video_path": "data/validation_dummy.mp4"
+          }
+        },
+        "audio_prior": {
+          "node": "audio_prior",
+          "state": "succeeded",
+          "input_hash": "2806ed8369fb1dd27ad15da64c7b25746200c849fc98c2877cb653509cdf4406",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "audio_prior_json": "runs/_unittest_smoke/videos/validation_dummy/audio_prior/audio_prior.json"
+          }
+        },
+        "step1_detect": {
+          "node": "step1_detect",
+          "state": "succeeded",
+          "input_hash": "3db3f52f22e4c093a6db43027a92284adb42f791e0fadc254b1c13c7d8f19801",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "detections_jsonl": "runs/_unittest_smoke/videos/validation_dummy/step1_detect/detections_full.jsonl",
+            "video_meta_json": "runs/_unittest_smoke/videos/validation_dummy/step1_detect/video_meta.json"
+          }
+        },
+        "keyframe_screen": {
+          "node": "keyframe_screen",
+          "state": "succeeded",
+          "input_hash": "ece0e3667bc36d76d1dab28a8d2e56cd23291029ffb01f25a75e22bc2de40bf8",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "screen_result_json": "runs/_unittest_smoke/videos/validation_dummy/keyframe_screen/screen_result.json"
+          }
+        },
+        "step2_track": {
+          "node": "step2_track",
+          "state": "succeeded",
+          "input_hash": "08c358fd328be015d9d1b91272baa4d33cb7d86960e7b43ee8591362f222312e",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "tracks_jsonl": "runs/_unittest_smoke/videos/validation_dummy/step2_track/tracks_full.jsonl",
+            "windows_json": "runs/_unittest_smoke/videos/validation_dummy/step2_track/windows.json"
+          }
+        },
+        "track_qc": {
+          "node": "track_qc",
+          "state": "succeeded",
+          "input_hash": "68ad27eeb41afb6fe9ec75037592a80affbb8da8c75cdcd9ce322a0f870b04b3",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "track_qc_json": "runs/_unittest_smoke/videos/validation_dummy/track_qc/track_qc.json"
+          }
+        },
+        "relation_rule": {
+          "node": "relation_rule",
+          "state": "succeeded",
+          "input_hash": "cfd81e3d41cab23762f135991e10b3f64fdee60b9d12df743960d110efb0c64d",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "relations_rule_json": "runs/_unittest_smoke/videos/validation_dummy/relation_rule/relations_rule.json"
+          }
+        },
+        "relation_llm": {
+          "node": "relation_llm",
+          "state": "succeeded",
+          "input_hash": "7992c1876403f50807fc997072ebf40449c78d776438cef928c867c7df4236bf",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "relations_llm_json": "runs/_unittest_smoke/videos/validation_dummy/relation_llm/relations_llm.json"
+          }
+        },
+        "relation_merge": {
+          "node": "relation_merge",
+          "state": "succeeded",
+          "input_hash": "fad101846c6a5d4f9a609debd189cd053ab396a36d7b77ad3971a1e60c0b47d7",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "relations_merged_json": "runs/_unittest_smoke/videos/validation_dummy/relation_merge/relations_merged.json"
+          }
+        },
+        "global_relation": {
+          "node": "global_relation",
+          "state": "succeeded",
+          "input_hash": "d9707f97d10dc073dbe7463c0947cb6851475428d424631fbf8129294c91be2d",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "relations_global_json": "runs/_unittest_smoke/videos/validation_dummy/global_relation/relations_global.json"
+          }
+        },
+        "relation_verify": {
+          "node": "relation_verify",
+          "state": "succeeded",
+          "input_hash": "7ddb6eb8c993ee51db8d4e2361a133cc179855258713f681567bd6be80dcebe8",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "relations_verified_json": "runs/_unittest_smoke/videos/validation_dummy/relation_verify/relations_verified.json",
+            "relation_qc_json": "runs/_unittest_smoke/videos/validation_dummy/relation_verify/relation_qc.json"
+          }
+        },
+        "export": {
+          "node": "export",
+          "state": "succeeded",
+          "input_hash": "ee7796d02b2dc53e2729a289124a89f1de6a977cebc493135cfa414edad2a235",
+          "finished_at": "2026-05-26 14:33:31",
+          "outputs": {
+            "relations_pred_json": "runs/_unittest_smoke/videos/validation_dummy/export/relations_pred.json",
+            "trajectories_pred_json": "runs/_unittest_smoke/videos/validation_dummy/export/trajectories_pred.json",
+            "relation_qc_json": "runs/_unittest_smoke/videos/validation_dummy/export/relation_qc.json"
+          }
+        }
+      },
+      "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\validation_dummy.mp4",
+      "path_rel": "data/validation_dummy.mp4",
+      "exists": true,
+      "file_hash": "10e7afb15219f62520bdace78ec310ced2c7308ada87058b8927b114be7592ac",
+      "state": "succeeded",
+      "outputs": {
+        "relations_pred_json": "runs/_unittest_smoke/videos/validation_dummy/export/relations_pred.json",
+        "trajectories_pred_json": "runs/_unittest_smoke/videos/validation_dummy/export/trajectories_pred.json"
+      }
+    }
+  ],
+  "finished_at": "2026-05-26 14:33:31",
+  "pred_relations_json": "runs/_unittest_smoke/pred/relations_pred.json",
+  "pred_relation_count": 6,
+  "video_state_counts": {
+    "succeeded": 1
+  },
+  "evaluate": {
+    "enabled": false,
+    "state": "skipped",
+    "reason": "disabled"
+  }
+}

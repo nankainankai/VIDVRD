@@ -1,0 +1,11 @@
+{
+  "node": "export",
+  "state": "succeeded",
+  "input_hash": "fe6b0180dbaf494333ff66389a13db14b042ac719b989d0968c6ee002a7ea2a6",
+  "finished_at": "2026-05-27 09:24:08",
+  "outputs": {
+    "relations_pred_json": "runs/rexomni_full_test1/videos/test1_video/export/relations_pred.json",
+    "trajectories_pred_json": "runs/rexomni_full_test1/videos/test1_video/export/trajectories_pred.json",
+    "relation_qc_json": "runs/rexomni_full_test1/videos/test1_video/export/relation_qc.json"
+  }
+}

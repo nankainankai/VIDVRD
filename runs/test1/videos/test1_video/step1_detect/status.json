@@ -1,0 +1,10 @@
+{
+  "node": "step1_detect",
+  "state": "succeeded",
+  "input_hash": "7fca8326c3e3d56b4e9f04ffc6b0a657448d7e3b9ea9cfd2a36f7babdffb9a30",
+  "finished_at": "2026-05-26 16:48:46",
+  "outputs": {
+    "detections_jsonl": "runs/test1/videos/test1_video/step1_detect/detections_full.jsonl",
+    "video_meta_json": "runs/test1/videos/test1_video/step1_detect/video_meta.json"
+  }
+}

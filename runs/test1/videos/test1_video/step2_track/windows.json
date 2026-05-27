@@ -1,0 +1,288 @@
+{
+  "video": {
+    "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+    "fps": 25,
+    "total_frames": 244,
+    "duration": 9.76
+  },
+  "window_size_frames": 20,
+  "stride_frames": 10,
+  "windows": [
+    {
+      "window_id": 1,
+      "start_frame": 0,
+      "end_frame": 19,
+      "start_time": 0.0,
+      "end_time": 0.76,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 2,
+      "start_frame": 10,
+      "end_frame": 29,
+      "start_time": 0.4,
+      "end_time": 1.16,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 3,
+      "start_frame": 20,
+      "end_frame": 39,
+      "start_time": 0.8,
+      "end_time": 1.56,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 4,
+      "start_frame": 30,
+      "end_frame": 49,
+      "start_time": 1.2,
+      "end_time": 1.96,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 5,
+      "start_frame": 40,
+      "end_frame": 59,
+      "start_time": 1.6,
+      "end_time": 2.36,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 6,
+      "start_frame": 50,
+      "end_frame": 69,
+      "start_time": 2.0,
+      "end_time": 2.76,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 7,
+      "start_frame": 60,
+      "end_frame": 79,
+      "start_time": 2.4,
+      "end_time": 3.16,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 8,
+      "start_frame": 70,
+      "end_frame": 89,
+      "start_time": 2.8,
+      "end_time": 3.56,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 9,
+      "start_frame": 80,
+      "end_frame": 99,
+      "start_time": 3.2,
+      "end_time": 3.96,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 10,
+      "start_frame": 90,
+      "end_frame": 109,
+      "start_time": 3.6,
+      "end_time": 4.36,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 11,
+      "start_frame": 100,
+      "end_frame": 119,
+      "start_time": 4.0,
+      "end_time": 4.76,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 12,
+      "start_frame": 110,
+      "end_frame": 129,
+      "start_time": 4.4,
+      "end_time": 5.16,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 13,
+      "start_frame": 120,
+      "end_frame": 139,
+      "start_time": 4.8,
+      "end_time": 5.56,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 14,
+      "start_frame": 130,
+      "end_frame": 149,
+      "start_time": 5.2,
+      "end_time": 5.96,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 15,
+      "start_frame": 140,
+      "end_frame": 159,
+      "start_time": 5.6,
+      "end_time": 6.36,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 16,
+      "start_frame": 150,
+      "end_frame": 169,
+      "start_time": 6.0,
+      "end_time": 6.76,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 17,
+      "start_frame": 160,
+      "end_frame": 179,
+      "start_time": 6.4,
+      "end_time": 7.16,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 18,
+      "start_frame": 170,
+      "end_frame": 189,
+      "start_time": 6.8,
+      "end_time": 7.56,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 19,
+      "start_frame": 180,
+      "end_frame": 199,
+      "start_time": 7.2,
+      "end_time": 7.96,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 20,
+      "start_frame": 190,
+      "end_frame": 209,
+      "start_time": 7.6,
+      "end_time": 8.36,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 21,
+      "start_frame": 200,
+      "end_frame": 219,
+      "start_time": 8.0,
+      "end_time": 8.76,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 22,
+      "start_frame": 210,
+      "end_frame": 229,
+      "start_time": 8.4,
+      "end_time": 9.16,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "window_id": 23,
+      "start_frame": 220,
+      "end_frame": 239,
+      "start_time": 8.8,
+      "end_time": 9.56,
+      "frame_count": 20,
+      "track_ids": [
+        1,
+        2
+      ]
+    }
+  ]
+}

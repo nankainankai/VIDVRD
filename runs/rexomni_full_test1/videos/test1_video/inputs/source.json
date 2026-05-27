@@ -1,0 +1,11 @@
+{
+  "source": "data/test1_video.mp4",
+  "source_type": "local",
+  "video_path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+  "video_path_rel": "data/test1_video.mp4",
+  "materialized_at": "2026-05-27 09:16:53",
+  "downloaded": false,
+  "exists": true,
+  "file_size": 3684737,
+  "file_hash": "7b28ea37c23ab6be3b7defa23eab94a7c5536b11ccb7e76bda857e95d6d5e019"
+}

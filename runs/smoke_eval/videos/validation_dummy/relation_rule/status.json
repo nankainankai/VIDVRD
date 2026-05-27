@@ -1,0 +1,9 @@
+{
+  "node": "relation_rule",
+  "state": "succeeded",
+  "input_hash": "d10d9af1d4cc63d8f0e5e2df6aa409e9de49cfecd9c767682c11cb5822c4d8f8",
+  "finished_at": "2026-05-26 14:12:54",
+  "outputs": {
+    "relations_rule_json": "runs/smoke_eval/videos/validation_dummy/relation_rule/relations_rule.json"
+  }
+}

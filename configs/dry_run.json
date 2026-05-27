@@ -1,7 +1,37 @@
 {
+  "detector": {
+    "backend": "mock",
+    "keyframe_interval": 5
+  },
+  "tracking": {
+    "backend": "mock",
+    "window_size": 20,
+    "stride": 10,
+    "enable_llm_qc": false,
+    "export_pair_viz_videos": false
+  },
+  "keyframe_screen": {
+    "enabled": true,
+    "vl_enabled": true,
+    "vl_dry_run": true,
+    "min_objects": 2
+  },
+  "track_qc": {
+    "vl_enabled": true,
+    "vl_dry_run": true,
+    "min_track_frames": 2
+  },
   "relations": {
     "dry_run": true,
     "max_windows": 2
+  },
+  "global_relation": {
+    "vl_enabled": true,
+    "vl_dry_run": true,
+    "vl_sample_frames": 4
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": false
   },
   "evaluate": {
     "enabled": false

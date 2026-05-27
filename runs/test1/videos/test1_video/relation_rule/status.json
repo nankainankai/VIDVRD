@@ -1,0 +1,9 @@
+{
+  "node": "relation_rule",
+  "state": "succeeded",
+  "input_hash": "f09c5c91d9dc1d261644be4be9e031b53ee51f563c48ccb7dec272606dd7a76e",
+  "finished_at": "2026-05-26 16:48:48",
+  "outputs": {
+    "relations_rule_json": "runs/test1/videos/test1_video/relation_rule/relations_rule.json"
+  }
+}

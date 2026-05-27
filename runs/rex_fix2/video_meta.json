@@ -1,0 +1,23 @@
+{
+  "video": {
+    "path": "data/validation_dummy.mp4",
+    "fps": 10,
+    "total_frames": 40,
+    "duration": 4.0
+  },
+  "detector_stats": {
+    "backend": "rexomni",
+    "model_path": "my_scripts/models/Rex-Omni-AWQ",
+    "engine": "transformers",
+    "categories": [
+      "person"
+    ],
+    "detection_interval": 1,
+    "frame_calls": 1,
+    "trigger_calls": 1,
+    "interval_skips": 0,
+    "detected_objects_total": 0
+  },
+  "detections_jsonl": "detections_full.jsonl",
+  "box_vis_video": ""
+}

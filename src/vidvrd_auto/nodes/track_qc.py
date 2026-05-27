@@ -4,24 +4,32 @@ from __future__ import annotations
 
 输入：轨迹 JSONL、窗口 JSON 和 QC 配置。
 输出：`track_qc.json`，记录短轨迹、类别漂移、框跳变和可选 VL 复核建议。
-该节点只标记风险，不直接修改轨迹。
+VL 开启时会对风险帧抽帧拼图后调用多模态模型。
 """
 
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 import json
 
-from vidvrd_auto.models.vl_client import VLClient
 from vidvrd_auto.prompts.templates import track_qc_prompt
+from vidvrd_auto.relations.storyboard import load_tracks_for_frames
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
+from vidvrd_auto.utils.vl_frames import build_storyboard_from_video, call_vl_with_storyboard, video_path_from_windows
 
 
 def _bbox_center(bbox: List[float]) -> tuple[float, float]:
     return (float(bbox[0]) + float(bbox[2])) / 2.0, (float(bbox[1]) + float(bbox[3])) / 2.0
 
 
-def run_track_qc(*, tracks_jsonl: Path, windows_json: Path, out_json: Path, config: Dict[str, Any]) -> Dict[str, Any]:
+def run_track_qc(
+    *,
+    tracks_jsonl: Path,
+    windows_json: Path,
+    out_json: Path,
+    config: Dict[str, Any],
+    api_key: str = "",
+) -> Dict[str, Any]:
     min_frames = int(config.get("min_track_frames", 2) or 2)
     max_class_changes = int(config.get("max_class_changes", 1) or 1)
     max_center_jump_ratio = float(config.get("max_center_jump_ratio", 0.45) or 0.45)
@@ -70,25 +78,54 @@ def run_track_qc(*, tracks_jsonl: Path, windows_json: Path, out_json: Path, conf
     risk_items: List[Dict[str, Any]] = []
     risk_items.extend({"track_id": tid, "type": "short_track", "frame_count": track_frames[tid]} for tid in short_tracks[:50])
     risk_items.extend({"track_id": item["track_id"], "type": "class_drift", "classes": item["classes"]} for item in class_drift[:50])
-    risk_items.extend({"track_id": item["track_id"], "type": "large_jump", "frame": item["frame"], "jump_ratio": item["jump_ratio"]} for item in large_jumps[:50])
+    risk_items.extend(
+        {"track_id": item["track_id"], "type": "large_jump", "frame": item["frame"], "jump_ratio": item["jump_ratio"]}
+        for item in large_jumps[:50]
+    )
 
     vl_enabled = bool(config.get("vl_enabled", False))
-    vl_dry_run = bool(config.get("vl_dry_run", False))
     vl_review: Dict[str, Any] = {
         "enabled": vl_enabled,
         "state": "disabled",
         "items": [],
+        "used_images": False,
     }
     if vl_enabled and risk_items:
-        client_cfg = {
-            "model": str(config.get("vl_model", "qwen-vl-max") or "qwen-vl-max"),
-            "api_key_env": str(config.get("api_key_env", "DASHSCOPE_API_KEY") or "DASHSCOPE_API_KEY"),
-            "retries": int(config.get("vl_retries", 2) or 2),
-            "backoff_sec": float(config.get("vl_backoff_sec", 1.5) or 1.5),
-            "sleep_sec": float(config.get("vl_sleep_sec", 0.0) or 0.0),
-            "dry_run": vl_dry_run,
-        }
-        vl_result = VLClient(client_cfg).call(prompt=track_qc_prompt(risk_items), dry_run=vl_dry_run)
+        video_path = video_path_from_windows(windows_json)
+        storyboard = None
+        vl_max_frames = int(config.get("vl_max_frames", 6) or 6)
+        frame_indices: List[int] = []
+        risk_track_ids: Set[int] = set()
+        for item in risk_items:
+            if item.get("type") == "large_jump" and "frame" in item:
+                frame_indices.append(int(item["frame"]))
+            try:
+                risk_track_ids.add(int(item.get("track_id")))
+            except Exception:
+                pass
+        frame_indices = sorted(set(frame_indices))[:vl_max_frames]
+        if video_path is not None and frame_indices:
+            tracks_map = load_tracks_for_frames(tracks_jsonl, set(frame_indices))
+            storyboard = build_storyboard_from_video(
+                video_path=video_path,
+                frame_indices=frame_indices,
+                tracks_by_frame=tracks_map,
+                allowed_track_ids=risk_track_ids if risk_track_ids else None,
+                tile_h=int(config.get("vl_tile_h", 320) or 320),
+            )
+            if storyboard is not None:
+                vl_review["used_images"] = True
+                vl_review["video_path"] = str(video_path)
+                vl_review["sampled_frames"] = frame_indices
+        else:
+            vl_review["image_fallback"] = "no_risk_frames_or_video"
+
+        vl_result = call_vl_with_storyboard(
+            config=config,
+            api_key=api_key,
+            prompt=track_qc_prompt(risk_items, has_images=bool(storyboard is not None)),
+            storyboard_bgr=storyboard,
+        )
         vl_review.update(vl_result.to_dict())
         vl_review["state"] = "succeeded" if vl_result.ok else "failed"
         if vl_result.ok:

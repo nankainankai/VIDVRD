@@ -1,0 +1,667 @@
+{
+  "test1_video": [
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 20/20 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 10,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 20/20 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 20,
+      "end_frame": 39,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 20/20 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 30,
+      "end_frame": 49,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 20/20 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 40,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 20/20 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 50,
+      "end_frame": 69,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 20/20 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 79,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 20/20 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 70,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 20/20 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 80,
+      "end_frame": 99,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 20/20 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 109,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 100,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 20/20 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 110,
+      "end_frame": 129,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 20/20 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 139,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 20/20 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 130,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 20/20 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 140,
+      "end_frame": 159,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 15,
+      "evidence": "geometry vote 20/20 in window 15",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 169,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 16,
+      "evidence": "geometry vote 20/20 in window 16",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 160,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 17,
+      "evidence": "geometry vote 20/20 in window 17",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 170,
+      "end_frame": 189,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 18,
+      "evidence": "geometry vote 20/20 in window 18",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 180,
+      "end_frame": 199,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 19,
+      "evidence": "geometry vote 20/20 in window 19",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 190,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 20,
+      "evidence": "geometry vote 20/20 in window 20",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 200,
+      "end_frame": 219,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 21,
+      "evidence": "geometry vote 20/20 in window 21",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 210,
+      "end_frame": 229,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 22,
+      "evidence": "geometry vote 20/20 in window 22",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 2,
+      "predicate": "left",
+      "start_frame": 220,
+      "end_frame": 239,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 23,
+      "evidence": "geometry vote 20/20 in window 23",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 19,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 20/20 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 10,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 20/20 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 20,
+      "end_frame": 39,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 20/20 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 30,
+      "end_frame": 49,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 20/20 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 40,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 20/20 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 50,
+      "end_frame": 69,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 20/20 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 79,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 20/20 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 70,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 20/20 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 80,
+      "end_frame": 99,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 20/20 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 109,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 20/20 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 100,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 20/20 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 110,
+      "end_frame": 129,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 20/20 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 139,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 20/20 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 130,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 20/20 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 140,
+      "end_frame": 159,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 15,
+      "evidence": "geometry vote 20/20 in window 15",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 169,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 16,
+      "evidence": "geometry vote 20/20 in window 16",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 160,
+      "end_frame": 179,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 17,
+      "evidence": "geometry vote 20/20 in window 17",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 170,
+      "end_frame": 189,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 18,
+      "evidence": "geometry vote 20/20 in window 18",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 180,
+      "end_frame": 199,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 19,
+      "evidence": "geometry vote 20/20 in window 19",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 190,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 20,
+      "evidence": "geometry vote 20/20 in window 20",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 200,
+      "end_frame": 219,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 21,
+      "evidence": "geometry vote 20/20 in window 21",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 210,
+      "end_frame": 229,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 22,
+      "evidence": "geometry vote 20/20 in window 22",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 2,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 220,
+      "end_frame": 239,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 23,
+      "evidence": "geometry vote 20/20 in window 23",
+      "sources": [
+        "rule_geometry"
+      ]
+    }
+  ],
+  "_global_review": {
+    "enabled": true,
+    "state": "succeeded",
+    "relations": [],
+    "used_images": true,
+    "video_path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+    "sampled_frames": [
+      0,
+      81,
+      162,
+      243
+    ],
+    "ok": true,
+    "text": "{\"triples\":[]}",
+    "model": "qwen-vl-max",
+    "dry_run": true,
+    "error": "",
+    "attempts": 0
+  }
+}

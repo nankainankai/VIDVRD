@@ -1,0 +1,25 @@
+{
+  "video_id": "validation_dummy",
+  "relation_count": 9,
+  "source_counts": {
+    "semi_auto": 1,
+    "rule_geometry": 6,
+    "semi_auto+coupling": 1,
+    "global_relation_model": 1
+  },
+  "low_confidence_count": 0,
+  "low_confidence_examples": [],
+  "conflict_count": 0,
+  "conflicts": [],
+  "strong_model_review_enabled": false,
+  "strong_model_review_count": 0,
+  "strong_model_review_items": [],
+  "strong_model_review_vl": {},
+  "final_actions": [],
+  "track_count": 2,
+  "track_frame_counts": {
+    "1": 40,
+    "2": 40
+  },
+  "passed": true
+}

@@ -11,7 +11,12 @@ from pathlib import Path
 from typing import Any, Dict
 
 from vidvrd_auto.detection.legacy_step1 import run_legacy_step1
+from vidvrd_auto.detection.mock_detect import run_mock_detect
 
 
 def run_detect(*, video_path: Path, out_dir: Path, config: Dict[str, Any], log_path: Path) -> None:
+    backend = str(config.get("backend", "rexomni")).strip().lower()
+    if backend == "mock":
+        run_mock_detect(video_path=video_path, out_dir=out_dir, config=config, log_path=log_path)
+        return
     run_legacy_step1(video_path=video_path, out_dir=out_dir, config=config, log_path=log_path)
