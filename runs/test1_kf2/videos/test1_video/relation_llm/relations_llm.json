@@ -1,0 +1,260 @@
+{
+  "test1_video": [
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "behind",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 appears behind ID 1 in the forest scene across the frames.",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "follow",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 appears to be following ID 1 along the path in the forest.",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "toward",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 的人物在画面中向 ID 1 的方向移动",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "front",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 appears behind ID 1 in the forest scene across the frames.",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 的人物在画面中向 ID 1 的方向移动",
+      "frames": [
+        0,
+        25,
+        29
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "near",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.95,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 和 ID 1 在画面中始终保持近距离",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently to the left of ID 1 in all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 1 is consistently to the right of ID 0 in all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "behind",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 1 is consistently positioned behind ID 0 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "follow",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 出现在 ID 1 后方并持续跟随移动",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "toward",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is moving closer to ID 1 over time in the sequence",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "near",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.95,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 和 ID 1 在画面中始终保持近距离",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "front",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 1 is consistently positioned behind ID 0 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is moving closer to ID 1 over time in the sequence",
+      "frames": [
+        15,
+        40,
+        44
+      ]
+    }
+  ]
+}

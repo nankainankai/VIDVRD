@@ -1,0 +1,9 @@
+{
+  "node": "relation_llm",
+  "state": "succeeded",
+  "input_hash": "b079e054c60557eb51ad1730c389c0fbb355d03a9fb325ca3b348044e4537643",
+  "finished_at": "2026-05-28 10:39:14",
+  "outputs": {
+    "relations_llm_json": "runs/test1_kf2/videos/test1_video/relation_llm/relations_llm.json"
+  }
+}

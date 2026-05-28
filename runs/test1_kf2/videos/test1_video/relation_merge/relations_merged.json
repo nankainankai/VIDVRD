@@ -1,0 +1,1036 @@
+{
+  "test1_video": [
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "behind",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 appears behind ID 1 in the forest scene across the frames.",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "below",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.6471,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 11/17 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "contact",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 30/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "contact",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 21/21 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "contact",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 6/6 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "follow",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 appears to be following ID 1 along the path in the forest.",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "follow",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 出现在 ID 1 后方并持续跟随移动",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "front",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 1 is consistently positioned behind ID 0 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "left",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is consistently to the left of ID 1 in all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "moving_together",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 0.6667,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 20/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "moving_together",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 27/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "moving_together",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 0.9667,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 29/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "moving_together",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 27/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "moving_together",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 0.7,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 21/30 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "near",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.95,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 和 ID 1 在画面中始终保持近距离",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "near",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 0.9667,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 29/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "near",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 21/21 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "near",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 6/6 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "overlap",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 30/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "overlap",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 21/21 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "overlap",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 6/6 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 2/2 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 17/17 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 30/30 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 30/30 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 30/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 30/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 30/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 30/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 30/30 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "right",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 0.6333,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 19/30 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "toward",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 1,
+      "evidence": "ID 0 的人物在画面中向 ID 1 的方向移动",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "predicate": "toward",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 0 is moving closer to ID 1 over time in the sequence",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "above",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.6471,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 11/17 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 的人物在画面中向 ID 1 的方向移动",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "away",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 is moving closer to ID 1 over time in the sequence",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "behind",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 1 is consistently positioned behind ID 0 in the sequence of frames.",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 30/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 21/21 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "contact",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 6/6 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "front",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 appears behind ID 1 in the forest scene across the frames.",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 1,
+      "evidence": "geometry vote 2/2 in window 1",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 2,
+      "evidence": "geometry vote 17/17 in window 2",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 30,
+      "end_frame": 59,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 3,
+      "evidence": "geometry vote 30/30 in window 3",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 45,
+      "end_frame": 74,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 4,
+      "evidence": "geometry vote 30/30 in window 4",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 60,
+      "end_frame": 89,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 5,
+      "evidence": "geometry vote 30/30 in window 5",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 30/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 30/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 30/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 30/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 30/30 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "left",
+      "start_frame": 150,
+      "end_frame": 179,
+      "confidence": 0.6333,
+      "source": "rule_geometry",
+      "segment_id": 11,
+      "evidence": "geometry vote 19/30 in window 11",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "moving_together",
+      "start_frame": 75,
+      "end_frame": 104,
+      "confidence": 0.6667,
+      "source": "rule_geometry",
+      "segment_id": 6,
+      "evidence": "geometry vote 20/30 in window 6",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "moving_together",
+      "start_frame": 90,
+      "end_frame": 119,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 7,
+      "evidence": "geometry vote 27/30 in window 7",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "moving_together",
+      "start_frame": 105,
+      "end_frame": 134,
+      "confidence": 0.9667,
+      "source": "rule_geometry",
+      "segment_id": 8,
+      "evidence": "geometry vote 29/30 in window 8",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "moving_together",
+      "start_frame": 120,
+      "end_frame": 149,
+      "confidence": 0.9,
+      "source": "rule_geometry",
+      "segment_id": 9,
+      "evidence": "geometry vote 27/30 in window 9",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "moving_together",
+      "start_frame": 135,
+      "end_frame": 164,
+      "confidence": 0.7,
+      "source": "rule_geometry",
+      "segment_id": 10,
+      "evidence": "geometry vote 21/30 in window 10",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "near",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.95,
+      "source": "semi_auto+coupling",
+      "segment_id": 2,
+      "evidence": "ID 0 和 ID 1 在画面中始终保持近距离",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "near",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 0.9667,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 29/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "near",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 21/21 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "near",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 6/6 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 165,
+      "end_frame": 194,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 12,
+      "evidence": "geometry vote 30/30 in window 12",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 180,
+      "end_frame": 209,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 13,
+      "evidence": "geometry vote 21/21 in window 13",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "overlap",
+      "start_frame": 195,
+      "end_frame": 224,
+      "confidence": 1.0,
+      "source": "rule_geometry",
+      "segment_id": 14,
+      "evidence": "geometry vote 6/6 in window 14",
+      "sources": [
+        "rule_geometry"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 0,
+      "end_frame": 29,
+      "confidence": 0.9,
+      "source": "semi_auto+coupling",
+      "segment_id": 1,
+      "evidence": "ID 0 is positioned to the left of ID 1 in the forest scene",
+      "frames": [
+        0,
+        25,
+        29
+      ],
+      "sources": [
+        "semi_auto+coupling"
+      ]
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "predicate": "right",
+      "start_frame": 15,
+      "end_frame": 44,
+      "confidence": 0.9,
+      "source": "semi_auto",
+      "segment_id": 2,
+      "evidence": "ID 1 is consistently to the right of ID 0 in all frames",
+      "frames": [
+        15,
+        40,
+        44
+      ],
+      "sources": [
+        "semi_auto"
+      ]
+    }
+  ]
+}

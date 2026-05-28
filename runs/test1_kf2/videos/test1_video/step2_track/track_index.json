@@ -1,0 +1,58 @@
+{
+  "video": {
+    "path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+    "fps": 25,
+    "total_frames": 244,
+    "duration": 9.76
+  },
+  "tracks": [
+    {
+      "track_id": 0,
+      "class_name": "person",
+      "first_frame": 2,
+      "last_frame": 201,
+      "first_time": 0.08,
+      "last_time": 8.04,
+      "frame_hits": 200,
+      "span_frames": 200,
+      "coverage_ratio": 1.0,
+      "gap_count": 0,
+      "max_gap_frames": 0,
+      "avg_confidence": 1.0,
+      "max_confidence": 1.0,
+      "duration_seconds": 8.0
+    },
+    {
+      "track_id": 1,
+      "class_name": "person",
+      "first_frame": 28,
+      "last_frame": 200,
+      "first_time": 1.12,
+      "last_time": 8.0,
+      "frame_hits": 173,
+      "span_frames": 173,
+      "coverage_ratio": 1.0,
+      "gap_count": 0,
+      "max_gap_frames": 0,
+      "avg_confidence": 1.0,
+      "max_confidence": 1.0,
+      "duration_seconds": 6.92
+    },
+    {
+      "track_id": 2,
+      "class_name": "person",
+      "first_frame": 218,
+      "last_frame": 243,
+      "first_time": 8.72,
+      "last_time": 9.72,
+      "frame_hits": 26,
+      "span_frames": 26,
+      "coverage_ratio": 1.0,
+      "gap_count": 0,
+      "max_gap_frames": 0,
+      "avg_confidence": 1.0,
+      "max_confidence": 1.0,
+      "duration_seconds": 1.04
+    }
+  ]
+}

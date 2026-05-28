@@ -1,140 +1,189 @@
 ---
 name: vidvrd-full-auto
-description: 运行 VIDVRD 全自动视频关系标注流程。用户要求基于 OpenClaw 自动标注视频、批量生成轨迹和关系、恢复失败运行或查看运行报告时使用。
+description: 运行 VIDVRD 全自动视频关系标注流程。用户要求基于 OpenClaw 自动标注视频、批量生成轨迹和关系、Rex-Omni 真检测、恢复失败运行、Gold/Presence 评测或查看运行报告时使用。
 ---
 
 # VIDVRD 全自动标注
 
 ## 用途
 
-本 Skill 用于调用本仓库的稳定全自动标注主链。确定性 runner 是 `src/vidvrd_auto` 中的 `vidvrd_auto.cli`；Skill 只负责说明如何调用、如何查看输出、如何恢复失败。
+调用本仓库 **OpenClaw-first** 主链（12 节点）。确定性 runner：`vidvrd_auto.cli`（`src/vidvrd_auto/`）。Skill 只说明如何调用、读输出、恢复失败；业务逻辑不在 Skill 内实现。
+
+**现状摘要**（详见根目录 `README.md`、`plan.md`）：
+
+- Mock 全流程、`run_with_api` / `run_with_vl`、**Rex-Omni-AWQ 真检测** 均已验收。
+- `relation_llm` 在 `relations/clip_relation.py`（非 subprocess）。
+- **50 条 Gold**：标注组待交付；仓库仅 `validation_dummy` smoke 样例，Presence 评测链路可测但无真实批量指标。
 
 ## 前置检查
-
-运行前执行环境检查（推荐）：
 
 ```bash
 conda run -n vidvrd python scripts/check_openclaw_env.py
 ```
 
-无 conda 时：
+无 conda 时：`python scripts/check_openclaw_env.py`
 
-```bash
-python scripts/check_openclaw_env.py
-```
+确认项：
 
-运行前确认：
+1. Python 3.10+；推荐 `vidvrd` conda 或仓库根 `pip install -e .`。
+2. 输入：单视频路径/URL，或 `data/videos.txt` 这类列表文件。
+3. 配置存在：见下表；默认模板 `configs/default.json`。
+4. Smoke：`python scripts/make_validation_dummy.py`。
+5. 真 VL / `relation_llm`：环境变量 `DASHSCOPE_API_KEY` 或 `--api_key`（**勿写入仓库**）。
+6. **Rex-Omni**：`D:/Rex-Omni-AWQ/`（仓库外，含 `model.safetensors`）；GPU 约 4–6GB；Step1 首次加载约 1–3 分钟。其它机器见 `configs/local_rex.example.json` 或 `REXOMNI_MODEL_PATH`。
+7. **DINO-X**：仅 `detector.backend=dinox` 时需要 `DINOX_API_TOKEN`。
+8. **无 GPU/API**：`configs/dry_run.json`（mock 检测 + mock 追踪）。
+9. CLI 不可导入时：`pip install -e .` 或 `python scripts/run_vidvrd_auto.py`。
 
-1. 使用 `vidvrd` conda 环境（或已 `pip install -e .` 的 Python 3.10+）。
-2. 输入是单个视频路径、URL，或每行一个视频/URL 的文本文件（示例列表：`data/videos.txt`）。
-3. `configs/default.json` 存在，或用户提供了自定义 JSON 配置。
-4. 首次 smoke test：生成测试视频 `python scripts/make_validation_dummy.py`。
-5. 非 dry-run 的关系标注需要设置 `DASHSCOPE_API_KEY`，或传入 `--api_key`。
-6. Rex-Omni 检测需要本地依赖和模型路径；DINO-X 检测需要 `DINOX_API_TOKEN`。
-7. **无 API/无 GPU 验证主链**：使用 `configs/dry_run.json`（`detector.backend=mock`、`tracking.backend=mock`），不调用检测模型与 VL API。
-8. 如果 `python -m vidvrd_auto.cli` 无法导入，先在仓库根目录运行 `conda run -n vidvrd python -m pip install -e .`，或使用 `python scripts/run_vidvrd_auto.py`。
+### 配置选型
+
+| 配置 | 检测/追踪 | API | 何时用 |
+|------|-----------|-----|--------|
+| `dry_run.json` | mock | 全 dry_run | 冒烟、CI |
+| `dry_run_eval.json` | mock | dry_run | 验 Presence 评测 |
+| `run_with_api.json` | mock | 仅 relation_llm | 快速验关系 API |
+| `run_with_vl.json` | mock | 多节点 VL 传图 | 验 VL 全链（慢） |
+| `rexomni_full.json` | Rex + legacy | 真 VL，`max_windows: 2` | **真模型验收（推荐）** |
+| `rexomni_full_kf2.json` | Rex，`keyframe_interval: 2` | 真 VL | 更密关键帧实验 |
+| `default.json` | Rex + legacy | 可配；`max_windows: 0` 长视频极慢 | 正式模板 |
+| `production_full.json` | DINO-X | 需 token | 云端检测备选 |
+
+合并规则：`default.json` 为底，用户 JSON 深度覆盖（`configs/CONFIGS.md`）。
 
 ## 主命令
 
-单视频：
+### 单视频（正式 Rex + VL）
+
+**注意**：`validation_dummy.mp4` 上 Rex 常检出 0 人，主链会在检测后无轨迹。真验收请用 `data/test1_video.mp4` 或真实人物视频。
 
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --video <video_path> --run_dir runs/<run_id> --config configs/default.json --resume --api_key <key>
+conda run -n vidvrd python -m vidvrd_auto.cli \
+  --video data/test1_video.mp4 \
+  --run_dir runs/<run_id> \
+  --config configs/rexomni_full.json \
+  --resume \
+  --api_key <key>
 ```
 
-视频列表：
+PowerShell 一键（mock + 仅关系 API / mock + 全 VL）：
 
-```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos <videos_txt> --run_dir runs/<run_id> --config configs/default.json --resume --api_key <key>
+```powershell
+$env:DASHSCOPE_API_KEY = "sk-..."
+.\scripts\run_with_api.ps1 -RunDir runs/live_api
+.\scripts\run_with_vl.ps1 -RunDir runs/live_vl
 ```
 
-不调用多模态模型与检测模型的 dry-run（mock 检测/追踪 + 规则关系）：
+### 单视频（mock 冒烟）
 
 ```bash
 conda run -n vidvrd python scripts/make_validation_dummy.py
-conda run -n vidvrd python -m vidvrd_auto.cli --video data/validation_dummy.mp4 --run_dir runs/smoke001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+conda run -n vidvrd python -m vidvrd_auto.cli \
+  --video data/validation_dummy.mp4 \
+  --run_dir runs/smoke001 \
+  --config configs/dry_run.json \
+  --resume --dry_run_relations --skip_eval
 ```
 
-批量列表：
+### 批量
 
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/<run_id> --config configs/dry_run.json --resume --dry_run_relations --skip_eval
+conda run -n vidvrd python -m vidvrd_auto.cli \
+  --videos data/videos.txt \
+  --run_dir runs/<run_id> \
+  --config configs/rexomni_full.json \
+  --resume --api_key <key>
 ```
 
-mock 检测 + 全链路真实 VL（关键帧/轨迹/全局/片段关系均看图）：
+### Gold / Presence 评测
+
+**50 条 Gold** = 约 50 个视频的人工标准标注（`gold/relations_gold.json` + 可选 `trajectories_gold.json`），与 `pred/relations_pred.json` 同 schema；用于 Presence P/R/F1。当前仓库仅 smoke，见 `plan/plan.md` 第一阶段。
+
+启用评测（Gold 须含对应 `video_id`，勿 `--skip_eval`）：
 
 ```bash
-conda run -n vidvrd python scripts/run_with_vl.ps1
-# 或: python scripts/run_vidvrd_auto.py --video data/validation_dummy.mp4 --run_dir runs/live_vl --config configs/run_with_vl.json --resume --api_key $DASHSCOPE_API_KEY
+conda run -n vidvrd python -m vidvrd_auto.cli \
+  --video data/validation_dummy.mp4 \
+  --run_dir runs/smoke_eval \
+  --config configs/dry_run_eval.json \
+  --resume --dry_run_relations
 ```
 
 ## Agent 工作流
 
-1. 新数据或新环境先用 `--dry_run_relations --skip_eval` 验证。
-2. dry-run 成功后，去掉 `--dry_run_relations` 调用多模态模型。
-3. 检查 `runs/<run_id>/run_manifest.json`。
-4. 如果部分视频失败，用相同命令加 `--resume` 恢复。
-5. 只恢复局部节点时使用 `--from_node` 和 `--to_node`。
+1. 新环境：`check_openclaw_env.py` → `dry_run.json` 冒烟。
+2. 验 API：`run_with_api.json` 或 `run_with_vl.json`。
+3. 验真检测：`rexomni_full.json` + **真实内容视频**（非 dummy）。
+4. 读 `runs/<run_id>/run_manifest.json` 与 `reports/run_report.md`。
+5. 失败：查节点 `status.json`、`run.log`；`relation_llm` 还可看 `relations_llm.json.progress.json`（seg 内多次 VL，终端可能久无输出属正常）。
+6. 相同命令 `--resume`；仅重跑某段用 `--from_node` / `--to_node`；缓存失效用 `--force --from_node <node>`。
 
-说明：当使用 `--to_node` 停在 export 之前时，视频会在 manifest 中标记为 `state=partial`（不会生成 `export/relations_pred.json` / `trajectories_pred.json`，也不会计入最终 `pred/relations_pred.json` 聚合）。manifest 的 `args` 字段会记录本次运行的 `from_node/to_node` 等关键参数，便于审计与复现。
+`--to_node` 停在 export 前时，manifest 为 `state=partial`，无 `export/*`、不计入 `pred/` 聚合。
 
-节点名：
+节点顺序：
 
 ```text
-video_ingest
-audio_prior
-step1_detect
-keyframe_screen
-step2_track
-track_qc
-relation_rule
-relation_llm
-relation_merge
-global_relation
-relation_verify
-export
+video_ingest → audio_prior → step1_detect → keyframe_screen → step2_track
+  → track_qc → relation_rule → relation_llm → relation_merge
+  → global_relation → relation_verify → export
 ```
+
+- `step1_detect`：`mock` 或 `legacy` → `my_scripts`（Rex / DINO-X）。
+- `relation_llm`：`clip_relation.py`。
 
 ## 输出
 
-成功后向用户报告：
+向用户报告（完整跑通后）：
 
 - `runs/<run_id>/pred/relations_pred.json`
-- `runs/<run_id>/videos/<video_id>/inputs/source.json`
+- `runs/<run_id>/run_manifest.json`
+- `runs/<run_id>/reports/run_report.md`（自动生成）
+- `runs/<run_id>/videos/<video_id>/export/relations_pred.json`
 - `runs/<run_id>/videos/<video_id>/export/trajectories_pred.json`
 - `runs/<run_id>/videos/<video_id>/export/relation_qc.json`
-- `runs/<run_id>/run_manifest.json`
-- `runs/<run_id>/reports/presence_report.md` if Gold evaluation ran
+- `runs/<run_id>/videos/<video_id>/export/relation_box_vis.mp4`（`export.relation_viz_video=true` 时）
+- `runs/<run_id>/reports/presence_report.md`（`evaluate.enabled` 且 Gold、pred 存在时）
 
-如果是区间运行（manifest 中出现 `state=partial`），则不应向用户承诺存在 export/pred 产物；应提示继续运行到 `export` 或用 `--resume` 完整跑通。
+`state=partial` 时不承诺 export/pred 存在；提示 `--resume` 跑至 `export`。
+
+补生成关系可视化（不重跑 pipeline）：
+
+```bash
+python scripts/render_relation_video.py --run_dir runs/<run_id> --video_id <video_id>
+```
 
 ## 失败处理
 
-命令失败时：
+1. `run_manifest.json` → `state=failed` 的视频与节点。
+2. `videos/<id>/<node>/status.json`、`run.log`。
+3. 修环境/配置/数据后 `--resume`。
+4. 必要时 `--force --from_node <node>`。
 
-1. 读取 `runs/<run_id>/run_manifest.json`。
-2. 找到 `state=failed` 的视频。
-3. 查看失败节点的 `status.json` 和 `run.log`。
-4. 优先修复环境、配置或数据问题。
-5. 使用同一命令加 `--resume` 恢复。
-6. 只有确认缓存过期时才使用 `--force --from_node <node>`。
+## 中文诊断
 
-## 中文诊断建议
-
-- `missing DASHSCOPE api key`：设置 `DASHSCOPE_API_KEY`，或在命令中传入 `--api_key`。
-- Rex-Omni 导入失败：检查 `configs/default.json` 的 `detector.rex_model_path` 和本地依赖；也可临时改用 DINO-X。
-- DINO-X token 缺失：设置 `DINOX_API_TOKEN`。
-- 视频下载失败：检查 URL、网络和 `video_ingest.download_timeout_sec`。
-- `required output missing`：查看该节点 `run.log`，修复后用 `--force --from_node <node>` 重跑该节点及后续节点。
-- VL 模型输出无法解析：优先检查该节点 Prompt、模型返回文本和 `dry_run` 配置。
+| 现象 | 处理 |
+|------|------|
+| `missing DASHSCOPE api key` | 设 `DASHSCOPE_API_KEY` 或 `--api_key` |
+| Rex 导入/加载失败 | 检查 `rex_model_path`、conda 依赖、`rexomni_detector.py` 日志；或 `backend=dinox` / `mock` |
+| Rex 跑通但 0 框、后续全跳过 | 换真实人物视频，勿用 dummy |
+| `DINOX_API_TOKEN` 缺失 | 仅 dinox 后端需要 |
+| 下载失败 | URL、网络、`video_ingest.download_timeout_sec` |
+| `required output missing` | 该节点 `run.log` → `--force --from_node` |
+| `relation_llm` 长时间无终端输出 | 看 `relation_llm/run.log`、progress.json；`max_windows` 控制成本 |
+| VL JSON 解析失败 | Prompt、返回文本、`vl_dry_run` 配置 |
+| Presence skipped | Gold 缺失、`--skip_eval`、`evaluate.enabled=false` |
 
 ## 汇报格式
 
-完成后总结：
+- 运行目录、配置路径。
+- 成功/失败/跳过视频数。
+- `pred/relations_pred.json` 路径与关系条数（若有）。
+- `presence_report.md`（若跑了评测）。
+- 失败节点与原因摘要。
+- 可参考 `docs/RUN_REPORT_TEMPLATE.md`。
 
-- 运行目录。
-- 成功和失败视频数量。
-- 最终关系文件路径。
-- 如果有评测，给出评测报告路径。
-- 主要失败原因和对应节点。
-- 可参考 `docs/RUN_REPORT_TEMPLATE.md` 组织完整报告。
+## 延伸阅读
+
+- `README.md` — 快速开始与 Gold 说明
+- `plan.md` — 分工与验收
+- `plan/plan.md` — 50 条 Gold 与大创两阶段
+- `docs/WORKFLOW_AGENT.md` — Agent 细节

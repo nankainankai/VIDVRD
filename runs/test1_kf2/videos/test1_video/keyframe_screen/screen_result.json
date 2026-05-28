@@ -1,0 +1,19 @@
+{
+  "enabled": false,
+  "passed": true,
+  "decision": "keep",
+  "reason": "ok",
+  "positive_frames": 0,
+  "required_positive_frames": 1,
+  "min_objects": 2,
+  "min_confidence": 0.0,
+  "max_frame_index": 240,
+  "sampled_frames": [],
+  "vl_screen": {
+    "enabled": false,
+    "state": "disabled",
+    "model": "qwen-vl-max",
+    "used_images": false
+  },
+  "crop_suggestion": null
+}

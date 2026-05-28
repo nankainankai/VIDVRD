@@ -1,10 +1,10 @@
 # 全自动视频关系标注项目分工计划
 
-## 当前项目状态
+## 当前项目状态（截至 2026-05-28）
 
-项目已经形成 OpenClaw-first 的全自动标注主链 MVP，具备统一 CLI、节点编排、配置管理、缓存恢复、manifest 记录、基础 dry-run 和 unittest 验收能力。
+项目已形成 **OpenClaw-first** 全自动标注主链 MVP：统一 CLI（`vidvrd_auto.cli`）、12 节点编排、配置合并、节点缓存、`run_manifest.json`、自动生成 `reports/run_report.md`、unittest 与多种运行配置。
 
-当前已经具备的主链为：
+### 主链（已实现）
 
 ```text
 video_ingest
@@ -21,145 +21,154 @@ video_ingest
   -> export
 ```
 
-但项目还不是最终完整形态：检测、追踪、片段关系分类仍有旧脚本适配层；关键帧粗筛、轨迹质检、全局关系、强模型复核虽然已接入 VL/强模型调用入口，但仍需要真实视频验证、Prompt 调优和规则完善。
+### 已验收能力
 
-**2026-05-26 工程闭环更新**：已支持 `detector.backend=mock` / `tracking.backend=mock` 的端到端 dry-run（无需 GPU/API）；`scripts/check_openclaw_env.py`、`scripts/make_validation_dummy.py`、`tests/test_pipeline_smoke.py` 已加入；OpenClaw Skill 与 README 已补充 smoke 命令。
+| 能力 | 说明 |
+|------|------|
+| Mock 端到端 | `configs/dry_run.json`：`detector/tracking.backend=mock`，无需 GPU/API |
+| VL 传图 | `utils/vl_frames.py` + `VLClient.call_bgr`；`keyframe_screen` / `track_qc` / `global_relation` / `relation_verify` |
+| 片段关系主包化 | `relations/clip_relation.py`（`relation_llm` 节点）；`semi_auto_label_relations.py` 为薄 CLI |
+| Rex-Omni-AWQ | 本地 `D:/Rex-Omni-AWQ`（仓库外）+ `rexomni_detector.py`；`configs/rexomni_full.json` 在 `test1_video` 上 **12/12 节点 succeeded** |
+| 规则 motion | `relations/ops.py`：toward/away/follow 等 |
+| 关系可视化 | `export.relation_viz_video` → `relation_box_vis.mp4`（`utils/relation_viz.py`） |
+| Presence 评测链路 | `tools/evaluate_presence.py` + `gold/relations_gold.json` **样例 1 视频** |
 
-**2026-05-26 plan 续做**：`gold/` 样例 + Presence 评测链路；`pipeline/report.py` 自动生成 `reports/run_report.md`；`configs/production_full.json` + `scripts/run_production.ps1`；storyboard `imwrite` 修复（中文路径）；规则关系扩展 motion（toward/away/follow/chase 等）；`configs/CONFIGS.md`。
+### 未完成 / 进行中
 
-**2026-05-26 选项1**：`relation_llm` 迁入主包（`relations/clip_relation.py` 等）；`semi_auto_label_relations.py` 改为薄 CLI 包装。
+- **50 条真 Gold**（见下文）：标注组交付前无法做有意义的批量 P/R/F1。
+- Step1/Step2 仍经 `detection/legacy_step1.py`、`tracking/legacy_step2.py` 调 `my_scripts`，未完全迁入 `src/vidvrd_auto`。
+- `keyframe_screen` 在 Rex 生产配置中常关闭；VL 粗筛与 Rex 链路的组合策略待产品化。
+- `relation_verify.strong_model_review_enabled` 默认 false；强模型终审未常态化。
+- Prompt / 谓词边界需结合 Gold 与失败 case 迭代。
+- `default.json` 中 `relations.max_windows: 0` 会对所有窗口调 LLM，长视频极慢——生产跑批需显式限制 `max_windows`。
 
-**2026-05-26 选项2**：`keyframe_screen` / `track_qc` / `global_relation` / `relation_verify` 在 `vl_enabled` 时从视频抽帧拼图并 `call_bgr` 调用 VL；`utils/vl_frames.py`；`dry_run.json` 默认 `vl_dry_run=true` 可本地验证传图链路。
+### 工程里程碑日志
+
+- **2026-05-26**：mock dry-run；`check_openclaw_env.py`；`pipeline/report.py`；`clip_relation` 迁入；VL 节点传图；`configs/CONFIGS.md`；motion 规则扩展。
+- **2026-05-27**：`configs/rexomni_full.json`；Rex 全链验收（`runs/rexomni_full_test1`）；`run_with_vl.json` / 一键脚本。
+- **2026-05-28**：`rexomni_full_kf2.json`（`keyframe_interval: 2`）；`test1_kf2` 全链 + 关系可视化。
+
+---
+
+## 「50 条 Gold」是什么？
+
+定义来源：**[`plan/plan.md`](plan/plan.md) 第一阶段**（人工标注 + 半自动 + 可复现评测）。
+
+| 项 | 说明 |
+|----|------|
+| **是什么** | 约 **50 个视频** 的人工标准标注，与自动产出 **同一 schema**，用于对比质量 |
+| **轨迹 Gold** | `gold/trajectories_gold.json`：关键帧标注 → 插值/传播 → 少量修正，得到逐帧框与 `track_id` |
+| **关系 Gold** | `gold/relations_gold.json`：按 **时间段** 标注关系（`start_frame`~`end_frame`），不是逐帧打点 |
+| **工程用途** | 自动跑批得到 `pred/relations_pred.json` 后，跑 **Presence P/R/F1**（`tools/evaluate_presence.py`），输出 `reports/presence_report.md`，按失败类型改规则/Prompt |
+| **仓库现状** | 仅 `validation_dummy` **2 条关系** smoke 样例，用于验证评测脚本；**不能**当作项目真实精度 |
+
+标注组交付后：替换 `gold/` 内容，配置 `evaluate.enabled: true`（或 `configs/production.json`），对同一批 `video_id` 跑主链并对比。
+
+---
 
 ## 分工原则
 
-- 所有新代码默认进入 `src/vidvrd_auto/`。
-- 所有配置默认进入 `configs/`。
-- 所有说明、注释、运行文档尽量使用中文。
-- 所有真实测试统一在 `vidvrd` conda 环境运行。
-- `my_scripts/` 只作为过渡兼容层，后续逐步把能力迁入新包。
+- 新代码默认进入 `src/vidvrd_auto/`。
+- 配置默认进入 `configs/`。
+- 说明与运行文档使用中文。
+- 真实测试与 Rex 推理优先在 **`vidvrd` conda** 环境。
+- `my_scripts/` 为过渡层，检测/追踪迁移完成后仅保留薄包装。
+
+---
 
 ## 成员 1：工程主链与实验闭环（吴、李）
 
-负责方向：保证整个系统可跑、可恢复、可比较、可汇报。
+**方向**：系统可跑、可恢复、可比较、可汇报。
 
-主要任务：
+**任务**：
 
-- 维护 `vidvrd_auto.cli`、`pipeline/runner.py`、`run_manifest.json`、节点缓存和断点续跑逻辑。
-- 强化 OpenClaw Skill，使 Agent 能完成环境检查、运行、失败诊断、resume 和结果汇报。
-- 维护 `configs/default.json`、`configs/dry_run.json`、配置模板和参数说明。
-- 维护批量运行、dry-run、mock 测试和 smoke test。
-- 统计模型调用成本、失败节点分布、成功率和产出率。
-- 维护中文 `README.md`、`docs/WORKFLOW_AGENT.md`、`docs/RUN_REPORT_TEMPLATE.md`。
+- 维护 `cli`、`pipeline/runner.py`、`run_manifest.json`、节点缓存与 `--resume`。
+- OpenClaw Skill：环境检查、运行、失败诊断、resume、结果汇报。
+- 维护配置模板与 [`configs/CONFIGS.md`](configs/CONFIGS.md)；批量跑批与成本/失败统计。
+- 维护 `README.md`、`docs/WORKFLOW_AGENT.md`。
 
-对应模块：
+**模块**：`src/vidvrd_auto/cli.py`、`pipeline/`、`config/`、`skills/vidvrd-full-auto/`、`docs/`、`tests/`。
 
-- `src/vidvrd_auto/cli.py`
-- `src/vidvrd_auto/pipeline/`
-- `src/vidvrd_auto/config/`
-- `skills/vidvrd-full-auto/`
-- `docs/`
-- `tests/`
-
-难度与工作量：中高。虽然主链骨架已有，但后续所有成员的模块都需要接入、验收和报告，成员 1 负责项目工程闭环。
+---
 
 ## 成员 2：检测、关键帧筛选与轨迹质量（张）
 
-负责方向：完成会议方案第 2、3、4 步，让视频稳定产出高质量检测框和轨迹。
+**方向**：会议方案第 2–4 步——稳定框与轨迹。
 
-主要任务：
+**任务**：
 
-- ※从my_scripts里下载本地部署Rex-Omni-AWQ，接入自己的DINO-X API，部署并验证检测后端。
-- 完善关键帧检测策略，控制关键帧频率、检测阈值、可视化输出。
-- 完善 `keyframe_screen`，让 VL 模型真正判断 `keep/drop/crop`。
-- 实现可选视频裁剪节点，根据粗筛结果生成高质量片段。
-- 完善逐帧检测与插值补框策略。
-- 完善 OC-SORT 追踪、窗口切分和 pair 可视化。
-- 完善 `track_qc`，使用规则和 VL 模型判断是否同一物体、框是否偏移、类别是否正确。
-- 逐步把旧 Step1/Step2 逻辑迁入 `src/vidvrd_auto/detection/` 和 `src/vidvrd_auto/tracking/`。
+- ~~下载部署 Rex-Omni-AWQ~~ → **已完成本地路径与主链接入**；维护 `rexomni_detector.py`、Windows/CUDA 问题。
+- 可选 DINO-X（`DINOX_API_TOKEN`、`production_full.json`）作备选检测。
+- 关键帧策略：`keyframe_interval`、框可视化；对比 `rexomni_full` vs `rexomni_full_kf2`。
+- `keyframe_screen`：VL `keep/drop/crop`（Rex 链路上是否启用待决）。
+- OC-SORT、窗口切分、pair 可视化；`track_qc` 规则 + VL。
+- **迁移** Step1/Step2 至 `src/vidvrd_auto/detection`、`tracking`。
 
-对应模块：
+**模块**：`detection/`、`tracking/`、`nodes/detect.py`、`screen.py`、`track.py`、`track_qc.py`；`my_scripts/modules/rexomni_detector.py`。
 
-- `src/vidvrd_auto/detection/`
-- `src/vidvrd_auto/tracking/`
-- `src/vidvrd_auto/nodes/detect.py`
-- `src/vidvrd_auto/nodes/screen.py`
-- `src/vidvrd_auto/nodes/track.py`
-- `src/vidvrd_auto/nodes/track_qc.py`
-- `configs/default.json` 中 detector、tracking、keyframe_screen、track_qc 配置
+---
 
-难度与工作量：高。检测和追踪质量直接决定后续关系结果上限，需要处理模型部署、速度、召回、漂移和成本。
+## 成员 3：谓词体系、规则关系与片段关系（李、吴）
 
-## 成员 3：谓词体系、规则关系与片段关系分类（李、吴）
+**方向**：会议方案第 5–6 步——片段可靠关系候选。
 
-负责方向：完成会议方案第 5、6 步，让每个视频片段能生成可靠关系候选。
+**任务**：
 
-主要任务：
+- `configs/predicate_taxonomy.json`：层级、互斥、反向耦合、接触/运动约束。
+- 规则关系与 motion；storyboard、音频先验、分组 VL Prompt。
+- ~~迁入 `clip_classifier`~~ → **核心已在 `clip_relation.py`**；持续调解析与异常处理。
+- 结合 **50 条 Gold** 与 Presence 失败 case 迭代。
 
-- 完善 `configs/predicate_taxonomy.json`，定义谓词中文解释、层级、互斥组、反向耦合、接触要求、运动要求。
-- 明确易混谓词边界，例如 `sing with` / `sing to`、接触与靠近、跟随与朝向。
-- 扩展规则关系，包括左右、上下、前后、near、overlap/contact、toward/away、follow、moving_together 等。
-- 维护片段 storyboard 生成、轨迹 ID 显示、类别提示、音频先验注入。
-- 优化片段关系 Prompt，使大模型输出带起止帧、置信度、证据和来源。
-- 完善 LLM 输出解析和异常处理，保证模型输出能稳定转成统一 JSON。
-- 逐步把旧半自动关系脚本迁入 `src/vidvrd_auto/relations/clip_classifier.py`。
+**模块**：`relations/taxonomy.py`、`ops.py`、`clip_relation.py`、`storyboard.py`、`nodes/relation_llm.py`、`prompts/`。
 
-对应模块：
+---
 
-- `configs/predicate_taxonomy.json`
-- `src/vidvrd_auto/relations/taxonomy.py`
-- `src/vidvrd_auto/relations/ops.py`
-- `src/vidvrd_auto/relations/clip_classifier.py`
-- `src/vidvrd_auto/nodes/relation_llm.py`
-- `src/vidvrd_auto/prompts/`
+## 成员 4：全局关系、复核与评测交付（黄）
 
-难度与工作量：高。关系类别定义和片段关系 Prompt 是最终标注质量的核心，需要反复结合 Gold 样例和失败案例调整。
+**方向**：会议方案第 7–8 步 + 与 Gold 对齐。
 
-## 成员 4：全局关系、强模型复核与评测交付（黄）
+**任务**：
 
-负责方向：完成会议方案第 7、8 步，并负责最终结果能否对齐 Gold 和用于汇报。
+- `global_relation` 跨窗聚合；动态谓词 toward/follow 等。
+- `relation_verify`：冲突、低置信、强模型复核（当前默认关闭，待开启评估）。
+- 导出 schema；**主导 50 条 Gold 规范与 Presence 报告**、失败案例分析。
+- `tools/evaluate_presence.py`、`gold/`、启用 `evaluate` 的跑批流程。
 
-主要任务：
+**模块**：`nodes/global_relation.py`、`relations/verify.py`、`nodes/export.py`、`evaluation/`、`tools/`、`gold/`。
 
-- 完善 `global_relation`，对多个窗口关系做跨窗聚合，减少碎片化和重复关系。
-- 重点处理动态关系，如 `toward`、`away`、`follow`、`chase`、`moving_together`。
-- 调用 VL/强模型查看全视频抽帧和片段关系，复核全局关系。
-- 完善 `relation_verify`，处理互斥冲突、低置信度、规则与模型冲突、缺失反向关系。
-- 实现强模型最终动作：保留、删除、修改谓词、调整起止帧、补全耦合关系。
-- 维护最终导出 schema，保证 `relations_pred.json` 和 `trajectories_pred.json` 可被评测脚本读取。
-- 维护 Gold/Pred 对齐和 Presence P/R/F1 评测。
-- 产出失败案例分析和质量报告。
-
-对应模块：
-
-- `src/vidvrd_auto/nodes/global_relation.py`
-- `src/vidvrd_auto/relations/verify.py`
-- `src/vidvrd_auto/relations/ops.py`
-- `src/vidvrd_auto/nodes/export.py`
-- `src/vidvrd_auto/evaluation/`
-- `tools/evaluate_presence.py`
-- `gold/`
-
-难度与工作量：中高。该成员负责最终质量闭环，需要综合规则、模型结果、冲突处理和评测指标。
+---
 
 ## 协作节奏
 
-建议按三轮推进：
+1. **第一轮（已完成）**：dry-run / mock 主链不断。
+2. **第二轮（进行中）**：Rex + VL 真模型单视频验收；录失败 case。
+3. **第三轮（待 Gold）**：50 视频 Gold 齐套 → 每日/每版跑评测 → 指标表与汇报材料。
 
-1. 第一轮：每人负责模块跑通 dry-run 和小样例，确保主链不断。
-2. 第二轮：接入真实模型和真实视频，记录失败案例并迭代 Prompt/规则。
-3. 第三轮：用 Gold 集合评测，输出指标表、失败类型分布和最终汇报材料。
+合并前检查：
 
-每次合并前至少完成：
+```bash
+conda run -n vidvrd python -m vidvrd_auto.cli --help
+conda run -n vidvrd python -m compileall -q src scripts tests
+conda run -n vidvrd python -m unittest discover -s tests
+```
 
-- `conda run -n vidvrd python -m vidvrd_auto.cli --help`
-- `conda run -n vidvrd python -m compileall -q src scripts tests`
-- `conda run -n vidvrd python -m unittest discover -s tests`
+---
 
 ## 最终验收目标
 
-- 给定一组视频，能够一键产出轨迹、关系和质检报告。
-- 任意节点失败后，能够定位原因并 `--resume` 恢复。
-- 会议 8 步中涉及大模型判断的环节都有真实实现或明确 dry-run/mock 模式。
-- 旧 `my_scripts/` 不再被主链直接依赖，最多作为兼容包装存在。
-- 新成员只读中文 README 和 Agent 工作流文档即可理解项目如何运行。
+| 目标 | 状态 |
+|------|------|
+| 给定视频一键产出轨迹、关系、报告 | 单视频已达成（mock / Rex+VL） |
+| 节点失败可 `--resume` | 已达成 |
+| 大模型环节有真实现 + dry-run/mock | 已达成 |
+| 旧 `my_scripts` 不被主链依赖 | **未达成**（Step1/2 仍 legacy） |
+| 新成员读 README 即可运行 | 已更新 README（含 Rex/Gold 说明） |
+| 50 条 Gold 对齐 Presence 评测 | **待标注组交付** |
+
+---
+
+## 相关文档
+
+- 大创阶段目标与 50 条交付清单：[`plan/plan.md`](plan/plan.md)
+- 会议记录：[`plan/大创会议.md`](plan/大创会议.md)
+- Gold 字段说明：[`gold/README.md`](gold/README.md)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -17,6 +18,15 @@ def deep_merge(base: Dict[str, Any], overlay: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+def _apply_env_overrides(cfg: Dict[str, Any]) -> None:
+    det = cfg.get("detector")
+    if not isinstance(det, dict):
+        return
+    rex_path = os.environ.get("REXOMNI_MODEL_PATH", "").strip()
+    if rex_path:
+        det["rex_model_path"] = rex_path
+
+
 def load_config(config_path: Path | None = None) -> Dict[str, Any]:
     default_path = repo_root() / "configs" / "default.json"
     cfg = read_json(default_path)
@@ -25,4 +35,5 @@ def load_config(config_path: Path | None = None) -> Dict[str, Any]:
         if not isinstance(user_cfg, dict):
             raise SystemExit(f"ERROR: config must be a JSON object: {config_path}")
         cfg = deep_merge(cfg, user_cfg)
+    _apply_env_overrides(cfg)
     return cfg

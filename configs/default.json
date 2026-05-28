@@ -47,7 +47,7 @@
     "dinox_max_calls": 50,
     "dinox_request_retries": 1,
     "dinox_request_backoff_sec": 1.2,
-    "rex_model_path": "my_scripts/models/Rex-Omni-AWQ",
+    "rex_model_path": "D:/Rex-Omni-AWQ",
     "rex_backend": "transformers",
     "rex_categories": "person",
     "rex_detection_interval": 1,

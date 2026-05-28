@@ -104,7 +104,15 @@ def main() -> int:
         if not rex_path.is_absolute():
             rex_path = (ROOT / rex_path).resolve()
         if rex_path.exists():
-            _ok(f"Rex-Omni 模型目录存在: {rex_path.relative_to(ROOT)}")
+            try:
+                label = str(rex_path.relative_to(ROOT))
+            except ValueError:
+                label = str(rex_path)
+            weights = rex_path / "model.safetensors"
+            if weights.is_file():
+                _ok(f"Rex-Omni 模型目录存在: {label}")
+            else:
+                _warn(f"Rex-Omni 目录存在但缺少 model.safetensors: {label}")
         else:
             _warn(f"Rex-Omni 未找到: {rex_path}（可改用 dinox 或 mock）")
     except Exception:

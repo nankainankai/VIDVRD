@@ -15,4 +15,6 @@
 
 ## 当前样例
 
-`validation_dummy` 对应 `data/validation_dummy.mp4` smoke 视频，用于本地评测链路验证。正式 50 条 Gold 由标注组按 `plan/plan.md` 交付后替换本目录内容。
+`validation_dummy` 对应 `data/validation_dummy.mp4` smoke 视频，用于本地评测链路验证。
+
+**「50 条 Gold」**：指约 50 个视频的完整人工标注（轨迹 + 时间段关系），见根目录 `plan.md` 与 `plan/plan.md` 第一阶段。当前仓库**不是** 50 条，仅为 smoke；标注组交付后替换本目录，并保证 `video_id` 与跑批视频一致。

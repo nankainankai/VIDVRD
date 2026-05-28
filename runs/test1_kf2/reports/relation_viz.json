@@ -1,0 +1,16 @@
+[
+  {
+    "video_path": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\data\\test1_video.mp4",
+    "tracks_jsonl": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\runs\\test1_kf2\\videos\\test1_video\\step2_track\\tracks_full.jsonl",
+    "relations_json": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\runs\\test1_kf2\\videos\\test1_video\\export\\relations_pred.json",
+    "output_video": "C:\\Users\\吴泽宇\\Desktop\\VIDVRD\\runs\\test1_kf2\\videos\\test1_video\\export\\relation_box_vis.mp4",
+    "video_id": "test1_video",
+    "relation_count": 65,
+    "frames_written": 244,
+    "frames_with_relations": 225,
+    "fps": 25.0,
+    "width": 1280,
+    "height": 720,
+    "total_frames_reported": 244
+  }
+]

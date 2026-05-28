@@ -1,0 +1,10 @@
+{
+  "node": "video_ingest",
+  "state": "succeeded",
+  "input_hash": "4d321f8392c8fbdb628e8b9064b0fe5ee2fdce4cd23cedeb8ed0c52cd5614587",
+  "finished_at": "2026-05-28 10:22:27",
+  "outputs": {
+    "source_json": "runs/test1_kf2/videos/test1_video/inputs/source.json",
+    "video_path": "data/test1_video.mp4"
+  }
+}

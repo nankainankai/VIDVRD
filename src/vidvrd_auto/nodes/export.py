@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
 
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
+from vidvrd_auto.utils.relation_viz import render_relation_video
 
 
 def tracks_to_trajectories(tracks_jsonl: Path, video_id: str, out_json: Path) -> None:
@@ -49,12 +50,36 @@ def export_video_outputs(
     video_id: str,
     relations_pred_json: Path,
     trajectories_pred_json: Path,
-) -> None:
+    video_path: Path | None = None,
+    export_config: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
     relations_pred_json.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(verified_relations_json, relations_pred_json)
     if relation_qc_json.exists():
         shutil.copyfile(relation_qc_json, relations_pred_json.parent / "relation_qc.json")
     tracks_to_trajectories(tracks_jsonl, video_id, trajectories_pred_json)
+
+    out_meta: Dict[str, Any] = {}
+    cfg = export_config if isinstance(export_config, dict) else {}
+    if bool(cfg.get("relation_viz_video", False)) and video_path is not None and video_path.exists():
+        viz_path = relations_pred_json.parent / str(cfg.get("relation_viz_name", "relation_box_vis.mp4") or "relation_box_vis.mp4")
+        out_meta["relation_viz"] = render_relation_video(
+            video_path=video_path,
+            tracks_jsonl=tracks_jsonl,
+            relations_json=relations_pred_json,
+            video_id=video_id,
+            out_path=viz_path,
+            config={
+                "min_confidence": cfg.get("relation_viz_min_confidence", 0.3),
+                "max_confidence_spatial": cfg.get("relation_viz_max_confidence_spatial", 0.95),
+                "spatial_max_center_distance_ratio": cfg.get("relation_viz_spatial_max_distance_ratio", 0.35),
+                "max_relations_per_frame": cfg.get("relation_viz_max_per_frame", 8),
+                "top_k_per_pair": cfg.get("relation_viz_top_k_per_pair", 1),
+                "show_confidence": cfg.get("relation_viz_show_confidence", True),
+                "output_name": viz_path.name,
+            },
+        )
+    return out_meta
 
 
 def merge_relation_files(video_exports: Iterable[Tuple[str, Path]], out_json: Path) -> Dict[str, Any]:

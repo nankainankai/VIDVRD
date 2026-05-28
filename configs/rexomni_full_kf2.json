@@ -1,0 +1,55 @@
+﻿{
+  "detector": {
+    "backend": "rexomni",
+    "rex_model_path": "D:/Rex-Omni-AWQ",
+    "rex_backend": "transformers",
+    "rex_categories": "person",
+    "keyframe_interval": 2,
+    "save_box_video": true
+  },
+  "tracking": {
+    "backend": "legacy",
+    "export_pair_viz_videos": true,
+    "pair_viz_max_pairs_per_window": 6,
+    "enable_llm_qc": false
+  },
+  "keyframe_screen": {
+    "enabled": false,
+    "min_objects": 2
+  },
+  "track_qc": {
+    "vl_enabled": true,
+    "vl_dry_run": false,
+    "vl_model": "qwen-vl-max",
+    "vl_max_frames": 6,
+    "vl_tile_h": 320
+  },
+  "relations": {
+    "dry_run": false,
+    "api_model": "qwen-vl-max",
+    "max_windows": 2,
+    "max_frames_per_window": 6,
+    "group_size": 3,
+    "sleep_sec": 0.2
+  },
+  "global_relation": {
+    "vl_enabled": true,
+    "vl_dry_run": false,
+    "vl_model": "qwen-vl-max",
+    "vl_sample_frames": 6,
+    "vl_tile_h": 320
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": false
+  },
+  "export": {
+    "relation_viz_video": true,
+    "relation_viz_name": "relation_box_vis.mp4",
+    "relation_viz_min_confidence": 0.5,
+    "relation_viz_max_per_frame": 8
+  },
+  "evaluate": {
+    "enabled": false
+  }
+}
+

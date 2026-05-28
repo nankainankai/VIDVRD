@@ -28,7 +28,7 @@ DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "rexomni").strip().lower()
 
 # -------------------- Rex-Omni (optional) --------------------
 # 说明：Rex-Omni 依赖较重（torch/transformers 等），仅在启用时才会被导入。
-REXOMNI_MODEL_PATH = os.getenv("REXOMNI_MODEL_PATH", "IDEA-Research/Rex-Omni").strip()
+REXOMNI_MODEL_PATH = os.getenv("REXOMNI_MODEL_PATH", "D:/Rex-Omni-AWQ").strip()
 REXOMNI_BACKEND = os.getenv("REXOMNI_BACKEND", "transformers").strip()
 
 # 用于 detection task 的类别列表（逗号分隔）。为空时会回退到 DINOX_TEXT_PROMPT。

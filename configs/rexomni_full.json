@@ -1,7 +1,7 @@
 {
   "detector": {
     "backend": "rexomni",
-    "rex_model_path": "my_scripts/models/Rex-Omni-AWQ",
+    "rex_model_path": "D:/Rex-Omni-AWQ",
     "rex_backend": "transformers",
     "rex_categories": "person",
     "keyframe_interval": 25,
@@ -41,6 +41,12 @@
   },
   "relation_verify": {
     "strong_model_review_enabled": false
+  },
+  "export": {
+    "relation_viz_video": true,
+    "relation_viz_name": "relation_box_vis.mp4",
+    "relation_viz_min_confidence": 0.5,
+    "relation_viz_max_per_frame": 8
   },
   "evaluate": {
     "enabled": false

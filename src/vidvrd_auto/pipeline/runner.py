@@ -453,29 +453,49 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                     ),
                 )
 
+            export_cfg = cfg.get("export", {}) if isinstance(cfg.get("export"), dict) else {}
             export_hash = stable_hash(
-                {"node": "export", "relations_hash": sha256_file(relations_verified_json), "tracks_hash": sha256_file(tracks_jsonl)}
+                {
+                    "node": "export",
+                    "relations_hash": sha256_file(relations_verified_json),
+                    "tracks_hash": sha256_file(tracks_jsonl),
+                    "export_config": export_cfg,
+                }
             )
+            relation_viz_path = export_dir / str(export_cfg.get("relation_viz_name", "relation_box_vis.mp4") or "relation_box_vis.mp4")
             if node_enabled("export", args.from_node, args.to_node):
-                run_node(
-                    args=args,
-                    video_dir=video_dir,
-                    node="export",
-                    input_hash=export_hash,
-                    required_outputs=[relations_pred_json, trajectories_pred_json],
-                    outputs={
-                        "relations_pred_json": safe_rel(relations_pred_json),
-                        "trajectories_pred_json": safe_rel(trajectories_pred_json),
-                        "relation_qc_json": safe_rel(export_dir / "relation_qc.json"),
-                    },
-                    fn=lambda: export_video_outputs(
+                export_outputs = {
+                    "relations_pred_json": safe_rel(relations_pred_json),
+                    "trajectories_pred_json": safe_rel(trajectories_pred_json),
+                    "relation_qc_json": safe_rel(export_dir / "relation_qc.json"),
+                }
+                if bool(export_cfg.get("relation_viz_video", False)):
+                    export_outputs["relation_viz_video"] = safe_rel(relation_viz_path)
+
+                export_required = [relations_pred_json, trajectories_pred_json]
+                if bool(export_cfg.get("relation_viz_video", False)):
+                    export_required.append(relation_viz_path)
+
+                def _run_export() -> None:
+                    export_video_outputs(
                         verified_relations_json=relations_verified_json,
                         relation_qc_json=relation_qc_json,
                         tracks_jsonl=tracks_jsonl,
                         video_id=vid,
                         relations_pred_json=relations_pred_json,
                         trajectories_pred_json=trajectories_pred_json,
-                    ),
+                        video_path=video_path,
+                        export_config=export_cfg,
+                    )
+
+                run_node(
+                    args=args,
+                    video_dir=video_dir,
+                    node="export",
+                    input_hash=export_hash,
+                    required_outputs=export_required,
+                    outputs=export_outputs,
+                    fn=_run_export,
                 )
 
             if relations_pred_json.exists() and trajectories_pred_json.exists():

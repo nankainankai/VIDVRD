@@ -1,0 +1,9 @@
+{
+  "node": "relation_merge",
+  "state": "succeeded",
+  "input_hash": "cee021264c82e3773d3cffdd80672f7941b41801c0f317c5f8c0ce7e3cd94ff7",
+  "finished_at": "2026-05-28 10:39:14",
+  "outputs": {
+    "relations_merged_json": "runs/test1_kf2/videos/test1_video/relation_merge/relations_merged.json"
+  }
+}

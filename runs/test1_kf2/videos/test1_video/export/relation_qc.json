@@ -1,0 +1,71 @@
+{
+  "video_id": "test1_video",
+  "relation_count": 65,
+  "source_counts": {
+    "semi_auto": 6,
+    "rule_geometry": 52,
+    "global_relation": 3,
+    "semi_auto+coupling": 4
+  },
+  "low_confidence_count": 0,
+  "low_confidence_examples": [],
+  "conflict_count": 4,
+  "conflicts": [
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "start_frame": 0,
+      "end_frame": 29,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 0,
+      "object_track_id": 1,
+      "start_frame": 15,
+      "end_frame": 44,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "start_frame": 15,
+      "end_frame": 44,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    },
+    {
+      "subject_track_id": 1,
+      "object_track_id": 0,
+      "start_frame": 0,
+      "end_frame": 29,
+      "predicates": [
+        "left",
+        "right"
+      ],
+      "type": "mutual_exclusion"
+    }
+  ],
+  "strong_model_review_enabled": false,
+  "strong_model_review_count": 0,
+  "strong_model_review_items": [],
+  "strong_model_review_vl": {},
+  "final_actions": [],
+  "track_count": 3,
+  "track_frame_counts": {
+    "0": 200,
+    "1": 173,
+    "2": 26
+  },
+  "passed": false
+}
