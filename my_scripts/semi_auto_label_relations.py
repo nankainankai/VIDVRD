@@ -37,6 +37,7 @@ import argparse
 import base64
 import json
 import math
+import sys
 import time
 from dataclasses import dataclass
 from itertools import combinations
@@ -75,10 +76,27 @@ except Exception:
 try:
     import config  # type: ignore
 except ModuleNotFoundError:
-    import sys
-
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import config  # type: ignore
+
+SRC_DIR = Path(__file__).resolve().parents[1] / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+try:
+    from vidvrd_auto.relations.object_candidates import get_candidate_predicates, normalize_category
+except Exception:
+    def normalize_category(category: str) -> str:
+        return str(category or "").strip().lower().replace(" ", "_") or "unknown"
+
+    def get_candidate_predicates(subject_class: str, object_class: str, audio_label: str = "") -> List[str]:
+        s = normalize_category(subject_class)
+        o = normalize_category(object_class)
+        if s == "person" and o == "person":
+            return ["near", "follow", "chase", "talk_to", "sing_with"]
+        if s == "person":
+            return ["near", "on", "hold", "ride"]
+        return ["near", "overlap"]
 
 
 DEFAULT_RELATIONS: List[str] = [
@@ -152,9 +170,39 @@ PREDICATE_ALIASES: Dict[str, str] = {
     "跟随": "follow",
     "跟着": "follow",
     "追随": "follow",
+    "追": "chase",
+    "追赶": "chase",
     "朝向": "toward",
     "朝": "toward",
     "面向": "toward",
+    "骑": "ride",
+    "乘": "ride",
+    "骑乘": "ride",
+    "滑滑板": "ride",
+    "在上面": "on",
+    "坐在": "sit_on",
+    "坐在上面": "sit_on",
+    "拿": "hold",
+    "握": "hold",
+    "拿着": "hold",
+    "携带": "carry",
+    "背": "carry",
+    "穿戴": "wear",
+    "拥抱": "hug",
+    "踢": "kick",
+    "推": "push",
+    "对话": "talk_to",
+    "交谈": "talk_to",
+    "注视": "look_at",
+    "看着": "look_at",
+    "同行": "walk_with",
+    "一起走": "walk_with",
+    "玩耍": "play_with",
+    "对唱": "sing_with",
+    "合唱": "sing_with",
+    "sing with": "sing_with",
+    "speech to": "talk_to",
+    "talk to": "talk_to",
 }
 
 
@@ -185,19 +233,19 @@ def _audio_predicates_from_vggsound_label(label: str) -> List[str]:
 
     out: List[str] = []
     if "laugh" in s:
-        out.append("laugh with")
+        out.append("play_with")
     if "whisper" in s:
-        out.append("whisper to")
+        out.append("talk_to")
     if "speech" in s or "speaking" in s:
-        out.append("speech to")
+        out.append("talk_to")
     if "sing" in s and "bowl" not in s:
-        out.append("sing with")
+        out.append("sing_with")
     if "growl" in s:
-        out.append("growl at")
+        out.append("chase")
     if "bark" in s or "bow-wow" in s:
-        out.append("bark at")
+        out.append("chase")
     if "chirp" in s or "tweet" in s:
-        out.append("chirp at")
+        out.append("near")
 
     # de-dup preserving order
     seen: Set[str] = set()
@@ -393,6 +441,234 @@ def _draw_tracks(frame_bgr: np.ndarray, tracks: List[Dict[str, Any]], allowed_id
         )
 
     return img
+
+
+def _track_category(track: Dict[str, Any]) -> str:
+    for key in ("class_name", "category", "label", "class"):
+        value = str(track.get(key, "") or "").strip()
+        if value:
+            return normalize_category(value)
+    return "unknown"
+
+
+def _tracks_by_id(tracks: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
+    out: Dict[int, Dict[str, Any]] = {}
+    for track in tracks:
+        if not isinstance(track, dict):
+            continue
+        try:
+            tid = int(track.get("track_id"))
+        except Exception:
+            continue
+        out[tid] = track
+    return out
+
+
+def _dominant_track_categories(
+    track_ids: Sequence[int],
+    frames_idx: Sequence[int],
+    tracks_for_frame: Dict[int, List[Dict[str, Any]]],
+) -> Dict[int, str]:
+    votes: Dict[int, Dict[str, int]] = {int(tid): {} for tid in track_ids}
+    for fi in frames_idx:
+        for tid, track in _tracks_by_id(tracks_for_frame.get(int(fi), [])).items():
+            if tid not in votes:
+                continue
+            category = _track_category(track)
+            votes[tid][category] = votes[tid].get(category, 0) + 1
+    out: Dict[int, str] = {}
+    for tid, counter in votes.items():
+        if counter:
+            out[tid] = sorted(counter.items(), key=lambda x: (-x[1], x[0]))[0][0]
+        else:
+            out[tid] = "unknown"
+    return out
+
+
+def _bbox_distance(a: Sequence[float], b: Sequence[float]) -> float:
+    ax = (float(a[0]) + float(a[2])) / 2.0
+    ay = (float(a[1]) + float(a[3])) / 2.0
+    bx = (float(b[0]) + float(b[2])) / 2.0
+    by = (float(b[1]) + float(b[3])) / 2.0
+    return ((ax - bx) ** 2 + (ay - by) ** 2) ** 0.5
+
+
+def _select_candidate_pairs(
+    track_ids: Sequence[int],
+    frames_idx: Sequence[int],
+    tracks_for_frame: Dict[int, List[Dict[str, Any]]],
+    *,
+    audio_label: str,
+    max_pairs: int,
+    explicit_predicates: Optional[Set[str]] = None,
+) -> List[Dict[str, Any]]:
+    categories = _dominant_track_categories(track_ids, frames_idx, tracks_for_frame)
+    pair_stats: Dict[Tuple[int, int], Dict[str, float]] = {}
+
+    for fi in frames_idx:
+        frame_tracks = _tracks_by_id(tracks_for_frame.get(int(fi), []))
+        for sid, oid in combinations([int(x) for x in track_ids], 2):
+            st = frame_tracks.get(sid)
+            ot = frame_tracks.get(oid)
+            if not st or not ot:
+                continue
+            sb = _pick_bbox(st)
+            ob = _pick_bbox(ot)
+            if sb is None or ob is None:
+                continue
+            key = (sid, oid)
+            stats = pair_stats.setdefault(key, {"cooccur": 0.0, "distance": 0.0})
+            stats["cooccur"] += 1.0
+            stats["distance"] += _bbox_distance(sb, ob)
+
+    candidates: List[Dict[str, Any]] = []
+    for sid, oid in combinations([int(x) for x in track_ids], 2):
+        stats = pair_stats.get((sid, oid))
+        if not stats:
+            continue
+        cooccur = max(1.0, stats["cooccur"])
+        avg_dist = stats["distance"] / cooccur
+        for subj, obj in ((sid, oid), (oid, sid)):
+            s_cls = categories.get(subj, "unknown")
+            o_cls = categories.get(obj, "unknown")
+            preds = get_candidate_predicates(s_cls, o_cls, audio_label=audio_label)
+            if explicit_predicates:
+                preds = [p for p in preds if p in explicit_predicates]
+            if not preds:
+                continue
+            semantic_bonus = 0
+            if s_cls == "person" and o_cls != "person":
+                semantic_bonus += 2
+            if s_cls == "person" and o_cls == "person":
+                semantic_bonus += 1
+            candidates.append(
+                {
+                    "subject_track_id": subj,
+                    "object_track_id": obj,
+                    "subject_category": s_cls,
+                    "object_category": o_cls,
+                    "candidate_predicates": preds,
+                    "score": semantic_bonus + cooccur * 0.1 - avg_dist * 0.0001,
+                }
+            )
+
+    candidates.sort(key=lambda x: float(x.get("score", 0.0)), reverse=True)
+    if max_pairs > 0:
+        candidates = candidates[:max_pairs]
+    return candidates
+
+
+def _draw_labeled_bbox(
+    img: np.ndarray,
+    bbox: Sequence[float],
+    crop_origin: Tuple[float, float],
+    label: str,
+    color: Tuple[int, int, int],
+) -> None:
+    if not HAS_CV2 or cv2 is None:
+        return
+    ox, oy = crop_origin
+    h, w = img.shape[:2]
+    x1 = max(0, min(w - 1, int(round(float(bbox[0]) - ox))))
+    y1 = max(0, min(h - 1, int(round(float(bbox[1]) - oy))))
+    x2 = max(0, min(w - 1, int(round(float(bbox[2]) - ox))))
+    y2 = max(0, min(h - 1, int(round(float(bbox[3]) - oy))))
+    if x2 <= x1 or y2 <= y1:
+        return
+    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+    cv2.putText(img, label, (x1, max(14, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2, cv2.LINE_AA)
+
+
+def _make_pair_storyboard(
+    frame_samples: List[Tuple[int, np.ndarray, List[Dict[str, Any]]]],
+    *,
+    subject_id: int,
+    object_id: int,
+    subject_category: str,
+    object_category: str,
+    fps: int,
+    tile_h: int = 360,
+) -> np.ndarray:
+    if not HAS_CV2 or cv2 is None:
+        raise RuntimeError("opencv-python is required")
+
+    crops: List[np.ndarray] = []
+    for frame_idx, frame, tracks in frame_samples:
+        frame_tracks = _tracks_by_id(tracks)
+        st = frame_tracks.get(int(subject_id))
+        ot = frame_tracks.get(int(object_id))
+        if not st or not ot:
+            continue
+        sb = _pick_bbox(st)
+        ob = _pick_bbox(ot)
+        if sb is None or ob is None:
+            continue
+
+        h, w = frame.shape[:2]
+        x1 = min(sb[0], ob[0])
+        y1 = min(sb[1], ob[1])
+        x2 = max(sb[2], ob[2])
+        y2 = max(sb[3], ob[3])
+        bw = max(1.0, x2 - x1)
+        bh = max(1.0, y2 - y1)
+        expand = 0.4
+        x1 = max(0.0, x1 - bw * expand)
+        y1 = max(0.0, y1 - bh * expand)
+        x2 = min(float(w), x2 + bw * expand)
+        y2 = min(float(h), y2 + bh * expand)
+        if x2 <= x1 or y2 <= y1:
+            continue
+
+        crop = frame[int(y1) : int(y2), int(x1) : int(x2)].copy()
+        if crop.size == 0:
+            continue
+        _draw_labeled_bbox(crop, sb, (x1, y1), f"A ID{subject_id} {subject_category}", (0, 0, 255))
+        _draw_labeled_bbox(crop, ob, (x1, y1), f"B ID{object_id} {object_category}", (255, 128, 0))
+        timestamp = f"frame={frame_idx} t={float(frame_idx) / max(1, fps):.1f}s"
+        cv2.putText(crop, timestamp, (8, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+        crops.append(crop)
+
+    if not crops:
+        raise ValueError("empty pair storyboard")
+    return _make_storyboard(crops, tile_h=tile_h)
+
+
+def _pair_relation_prompt(
+    *,
+    subject_id: int,
+    object_id: int,
+    subject_category: str,
+    object_category: str,
+    candidate_predicates: Sequence[str],
+    frame_count: int,
+    audio_label: str,
+) -> str:
+    rel_hint = "\n".join(f"- {p}" for p in candidate_predicates)
+    audio_hint = f"\n音频先验：{audio_label}\n" if audio_label else ""
+    return f"""你是视频关系标注专家。
+
+画面是同一对轨迹的局部放大 storyboard，按时间从左到右、从上到下排列。
+红框 A 是 subject：ID {subject_id}，类别 {subject_category}。
+蓝框 B 是 object：ID {object_id}，类别 {object_category}。
+共抽取 {frame_count} 帧。{audio_hint}
+
+请只判断 A -> B 是否存在下列候选关系：
+{rel_hint}
+
+只输出 JSON，不要输出额外解释，格式如下：
+{{
+  "relations": [
+    {{"predicate": "ride", "confidence": 0.85, "evidence": "A 持续位于 B 上方且同步移动"}}
+  ],
+  "scene": "一句话描述 A 和 B 的交互"
+}}
+
+要求：
+- predicate 必须严格从候选关系中选择；
+- 不确定的关系不要输出；
+- confidence 范围 0 到 1，0.7 以上表示较有把握；
+- evidence 必须引用视觉证据或音频先验。
+"""
 
 
 def _make_storyboard(frames: List[np.ndarray], tile_h: int = 360) -> np.ndarray:
@@ -591,6 +867,7 @@ def _build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--windows_json", type=str, required=True)
     ap.add_argument("--tracks_jsonl", type=str, required=True)
     ap.add_argument("--output_json", type=str, default="pred/relations_pred.json")
+    ap.add_argument("--video_id", type=str, default="", help="Override output video_id key")
 
     ap.add_argument("--api_key", type=str, default="")
     ap.add_argument("--model_vl", type=str, default=str(getattr(config, "API_MODEL", "qwen-vl-max")))
@@ -599,6 +876,8 @@ def _build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--relations", type=str, default="", help="Comma-separated predicate list; default uses a small spatial set")
     ap.add_argument("--max_windows", type=int, default=0)
     ap.add_argument("--max_frames_per_window", type=int, default=8)
+    ap.add_argument("--max_pairs_per_window", type=int, default=8, help="Max directed track pairs queried per window in pair mode")
+    ap.add_argument("--pair_storyboard", action="store_true", help="Use pair crops and object-aware predicates instead of global storyboard prompts")
     ap.add_argument("--vggsound_label", type=str, default="")
 
     ap.add_argument("--resume", action="store_true", help="Resume from progress sidecar (skip processed segments)")
@@ -654,9 +933,10 @@ def main() -> None:
     fps = int(video_meta.get("fps", 30) or 30)
     fps = max(1, fps)
 
-    video_id = video_path.stem
+    video_id = str(args.video_id or "").strip() or video_path.stem
 
     rel_list_raw: List[str]
+    explicit_relations = bool(str(args.relations or "").strip())
     if str(args.relations or "").strip():
         rel_list_raw = [s.strip() for s in str(args.relations).split(",") if s.strip()]
     else:
@@ -704,6 +984,16 @@ def main() -> None:
         raise SystemExit(f"ERROR: failed to open video: {video_path}")
 
     all_relations: List[Dict[str, Any]] = []
+    if args.resume and out_path.exists():
+        try:
+            existing = _safe_read_json(out_path)
+            if isinstance(existing, dict):
+                existing_rels = existing.get(video_id, [])
+                if isinstance(existing_rels, list):
+                    all_relations = [dict(r) for r in existing_rels if isinstance(r, dict)]
+                    print(f"RESUME: loaded {len(all_relations)} existing relations from {out_path}")
+        except Exception as exc:
+            print(f"WARN: failed to load existing output during resume: {exc}")
     save_storyboards_dir = str(args.save_storyboards_dir or "").strip()
     storyboards_dir = Path(save_storyboards_dir).expanduser().resolve() if save_storyboards_dir else None
 
@@ -725,6 +1015,9 @@ def main() -> None:
             key = "processed_segments_dry_run" if bool(args.dry_run) else "processed_segments_llm"
             processed_segments = {int(x) for x in (progress.get(key) or [])}
         except Exception:
+            processed_segments = set()
+        if processed_segments and (not out_path.exists()) and (not args.dry_run):
+            print("WARN: progress sidecar exists but output_json is missing; reprocessing LLM segments")
             processed_segments = set()
 
     for i, w in enumerate(windows):
@@ -765,12 +1058,14 @@ def main() -> None:
             frames_idx = sorted(set(frames_idx))
 
         drawn_frames: List[np.ndarray] = []
+        frame_samples: List[Tuple[int, np.ndarray, List[Dict[str, Any]]]] = []
         for fi in frames_idx:
             cap.set(cv2.CAP_PROP_POS_FRAMES, int(fi))
             ok, frame = cap.read()
             if not ok or frame is None:
                 continue
             tracks = tracks_for_frame.get(int(fi), [])
+            frame_samples.append((int(fi), frame.copy(), tracks))
             drawn = _draw_tracks(frame, tracks, allowed_ids=allowed_ids)
             drawn_frames.append(drawn)
 
@@ -791,6 +1086,35 @@ def main() -> None:
                 )
 
         if bool(args.dry_run):
+            if bool(args.pair_storyboard) and storyboards_dir is not None:
+                pair_infos = _select_candidate_pairs(
+                    track_ids,
+                    frames_idx,
+                    tracks_for_frame,
+                    audio_label=vgg_label,
+                    max_pairs=int(args.max_pairs_per_window),
+                    explicit_predicates=set(rel_list) if explicit_relations else None,
+                )
+                for pair_info in pair_infos:
+                    try:
+                        pair_sb = _make_pair_storyboard(
+                            frame_samples,
+                            subject_id=int(pair_info["subject_track_id"]),
+                            object_id=int(pair_info["object_track_id"]),
+                            subject_category=str(pair_info["subject_category"]),
+                            object_category=str(pair_info["object_category"]),
+                            fps=fps,
+                            tile_h=360,
+                        )
+                        pair_path = storyboards_dir / (
+                            f"seg_{segment_id:04d}_{start_frame}-{end_frame}"
+                            f"_A{int(pair_info['subject_track_id'])}_B{int(pair_info['object_track_id'])}.jpg"
+                        )
+                        _save_storyboard_image(pair_path, pair_sb)
+                    except Exception as e:
+                        progress.setdefault("errors", []).append(
+                            {"segment_id": segment_id, "stage": "save_pair_storyboard", "error": str(e)[:300]}
+                        )
             seg_list = progress.setdefault("processed_segments_dry_run", [])
             if int(segment_id) not in set(int(x) for x in seg_list if str(x).strip()):
                 seg_list.append(int(segment_id))
@@ -798,10 +1122,116 @@ def main() -> None:
             print(f"OK seg={segment_id} dry_run storyboards_saved={storyboards_dir is not None}")
             continue
 
+        triples_window: List[Dict[str, Any]] = []
+
+        if bool(args.pair_storyboard):
+            pair_infos = _select_candidate_pairs(
+                track_ids,
+                frames_idx,
+                tracks_for_frame,
+                audio_label=vgg_label,
+                max_pairs=int(args.max_pairs_per_window),
+                explicit_predicates=set(rel_list) if explicit_relations else None,
+            )
+            for pair_info in pair_infos:
+                sid = int(pair_info["subject_track_id"])
+                oid = int(pair_info["object_track_id"])
+                s_cls = str(pair_info["subject_category"])
+                o_cls = str(pair_info["object_category"])
+                candidate_preds = [str(p) for p in pair_info.get("candidate_predicates", []) if str(p).strip()]
+                if not candidate_preds:
+                    continue
+                try:
+                    pair_sb = _make_pair_storyboard(
+                        frame_samples,
+                        subject_id=sid,
+                        object_id=oid,
+                        subject_category=s_cls,
+                        object_category=o_cls,
+                        fps=fps,
+                        tile_h=360,
+                    )
+                except Exception as e:
+                    progress.setdefault("errors", []).append(
+                        {"segment_id": segment_id, "stage": "make_pair_storyboard", "error": str(e)[:300]}
+                    )
+                    continue
+
+                if storyboards_dir is not None:
+                    try:
+                        pair_path = storyboards_dir / f"seg_{segment_id:04d}_{start_frame}-{end_frame}_A{sid}_B{oid}.jpg"
+                        _save_storyboard_image(pair_path, pair_sb)
+                    except Exception as e:
+                        progress.setdefault("errors", []).append(
+                            {"segment_id": segment_id, "stage": "save_pair_storyboard", "error": str(e)[:300]}
+                        )
+
+                prompt = _pair_relation_prompt(
+                    subject_id=sid,
+                    object_id=oid,
+                    subject_category=s_cls,
+                    object_category=o_cls,
+                    candidate_predicates=candidate_preds,
+                    frame_count=len(frame_samples),
+                    audio_label=vgg_label,
+                )
+                text_out = _run_vl_prompt_with_retry(
+                    pair_sb,
+                    model=str(args.model_vl),
+                    prompt=prompt,
+                    api_key=api_key,
+                    retries=int(args.retries),
+                    backoff_sec=float(args.backoff_sec),
+                    sleep_sec=float(args.sleep_sec),
+                )
+                obj = _try_parse_json_object(text_out)
+                if not isinstance(obj, dict):
+                    continue
+                rels = obj.get("relations", obj.get("triples", []))
+                if not isinstance(rels, list):
+                    continue
+                for rel in rels:
+                    if not isinstance(rel, dict):
+                        continue
+                    pred = _canonical_predicate(str(rel.get("predicate", "") or ""))
+                    if pred not in candidate_preds:
+                        continue
+                    try:
+                        conf_f = float(rel.get("confidence", 0.0) or 0.0)
+                        if not math.isfinite(conf_f):
+                            conf_f = 0.0
+                    except Exception:
+                        conf_f = 0.0
+                    triples_window.append(
+                        {
+                            "subject_track_id": sid,
+                            "object_track_id": oid,
+                            "subject_category": s_cls,
+                            "object_category": o_cls,
+                            "predicate": pred,
+                            "start_frame": start_frame,
+                            "end_frame": end_frame,
+                            "confidence": max(0.0, min(1.0, conf_f)),
+                            "source": "semi_auto_pair",
+                            "segment_id": segment_id,
+                            "evidence": str(rel.get("evidence", "") or "").strip()[:240],
+                            "frames": list(frames_idx),
+                        }
+                    )
+
+            triples_window = _dedup_triples(triples_window)
+            triples_window = _apply_coupling(triples_window)
+            all_relations.extend(triples_window)
+            seg_list = progress.setdefault("processed_segments_llm", [])
+            if int(segment_id) not in set(int(x) for x in seg_list if str(x).strip()):
+                seg_list.append(int(segment_id))
+            _save_progress(progress_path, progress)
+            print(f"OK seg={segment_id} pair_relations={len(triples_window)}")
+            continue
+
         ids_hint = "\n".join([f"- ID {tid}" for tid in sorted(allowed_ids)])
         audio_hint = f"\n音频先验(VggSound): {vgg_label}\n" if vgg_label else ""
 
-        triples_window: List[Dict[str, Any]] = []
         for group in _chunk_list(rel_list, int(args.group_size)):
             rel_hint = "\n".join([f"- {p}" for p in group])
             prompt = f"""这是一段视频窗口关键帧拼图（约 1fps 抽取，t1->tN）。图中已画出轨迹框与轨迹ID。{audio_hint}

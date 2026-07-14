@@ -1,36 +1,15 @@
 # VIDVRD Auto 架构说明
 
-本项目当前采用 OpenClaw-first 的工程结构：OpenClaw/Agent 只负责调用、恢复和汇报，实际业务逻辑全部落在 `src/vidvrd_auto/`。
-
 ## 主入口
 
-安装 editable 包后的推荐命令：
-
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume
+python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume
 ```
 
-不安装包时使用薄入口：
+薄入口（不安装包时）：
 
 ```bash
-conda run -n vidvrd python scripts/run_vidvrd_auto.py --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume
-```
-
-## 运行主链
-
-```text
-video_ingest        视频读入：本地文件或 URL 统一落盘
-  -> audio_prior    音频先验：VGGSound CSV 或配置兜底
-  -> step1_detect   检测出框：Rex-Omni/DINO-X 过渡适配
-  -> keyframe_screen 关键帧粗筛：规则 + 可选 VL 判断
-  -> step2_track    轨迹生成：OC-SORT 过渡适配
-  -> track_qc       轨迹质检：规则风险 + 可选 VL 复核
-  -> relation_rule  规则关系：几何/接触/时序关系
-  -> relation_llm   片段关系：storyboard + 多模态模型
-  -> relation_merge 关系合并：去重、耦合补全
-  -> global_relation 全局关系：跨窗口聚合和动态关系复核
-  -> relation_verify 关系复核：冲突、低置信度、强模型复核
-  -> export         导出：轨迹、关系和质检报告
+python scripts/run_vidvrd_auto.py --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume
 ```
 
 ## 包结构
@@ -38,38 +17,79 @@ video_ingest        视频读入：本地文件或 URL 统一落盘
 ```text
 src/vidvrd_auto/
 ├── cli.py              # CLI 参数解析
-├── config/             # 配置加载与合并
-├── pipeline/           # 节点顺序、manifest、runner
-├── nodes/              # 每个流程节点的可调用入口
-├── models/             # 统一模型客户端
-├── prompts/            # 中文 Prompt 模板
-├── detection/          # 检测能力迁移层
-├── tracking/           # 追踪能力迁移层
-├── relations/          # 关系规则、分类、合并、复核
-├── evaluation/         # 评测入口
-└── utils/              # IO、路径、hash、进程工具
+├── config/             # 配置加载与深度合并
+│   └── loader.py
+├── pipeline/           # 节点编排
+│   ├── constants.py    # NODE_ORDER（12 节点）
+│   ├── runner.py       # 主编排器
+│   └── manifest.py     # status.json 管理
+├── nodes/              # 流程节点（每个节点一个文件）
+│   ├── ingest.py       # video_ingest
+│   ├── audio_prior.py  # audio_prior
+│   ├── detect.py       # step1_detect → legacy_step1 适配
+│   ├── screen.py       # keyframe_screen
+│   ├── track.py        # step2_track → legacy_step2 适配
+│   ├── track_qc.py     # track_qc
+│   ├── relation_llm.py # relation_llm → clip_classifier 适配
+│   ├── global_relation.py # global_relation
+│   └── export.py       # export
+├── models/
+│   └── vl_client.py    # 统一 DashScope VL 客户端
+├── prompts/
+│   └── templates.py    # 中文 Prompt 模板
+├── relations/          # 关系核心逻辑
+│   ├── ops.py          # 规则生成、合并、复核（核心实现）
+│   ├── clip_classifier.py # 调旧脚本的适配层
+│   ├── object_candidates.py # 类别对→候选谓词
+│   └── taxonomy.py     # 谓词定义读取
+├── detection/
+│   └── legacy_step1.py # Step1 子进程适配
+├── tracking/
+│   └── legacy_step2.py # Step2 子进程适配
+├── evaluation/
+│   └── presence.py     # Presence 评测入口
+└── utils/
+    ├── io.py           # JSON/JSONL 读写
+    ├── paths.py        # 仓库根路径
+    ├── hashing.py      # 稳定 hash
+    └── process.py      # 子进程执行
 ```
 
-`my_scripts/` 只作为迁移期间的旧脚本适配层，不再承载新编排逻辑。
+## 旧脚本适配层
+
+`my_scripts/` 中以下文件仍被新包 subprocess 调用：
+
+| 文件 | 调用方 |
+|------|--------|
+| `step1_full_video_box_detection_dinox.py` | `detection/legacy_step1.py` |
+| `step2_full_video_tracking_ocsort_qc_pairviz.py` | `tracking/legacy_step2.py` |
+| `semi_auto_label_relations.py` | `relations/clip_classifier.py` |
+
+其余 `my_scripts/` 文件为上述脚本的依赖（`config.py`、`utils_io.py`、`modules/`）。
+
+## 关系处理流程
+
+```text
+relation_rule     几何规则 + Object-Aware 候选（低置信度）
+       ↓
+relation_llm      VL 模型验证候选（Pair Storyboard / 全景 Storyboard）
+       ↓
+relation_merge    去重 + 耦合补全（left↔right 等）
+       ↓
+global_relation   跨窗口动态关系聚合
+       ↓
+relation_verify   互斥消解 + 类别约束过滤 + 最低置信度过滤 + 强模型复核
+       ↓
+export            导出最终 JSON
+```
 
 ## 可恢复性
 
-每个节点会写：
-
-- `runs/<run_id>/videos/<video_id>/<node>/status.json`
-- 必要时写 `run.log`
-- 节点输出文件路径会登记到 `run_manifest.json`
-
-恢复失败任务时，用同一命令加 `--resume`；只想重跑局部节点时，用 `--from_node` 和 `--to_node`。
+每个节点写 `status.json`（含 `input_hash`），`--resume` 时只重跑 hash 变化或未成功的节点。`--from_node`/`--to_node` 支持局部重跑。
 
 ## 验证
 
-所有真实验证使用 `vidvrd` 环境：
-
 ```bash
-$env:PYTHONPATH="src"
-conda run -n vidvrd python -m compileall -q src scripts tests
-conda run -n vidvrd python -m unittest discover -s tests
+python -m compileall -q src scripts tests
+python -m unittest discover -s tests
 ```
-
-当前测试使用标准库 `unittest`，不强制依赖 `pytest`。

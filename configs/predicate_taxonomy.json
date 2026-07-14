@@ -72,6 +72,76 @@
       "requires_contact": true,
       "uses_motion": false
     },
+    "on": {
+      "zh": "在上面",
+      "category": "contact_action",
+      "inverse": "under",
+      "mutex_group": "on_under",
+      "requires_contact": true,
+      "uses_motion": false,
+      "subject_categories": ["any"],
+      "object_categories": ["any"]
+    },
+    "under": {
+      "zh": "在下面",
+      "category": "contact_action",
+      "inverse": "on",
+      "mutex_group": "on_under",
+      "requires_contact": false,
+      "uses_motion": false,
+      "subject_categories": ["any"],
+      "object_categories": ["any"]
+    },
+    "ride": {
+      "zh": "骑/乘",
+      "category": "contact_action",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": true,
+      "subject_categories": ["person"],
+      "object_categories": ["skateboard", "bicycle", "horse", "car", "surfboard"]
+    },
+    "sit_on": {
+      "zh": "坐在上面",
+      "category": "contact_action",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["chair", "bench", "sofa", "table", "horse"]
+    },
+    "hold": {
+      "zh": "握/拿",
+      "category": "contact_action",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["object", "ball", "guitar", "microphone", "bag", "cup", "phone", "skateboard", "surfboard"]
+    },
+    "carry": {
+      "zh": "携带/背",
+      "category": "contact_action",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": true,
+      "subject_categories": ["person"],
+      "object_categories": ["object", "bag", "cat", "dog", "ball", "guitar", "skateboard", "surfboard"]
+    },
+    "wear": {
+      "zh": "穿戴",
+      "category": "contact_action",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["object", "bag"]
+    },
     "toward": {
       "zh": "朝向/接近",
       "category": "motion",
@@ -94,7 +164,19 @@
       "inverse": "",
       "mutex_group": "",
       "requires_contact": false,
-      "uses_motion": true
+      "uses_motion": true,
+      "subject_categories": ["person", "animal"],
+      "object_categories": ["person", "animal", "dog", "cat", "horse"]
+    },
+    "chase": {
+      "zh": "追",
+      "category": "motion",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": true,
+      "subject_categories": ["person", "animal", "dog", "cat"],
+      "object_categories": ["person", "animal", "dog", "cat"]
     },
     "moving_together": {
       "zh": "共同移动",
@@ -103,6 +185,87 @@
       "mutex_group": "",
       "requires_contact": false,
       "uses_motion": true
+    },
+    "hug": {
+      "zh": "拥抱",
+      "category": "interaction",
+      "inverse": "hug",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["person"]
+    },
+    "kick": {
+      "zh": "踢",
+      "category": "interaction",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": true,
+      "subject_categories": ["person"],
+      "object_categories": ["object", "ball", "person"]
+    },
+    "push": {
+      "zh": "推",
+      "category": "interaction",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": true,
+      "uses_motion": true,
+      "subject_categories": ["person"],
+      "object_categories": ["object", "person", "bicycle", "chair", "car", "skateboard"]
+    },
+    "talk_to": {
+      "zh": "对话",
+      "category": "interaction",
+      "inverse": "talk_to",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["person"]
+    },
+    "look_at": {
+      "zh": "注视",
+      "category": "interaction",
+      "inverse": "",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["any"]
+    },
+    "walk_with": {
+      "zh": "同行",
+      "category": "interaction",
+      "inverse": "walk_with",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": true,
+      "subject_categories": ["person"],
+      "object_categories": ["person", "dog", "horse"]
+    },
+    "play_with": {
+      "zh": "玩耍",
+      "category": "interaction",
+      "inverse": "play_with",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": true,
+      "subject_categories": ["person"],
+      "object_categories": ["any"]
+    },
+    "sing_with": {
+      "zh": "对唱/合唱",
+      "category": "audio_assisted",
+      "inverse": "sing_with",
+      "mutex_group": "",
+      "requires_contact": false,
+      "uses_motion": false,
+      "subject_categories": ["person"],
+      "object_categories": ["person"],
+      "candidate_triggers": ["audio_sing", "person_person"]
     }
   }
 }

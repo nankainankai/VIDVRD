@@ -34,6 +34,7 @@ def global_relation_prompt(relations: List[Dict[str, Any]]) -> str:
 def relation_verify_prompt(relations: List[Dict[str, Any]], issues: List[Dict[str, Any]]) -> str:
     return (
         "你是视频关系最终复核助手。请根据冲突、低置信度和候选关系给出最终动作。\n"
+        "候选关系中的 index 是后续动作必须引用的下标；如果有随 prompt 一起提供的 storyboard 图片，请结合图像证据判断。\n"
         "只输出 JSON，格式为：{\"actions\":[{\"action\":\"keep|delete|change_predicate|adjust_span|add_coupling\",\"index\":0,\"reason\":\"中文原因\"}]}。\n"
         f"候选关系：{json.dumps(relations, ensure_ascii=False)}\n"
         f"风险问题：{json.dumps(issues, ensure_ascii=False)}"

@@ -1,118 +1,118 @@
 # VIDVRD 全自动视频关系标注
 
-本项目面向大创项目“Agent 赋能的视频关系理解”，目标是用 OpenClaw/Agent 调用一条稳定、可复现、可恢复的全自动标注主链，把输入视频转换为可审计的结构化结果：
+本项目面向大创项目"Agent 赋能的视频关系理解"，目标是用 OpenClaw/Agent 调用一条稳定、可复现、可恢复的全自动标注主链，把输入视频转换为可审计的结构化结果：
 
 - 物体轨迹：逐帧 `track_id`、类别、bbox。
 - 视频关系：主体、谓词、客体、起止帧、置信度、来源。
 - 质检报告：轨迹风险、关系冲突、强模型复核建议。
-- 可选评测报告：自动结果与 Gold 标注的 Presence P/R/F1。
+- 可选评测报告：自动结果与 Gold 标注的 Presence P/R/F1（含分谓词分析）。
 
-## 当前架构
+## 项目结构
 
 ```text
 VIDVRD/
-├── src/vidvrd_auto/          # 唯一主工程包，新增能力都放这里
-├── configs/                  # 唯一主配置目录
-├── skills/vidvrd-full-auto/  # OpenClaw Skill 调用说明
+├── src/vidvrd_auto/          # 唯一主工程包
+│   ├── cli.py                # CLI 入口
+│   ├── config/               # 配置加载与合并
+│   ├── pipeline/             # 节点编排、manifest、runner
+│   ├── nodes/                # 12 个流程节点
+│   ├── models/               # VL 模型客户端
+│   ├── prompts/              # 中文 Prompt 模板
+│   ├── relations/            # 规则关系、候选生成、合并、复核
+│   ├── detection/            # 检测适配层（调旧 Step1）
+│   ├── tracking/             # 追踪适配层（调旧 Step2）
+│   ├── evaluation/           # Presence 评测入口
+│   └── utils/                # IO、路径、hash、进程
+├── configs/                  # 配置文件
+│   ├── default.json          # 完整默认配置
+│   ├── semantic_relations.json # 语义关系实验配置
+│   ├── predicate_taxonomy.json # 谓词定义（25 个谓词）
+│   ├── dry_run.json          # dry-run 覆盖配置
+│   └── production.json       # 生产覆盖配置
 ├── scripts/                  # 薄入口脚本
-├── tests/                    # unittest / smoke 测试
-├── docs/                     # 中文架构、schema、Agent 工作流文档
-├── my_scripts/               # 旧脚本兼容层，迁移完成后逐步废弃
-├── auto_label/               # 旧入口兼容包装
-├── tools/                    # 人工标注、评测等辅助工具
-└── plan/                     # 会议规划与任务说明
+├── tests/                    # unittest 测试
+├── docs/                     # 架构、Schema、Agent 工作流文档
+├── tools/                    # 评测、人工标注辅助工具
+├── my_scripts/               # 旧脚本适配层（检测、追踪、关系分类）
+├── plan/                     # 会议规划与改进计划
+├── skills/vidvrd-full-auto/  # OpenClaw Skill
+└── data/                     # 样本数据
 ```
-
-新开发默认进入 `src/vidvrd_auto/`，不要再新增平行主链。
 
 ## 快速开始
 
-所有真实运行和测试都使用 `vidvrd` conda 环境。
+所有运行使用 `vidvrd` conda 环境：
 
 ```bash
 conda activate vidvrd
+pip install -e .
 ```
 
-首次使用可安装为 editable 包：
+dry-run（不调用多模态模型）：
 
 ```bash
-conda run -n vidvrd python -m pip install -e .
+python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
 ```
 
-不调用多模态模型的 dry-run：
+语义关系实验：
 
 ```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/debug001 --config configs/dry_run.json --resume --dry_run_relations --skip_eval
-```
-
-正式运行：
-
-```bash
-conda run -n vidvrd python -m vidvrd_auto.cli --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume --api_key YOUR_DASHSCOPE_KEY
-```
-
-不安装包时可使用薄入口：
-
-```bash
-conda run -n vidvrd python scripts/run_vidvrd_auto.py --videos data/videos.txt --run_dir runs/exp001 --config configs/default.json --resume
+python -m vidvrd_auto.cli --videos data/videos_semantic.txt --run_dir runs/semantic_v1 --config configs/semantic_relations.json --resume --api_key YOUR_DASHSCOPE_KEY
 ```
 
 ## 主链节点
 
 ```text
-视频读入 video_ingest
-  -> 音频先验 audio_prior
-  -> 关键帧/逐帧检测 step1_detect
-  -> 关键帧粗筛 keyframe_screen
-  -> 轨迹生成 step2_track
-  -> 轨迹质检 track_qc
-  -> 规则关系 relation_rule
-  -> 片段关系 relation_llm
-  -> 关系合并 relation_merge
-  -> 全局关系 global_relation
-  -> 关系复核 relation_verify
-  -> 导出 export
+video_ingest   视频读入
+  → audio_prior   音频先验
+  → step1_detect  目标检测（Rex-Omni / DINO-X）
+  → keyframe_screen  关键帧粗筛
+  → step2_track   轨迹生成（OC-SORT）
+  → track_qc      轨迹质检
+  → relation_rule  规则关系 + Object-Aware 候选
+  → relation_llm   片段关系（Storyboard + Qwen-VL）
+  → relation_merge 关系合并 + 耦合补全
+  → global_relation 跨窗口聚合
+  → relation_verify 复核 + 冲突消解 + 类别约束过滤
+  → export         导出
 ```
 
-每个节点都会写 `status.json`，同一视频和同一配置可用 `--resume` 断点续跑。
+每个节点写 `status.json`，同一视频同一配置可用 `--resume` 断点续跑。
+
+## 谓词体系
+
+当前支持 25 个谓词，分四层：
+
+| 层级 | 谓词示例 |
+|------|----------|
+| 空间关系 | left, right, above, below, near, overlap, on, under |
+| 运动关系 | toward, away, follow, chase, moving_together |
+| 动作关系 | ride, sit_on, hold, carry, wear, kick, push |
+| 交互关系 | hug, talk_to, look_at, walk_with, play_with, sing_with |
+
+详见 `configs/predicate_taxonomy.json`。
 
 ## 输出
 
-所有运行产物都写入 `runs/<run_id>/`：
+所有运行产物写入 `runs/<run_id>/`：
 
 - `run_manifest.json`
 - `pred/relations_pred.json`
 - `videos/<video_id>/export/trajectories_pred.json`
 - `videos/<video_id>/export/relation_qc.json`
-- `reports/presence_report.md`，当 Gold 文件存在且启用评测时生成
-
-## OpenClaw
-
-项目级 Skill：
-
-`skills/vidvrd-full-auto/SKILL.md`
-
-OpenClaw/Agent 的职责是调用稳定 CLI、检查 `run_manifest.json`、定位失败节点，并用相同命令加 `--resume` 恢复运行。业务逻辑不写进 Skill，统一保留在 `src/vidvrd_auto/`。
-
-## 重要文档
-
-- `docs/ARCHITECTURE.md`
-- `docs/SCHEMAS.md`
-- `docs/WORKFLOW_AGENT.md`
-- `plan/大创会议.md`
-- `plan/plan.md`
-
-## 旧架构说明
-
-`my_scripts/` 仍作为过渡兼容层被检测、追踪、片段关系节点调用，但不再新增主流程编排逻辑。后续迁移完成后，旧脚本只保留为反向调用新包的薄包装器。
-
-`auto_label/vidvrd_auto_label.py` 是旧入口兼容包装，实际委托给 `vidvrd_auto.cli`。
+- `reports/presence_report.md`（含分视频和分谓词评测表）
 
 ## 验证
 
 ```bash
-$env:PYTHONPATH="src"
-conda run -n vidvrd python -m vidvrd_auto.cli --help
-conda run -n vidvrd python -m compileall -q src scripts tests
-conda run -n vidvrd python -m unittest discover -s tests
+python -m vidvrd_auto.cli --help
+python -m compileall -q src scripts tests
+python -m unittest discover -s tests
 ```
+
+## 文档
+
+- `docs/ARCHITECTURE.md` — 包结构与节点说明
+- `docs/SCHEMAS.md` — 输出 JSON Schema
+- `docs/WORKFLOW_AGENT.md` — OpenClaw Agent 工作流
+- `plan/semantic_relation_plan.md` — 语义关系改进计划

@@ -49,7 +49,7 @@
     "dinox_request_backoff_sec": 1.2,
     "rex_model_path": "my_scripts/models/Rex-Omni-AWQ",
     "rex_backend": "transformers",
-    "rex_categories": "person",
+    "rex_categories": "person,skateboard,bicycle,horse,dog,cat,ball,guitar,microphone,chair,table,car,bag,cup,phone,surfboard",
     "rex_detection_interval": 1,
     "rex_min_box_area": 500.0,
     "rex_max_detections_per_frame": 60,

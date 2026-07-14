@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from vidvrd_auto.relations.merge import merge_relations
+from vidvrd_auto.relations import merge_relations
 
 
 def _write(path: Path, obj) -> None:

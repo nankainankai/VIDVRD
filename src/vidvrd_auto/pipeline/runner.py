@@ -30,9 +30,7 @@ from vidvrd_auto.pipeline.manifest import (
     now_text,
     should_skip,
 )
-from vidvrd_auto.relations.merge import merge_relations
-from vidvrd_auto.relations.rules import generate_rule_relations
-from vidvrd_auto.relations.verify import verify_relations
+from vidvrd_auto.relations.ops import generate_rule_relations, merge_relations, verify_relations
 from vidvrd_auto.utils.hashing import sha256_file, stable_hash
 from vidvrd_auto.utils.io import read_json, write_json
 from vidvrd_auto.utils.paths import repo_root, safe_rel
@@ -310,6 +308,11 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                 )
 
             rule_cfg = cfg.get("relation_rule", {}) if isinstance(cfg.get("relation_rule"), dict) else {}
+            rule_cfg = dict(rule_cfg)
+            if audio_prior_json.exists():
+                audio_prior_for_rule = read_json(audio_prior_json)
+                if isinstance(audio_prior_for_rule, dict) and str(audio_prior_for_rule.get("label", "") or "").strip():
+                    rule_cfg["audio_label"] = str(audio_prior_for_rule.get("label")).strip()
             rule_hash = stable_hash(
                 {"node": "relation_rule", "windows_hash": sha256_file(windows_json), "tracks_hash": sha256_file(tracks_jsonl), "config": rule_cfg}
             )
@@ -407,6 +410,7 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                         relations_json=relations_merged_json,
                         out_json=relations_global_json,
                         config=global_cfg,
+                        storyboards_dir=rel_dir / "storyboards",
                     ),
                 )
 
@@ -434,6 +438,7 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                         out_relations_json=relations_verified_json,
                         out_qc_json=relation_qc_json,
                         config=verify_cfg,
+                        storyboards_dir=rel_dir / "storyboards",
                     ),
                 )
 

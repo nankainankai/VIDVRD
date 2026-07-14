@@ -37,6 +37,8 @@ def run_clip_relation(
         str(tracks_jsonl),
         "--output_json",
         str(out_json),
+        "--video_id",
+        str(video_id),
         "--save_storyboards_dir",
         str(storyboards_dir),
         "--group_size",
@@ -45,6 +47,8 @@ def run_clip_relation(
         str(int(config.get("max_windows", 0))),
         "--max_frames_per_window",
         str(int(config.get("max_frames_per_window", 8))),
+        "--max_pairs_per_window",
+        str(int(config.get("max_pairs_per_window", 8))),
         "--retries",
         str(int(config.get("retries", 2))),
         "--backoff_sec",
@@ -60,6 +64,8 @@ def run_clip_relation(
         cmd += ["--resume"]
     if dry_run:
         cmd += ["--dry_run"]
+    if bool(config.get("pair_storyboard", False)):
+        cmd += ["--pair_storyboard"]
     if str(config.get("relations", "")).strip():
         cmd += ["--relations", str(config.get("relations")).strip()]
     if str(config.get("vggsound_label", "")).strip():

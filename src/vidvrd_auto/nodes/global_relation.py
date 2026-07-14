@@ -17,7 +17,14 @@ from vidvrd_auto.prompts.templates import global_relation_prompt
 from vidvrd_auto.utils.io import read_json, write_json
 
 
-def run_global_relation(*, video_id: str, relations_json: Path, out_json: Path, config: Dict[str, Any]) -> Dict[str, Any]:
+def run_global_relation(
+    *,
+    video_id: str,
+    relations_json: Path,
+    out_json: Path,
+    config: Dict[str, Any],
+    storyboards_dir: Path | None = None,
+) -> Dict[str, Any]:
     obj = read_json(relations_json) if relations_json.exists() else {video_id: []}
     items = obj.get(video_id, []) if isinstance(obj, dict) else []
     if not isinstance(items, list):
@@ -73,7 +80,8 @@ def run_global_relation(*, video_id: str, relations_json: Path, out_json: Path, 
             "sleep_sec": float(config.get("vl_sleep_sec", 0.0) or 0.0),
             "dry_run": vl_dry_run,
         }
-        vl_result = VLClient(client_cfg).call(prompt=global_relation_prompt(passthrough), dry_run=vl_dry_run)
+        image_paths = sorted(storyboards_dir.glob("*.jpg"))[:4] if storyboards_dir and storyboards_dir.exists() else []
+        vl_result = VLClient(client_cfg).call(prompt=global_relation_prompt(passthrough), image_paths=image_paths, dry_run=vl_dry_run)
         model_review.update(vl_result.to_dict())
         model_review["state"] = "succeeded" if vl_result.ok else "failed"
         if vl_result.ok:
@@ -88,6 +96,7 @@ def run_global_relation(*, video_id: str, relations_json: Path, out_json: Path, 
         else:
             model_review["fallback"] = "use_rule_aggregation"
 
-    out = {video_id: passthrough, "_global_review": model_review}
-    write_json(out_json, out)
-    return out
+    write_json(out_json, {video_id: passthrough})
+    review_path = out_json.parent / "global_review.json"
+    write_json(review_path, model_review)
+    return {video_id: passthrough, "_global_review": model_review}

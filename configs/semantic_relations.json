@@ -1,0 +1,30 @@
+{
+  "detector": {
+    "rex_categories": "person,skateboard,bicycle,horse,dog,cat,ball,guitar,microphone,chair,table,car,bag,cup,phone,surfboard"
+  },
+  "tracking": {
+    "enable_llm_qc": false,
+    "export_pair_viz_videos": false
+  },
+  "relations": {
+    "api_model": "qwen-vl-max",
+    "group_size": 0,
+    "max_frames_per_window": 8,
+    "max_pairs_per_window": 8,
+    "pair_storyboard": true
+  },
+  "relation_rule": {
+    "enabled": true,
+    "object_aware_candidates": true
+  },
+  "relation_verify": {
+    "low_confidence_threshold": 0.35,
+    "min_export_confidence": 0.35,
+    "apply_actions": true,
+    "category_constraints_enabled": true
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_json": "gold/relations_gold_semantic.json"
+  }
+}

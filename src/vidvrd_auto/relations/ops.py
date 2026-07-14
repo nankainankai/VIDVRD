@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from vidvrd_auto.models.vl_client import VLClient
 from vidvrd_auto.prompts.templates import relation_verify_prompt
-from vidvrd_auto.relations.taxonomy import coupling_inverse, mutex_pairs
+from vidvrd_auto.relations.object_candidates import GEOMETRY_PREDICATES, get_candidate_predicates, normalize_category
+from vidvrd_auto.relations.taxonomy import coupling_inverse, mutex_pairs, predicate_defs
+from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
 
 
 COUPLING_INVERSE: Dict[str, str] = {
@@ -25,31 +28,6 @@ MUTEX_PAIRS = {
     frozenset(("front", "behind")),
 }
 MUTEX_PAIRS.update(mutex_pairs())
-
-
-def read_json(path: Path) -> Any:
-    with path.open("r", encoding="utf-8-sig") as f:
-        return json.load(f)
-
-
-def write_json(path: Path, obj: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(obj, f, ensure_ascii=False, indent=2)
-
-
-def _iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
-    with path.open("r", encoding="utf-8-sig") as f:
-        for line in f:
-            s = line.strip()
-            if not s:
-                continue
-            try:
-                obj = json.loads(s)
-            except Exception:
-                continue
-            if isinstance(obj, dict):
-                yield obj
 
 
 def _bbox_center(bbox: Sequence[float]) -> Tuple[float, float]:
@@ -88,9 +66,17 @@ def _pick_bbox(track: Dict[str, Any]) -> Optional[List[float]]:
         return None
 
 
+def _track_class(track: Dict[str, Any]) -> str:
+    for key in ("class_name", "category", "label", "class"):
+        value = str(track.get(key, "") or "").strip()
+        if value:
+            return normalize_category(value)
+    return "unknown"
+
+
 def _load_tracks_by_frame(tracks_jsonl: Path) -> Dict[int, Dict[int, Dict[str, Any]]]:
     out: Dict[int, Dict[int, Dict[str, Any]]] = {}
-    for row in _iter_jsonl(tracks_jsonl):
+    for row in iter_jsonl(tracks_jsonl):
         try:
             frame = int(row.get("frame"))
         except Exception:
@@ -125,6 +111,20 @@ def generate_rule_relations(
     near_ratio = float(config.get("near_distance_ratio", 0.35))
     overlap_thresh = float(config.get("overlap_iou_threshold", 0.05))
     max_pairs_per_window = int(config.get("max_pairs_per_window", 0) or 0)
+    max_track_ids_per_window = int(config.get("max_track_ids_per_window", 0) or 0)
+    object_aware = bool(config.get("object_aware_candidates", False))
+    audio_label = str(config.get("audio_label", "") or "")
+
+    track_class_votes: Dict[int, Counter[str]] = {}
+    if object_aware:
+        for frame_tracks in tracks_by_frame.values():
+            for tid, track in frame_tracks.items():
+                track_class_votes.setdefault(tid, Counter())[_track_class(track)] += 1
+    track_main_class = {
+        tid: votes.most_common(1)[0][0]
+        for tid, votes in track_class_votes.items()
+        if votes
+    }
 
     relations: List[Dict[str, Any]] = []
     for wi, w in enumerate(windows):
@@ -138,8 +138,8 @@ def generate_rule_relations(
         track_ids = [int(tid) for tid in (w.get("track_ids", []) or []) if str(tid).strip()]
         if len(track_ids) < 2:
             continue
-        if max_pairs_per_window > 0:
-            track_ids = track_ids[:max_pairs_per_window]
+        if max_track_ids_per_window > 0:
+            track_ids = track_ids[:max_track_ids_per_window]
 
         pair_stats: Dict[Tuple[int, int], Dict[str, int]] = {}
         pair_total: Dict[Tuple[int, int], int] = {}
@@ -203,6 +203,41 @@ def generate_rule_relations(
                         "evidence": f"geometry vote {count}/{total} in window {segment_id}",
                     }
                 )
+
+        if object_aware:
+            candidate_count = 0
+            for i, sid in enumerate(track_ids):
+                for oid in track_ids[i + 1 :]:
+                    for subj, obj in ((sid, oid), (oid, sid)):
+                        s_cls = track_main_class.get(subj, "unknown")
+                        o_cls = track_main_class.get(obj, "unknown")
+                        for pred in get_candidate_predicates(s_cls, o_cls, audio_label=audio_label):
+                            if pred in GEOMETRY_PREDICATES:
+                                continue
+                            relations.append(
+                                {
+                                    "subject_track_id": int(subj),
+                                    "object_track_id": int(obj),
+                                    "predicate": pred,
+                                    "start_frame": int(start),
+                                    "end_frame": int(end),
+                                    "confidence": 0.15,
+                                    "source": "candidate_object_aware",
+                                    "segment_id": int(segment_id),
+                                    "subject_category": s_cls,
+                                    "object_category": o_cls,
+                                    "evidence": f"candidate from {s_cls}-{o_cls} pair",
+                                }
+                            )
+                            candidate_count += 1
+                            if max_pairs_per_window > 0 and candidate_count >= max_pairs_per_window:
+                                break
+                        if max_pairs_per_window > 0 and candidate_count >= max_pairs_per_window:
+                            break
+                    if max_pairs_per_window > 0 and candidate_count >= max_pairs_per_window:
+                        break
+                if max_pairs_per_window > 0 and candidate_count >= max_pairs_per_window:
+                    break
 
     out = {video_id: relations}
     write_json(out_json, out)
@@ -296,6 +331,138 @@ def merge_relations(
     return out
 
 
+def _safe_conf(item: Dict[str, Any]) -> float:
+    try:
+        return float(item.get("confidence", 0.0) or 0.0)
+    except Exception:
+        return 0.0
+
+
+def _collect_track_main_classes(tracks_jsonl: Path) -> Tuple[Dict[int, str], Dict[int, int]]:
+    class_votes: Dict[int, Counter[str]] = {}
+    frame_counts: Dict[int, int] = {}
+    for row in iter_jsonl(tracks_jsonl):
+        for t in row.get("tracks", []) or []:
+            if not isinstance(t, dict):
+                continue
+            try:
+                tid = int(t.get("track_id"))
+            except Exception:
+                continue
+            frame_counts[tid] = frame_counts.get(tid, 0) + 1
+            class_votes.setdefault(tid, Counter())[_track_class(t)] += 1
+    main_classes = {
+        tid: votes.most_common(1)[0][0]
+        for tid, votes in class_votes.items()
+        if votes
+    }
+    return main_classes, frame_counts
+
+
+def _category_allowed(actual: str, allowed: Sequence[Any]) -> bool:
+    if not allowed:
+        return True
+    actual_norm = normalize_category(actual)
+    allowed_norm = {normalize_category(str(x)) for x in allowed if str(x).strip()}
+    if not allowed_norm or "any" in allowed_norm:
+        return True
+    if actual_norm in allowed_norm:
+        return True
+    if "object" in allowed_norm and actual_norm not in {"person", "unknown"}:
+        return True
+    if "animal" in allowed_norm and actual_norm in {"dog", "cat", "horse"}:
+        return True
+    if "vehicle" in allowed_norm and actual_norm in {"bicycle", "car", "skateboard", "surfboard"}:
+        return True
+    return False
+
+
+def _category_constraint_check(item: Dict[str, Any], track_classes: Dict[int, str], taxonomy: Dict[str, Dict[str, Any]]) -> bool:
+    pred = str(item.get("predicate", "") or "").strip().lower()
+    meta = taxonomy.get(pred, {})
+    subj_allowed = meta.get("subject_categories", [])
+    obj_allowed = meta.get("object_categories", [])
+    if not subj_allowed and not obj_allowed:
+        return True
+    try:
+        sid = int(item.get("subject_track_id", item.get("subject_id")))
+        oid = int(item.get("object_track_id", item.get("object_id")))
+    except Exception:
+        return False
+    s_cls = str(item.get("subject_category", "") or track_classes.get(sid, "unknown"))
+    o_cls = str(item.get("object_category", "") or track_classes.get(oid, "unknown"))
+    return _category_allowed(s_cls, subj_allowed) and _category_allowed(o_cls, obj_allowed)
+
+
+def _resolve_mutex_conflicts(items: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    by_pair_span: Dict[Tuple[int, int, int, int], List[Tuple[int, str, float]]] = {}
+    for idx, item in enumerate(items):
+        key = _rel_key(item)
+        if key is None:
+            continue
+        sid, pred, oid, start, end = key
+        by_pair_span.setdefault((sid, oid, start, end), []).append((idx, pred, _safe_conf(item)))
+
+    to_delete: set[int] = set()
+    actions: List[Dict[str, Any]] = []
+    for (sid, oid, start, end), entries in by_pair_span.items():
+        pred_set = {pred for _, pred, _ in entries}
+        for pair in MUTEX_PAIRS:
+            if not pair.issubset(pred_set):
+                continue
+            pair_preds = sorted(pair)
+            best_pred = max(pair_preds, key=lambda p: max((conf for _, pred, conf in entries if pred == p), default=0.0))
+            for idx, pred, conf in entries:
+                if pred in pair and pred != best_pred:
+                    to_delete.add(idx)
+                    actions.append(
+                        {
+                            "action": "delete",
+                            "index": idx,
+                            "reason": f"mutex conflict on {sid}-{oid} {start}-{end}; keep {best_pred}",
+                            "predicate": pred,
+                            "confidence": conf,
+                        }
+                    )
+
+    return [item for idx, item in enumerate(items) if idx not in to_delete], actions
+
+
+def _apply_final_actions(items: List[Dict[str, Any]], actions: Sequence[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    out = [dict(item) for item in items]
+    to_delete: set[int] = set()
+    applied: List[Dict[str, Any]] = []
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        try:
+            idx = int(action.get("index"))
+        except Exception:
+            continue
+        if idx < 0 or idx >= len(out):
+            continue
+        op = str(action.get("action", "") or "").strip().lower()
+        if op == "delete":
+            to_delete.add(idx)
+            applied.append(dict(action))
+        elif op == "change_predicate":
+            new_pred = str(action.get("new_predicate", "") or action.get("predicate", "") or "").strip().lower()
+            if new_pred:
+                out[idx]["predicate"] = new_pred
+                out[idx]["source"] = "verify_corrected"
+                applied.append(dict(action))
+        elif op == "adjust_span":
+            if action.get("start_frame") is not None:
+                out[idx]["start_frame"] = int(action["start_frame"])
+            if action.get("end_frame") is not None:
+                out[idx]["end_frame"] = int(action["end_frame"])
+            out[idx]["source"] = "verify_corrected"
+            applied.append(dict(action))
+    if to_delete:
+        out = [item for idx, item in enumerate(out) if idx not in to_delete]
+    return out, applied
+
+
 def verify_relations(
     *,
     video_id: str,
@@ -304,6 +471,7 @@ def verify_relations(
     out_relations_json: Path,
     out_qc_json: Path,
     config: Dict[str, Any],
+    storyboards_dir: Path | None = None,
 ) -> Dict[str, Any]:
     obj = read_json(relations_json) if relations_json.exists() else {video_id: []}
     items = _relation_items(obj, video_id)
@@ -375,7 +543,13 @@ def verify_relations(
             "dry_run": strong_model_dry_run,
         }
         issues = [{"type": "low_confidence", **x} for x in strong_model_review] + [{"type": "conflict", **x} for x in conflicts]
-        vl_result = VLClient(client_cfg).call(prompt=relation_verify_prompt(items, issues), dry_run=strong_model_dry_run)
+        indexed_items = [dict(item, index=i) for i, item in enumerate(items)]
+        image_paths = sorted(storyboards_dir.glob("*.jpg"))[:4] if storyboards_dir and storyboards_dir.exists() else []
+        vl_result = VLClient(client_cfg).call(
+            prompt=relation_verify_prompt(indexed_items, issues),
+            image_paths=image_paths,
+            dry_run=strong_model_dry_run,
+        )
         if vl_result.ok:
             try:
                 parsed = json.loads(vl_result.text)
@@ -386,20 +560,45 @@ def verify_relations(
         else:
             final_actions = [{"action": "manual_review", "reason": vl_result.error}]
 
-    track_frames: Dict[int, int] = {}
-    for row in _iter_jsonl(tracks_jsonl):
-        for t in row.get("tracks", []) or []:
-            if not isinstance(t, dict):
-                continue
-            try:
-                tid = int(t.get("track_id"))
-            except Exception:
-                continue
-            track_frames[tid] = track_frames.get(tid, 0) + 1
+    track_main_classes, track_frames = _collect_track_main_classes(tracks_jsonl)
+
+    final_items = [dict(item) for item in items]
+    applied_actions: List[Dict[str, Any]] = []
+    auto_actions: List[Dict[str, Any]] = []
+
+    if bool(config.get("apply_actions", False)) and final_actions:
+        final_items, applied_actions = _apply_final_actions(final_items, final_actions)
+
+    if bool(config.get("apply_actions", False)):
+        final_items, auto_actions = _resolve_mutex_conflicts(final_items)
+        applied_actions.extend(auto_actions)
+
+    filtered_by_category = 0
+    if bool(config.get("category_constraints_enabled", False)):
+        taxonomy = predicate_defs()
+        kept: List[Dict[str, Any]] = []
+        for item in final_items:
+            if _category_constraint_check(item, track_main_classes, taxonomy):
+                kept.append(item)
+            else:
+                filtered_by_category += 1
+        final_items = kept
+
+    min_export_conf = float(config.get("min_export_confidence", 0.0) or 0.0)
+    filtered_by_confidence = 0
+    if min_export_conf > 0:
+        kept = []
+        for item in final_items:
+            if _safe_conf(item) >= min_export_conf:
+                kept.append(item)
+            else:
+                filtered_by_confidence += 1
+        final_items = kept
 
     qc = {
         "video_id": video_id,
-        "relation_count": len(items),
+        "original_relation_count": len(items),
+        "relation_count": len(final_items),
         "source_counts": source_counts,
         "low_confidence_count": len(low_confidence),
         "low_confidence_examples": low_confidence[:20],
@@ -409,10 +608,14 @@ def verify_relations(
         "strong_model_review_count": len(strong_model_review),
         "strong_model_review_items": strong_model_review[:50],
         "final_actions": final_actions[:100],
+        "applied_actions": applied_actions[:100],
+        "filtered_by_category_count": filtered_by_category,
+        "filtered_by_confidence_count": filtered_by_confidence,
         "track_count": len(track_frames),
         "track_frame_counts": {str(k): v for k, v in sorted(track_frames.items())},
-        "passed": len(conflicts) == 0,
+        "track_main_classes": {str(k): v for k, v in sorted(track_main_classes.items())},
+        "passed": len(conflicts) == 0 and filtered_by_category == 0,
     }
-    write_json(out_relations_json, {video_id: items})
+    write_json(out_relations_json, {video_id: final_items})
     write_json(out_qc_json, qc)
     return qc

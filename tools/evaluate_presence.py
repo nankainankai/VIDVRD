@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from collections import Counter
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 
@@ -40,6 +41,28 @@ PRED_ALIASES: Dict[str, str] = {
     "在后": "behind",
     "在后方": "behind",
     "后方": "behind",
+    "骑": "ride",
+    "骑乘": "ride",
+    "滑滑板": "ride",
+    "坐在": "sit_on",
+    "拿": "hold",
+    "拿着": "hold",
+    "携带": "carry",
+    "穿戴": "wear",
+    "拥抱": "hug",
+    "追": "chase",
+    "追赶": "chase",
+    "踢": "kick",
+    "推": "push",
+    "对话": "talk_to",
+    "交谈": "talk_to",
+    "注视": "look_at",
+    "同行": "walk_with",
+    "玩耍": "play_with",
+    "对唱": "sing_with",
+    "合唱": "sing_with",
+    "sing with": "sing_with",
+    "talk to": "talk_to",
 }
 
 
@@ -90,7 +113,7 @@ def _extract_presence_key(item: Dict[str, Any]) -> Optional[Tuple[int, str, int]
     # Support both semi_auto format and Step3-like keys.
     sid = _to_int(item.get("subject_track_id", item.get("subject_id")))
     oid = _to_int(item.get("object_track_id", item.get("object_id")))
-    pred = _canonical_predicate(str(item.get("predicate", "") or ""))
+    pred = _canonical_predicate(str(item.get("predicate", item.get("relationship_type", "")) or ""))
 
     if sid is None or oid is None or not pred:
         return None
@@ -140,6 +163,7 @@ def _pick_example(items: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
 def _markdown_report(
     *,
     per_video_rows: List[Dict[str, Any]],
+    per_predicate_rows: List[Dict[str, Any]],
     overall: Dict[str, Any],
     fp_examples: List[Dict[str, Any]],
     fn_examples: List[Dict[str, Any]],
@@ -168,6 +192,16 @@ def _markdown_report(
     for r in per_video_rows:
         lines.append(
             f"| {r['video_id']} | {r['tp']} | {r['fp']} | {r['fn']} | {r['precision']:.4f} | {r['recall']:.4f} | {r['f1']:.4f} |"
+        )
+    lines.append("")
+
+    lines.append("## Per Predicate")
+    lines.append("")
+    lines.append("| predicate | TP | FP | FN | Precision | Recall | F1 |")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|")
+    for r in per_predicate_rows:
+        lines.append(
+            f"| {r['predicate']} | {r['tp']} | {r['fp']} | {r['fn']} | {r['precision']:.4f} | {r['recall']:.4f} | {r['f1']:.4f} |"
         )
     lines.append("")
 
@@ -228,6 +262,9 @@ def main() -> None:
 
     fp_examples: List[Dict[str, Any]] = []
     fn_examples: List[Dict[str, Any]] = []
+    pred_tp: Counter[str] = Counter()
+    pred_fp: Counter[str] = Counter()
+    pred_fn: Counter[str] = Counter()
 
     for vid in video_ids:
         g = set(gold_map.get(vid, {}).keys())
@@ -256,6 +293,13 @@ def main() -> None:
         overall_tp += tp
         overall_fp += fp
         overall_fn += fn
+
+        for k in g & p:
+            pred_tp[k[1]] += 1
+        for k in p - g:
+            pred_fp[k[1]] += 1
+        for k in g - p:
+            pred_fn[k[1]] += 1
 
         # Collect examples (best-effort)
         for k in sorted(list(p - g)):
@@ -300,8 +344,28 @@ def main() -> None:
         "f1": overall_f1,
     }
 
+    per_predicate_rows: List[Dict[str, Any]] = []
+    for pred in sorted(set(pred_tp.keys()) | set(pred_fp.keys()) | set(pred_fn.keys())):
+        tp = int(pred_tp[pred])
+        fp = int(pred_fp[pred])
+        fn = int(pred_fn[pred])
+        precision = float(tp / max(1, tp + fp))
+        recall = float(tp / max(1, tp + fn))
+        per_predicate_rows.append(
+            {
+                "predicate": pred,
+                "tp": tp,
+                "fp": fp,
+                "fn": fn,
+                "precision": precision,
+                "recall": recall,
+                "f1": _f1(precision, recall),
+            }
+        )
+
     md = _markdown_report(
         per_video_rows=per_video_rows,
+        per_predicate_rows=per_predicate_rows,
         overall=overall,
         fp_examples=fp_examples,
         fn_examples=fn_examples,
