@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-"""导出节点。
-
-输入：复核后的关系、轨迹 JSONL 和关系 QC。
-输出：最终 `relations_pred.json`、`trajectories_pred.json` 和 `relation_qc.json`。
-该节点不调用模型，负责把内部结果转换为稳定交付 schema。
-"""
+"""Final relation and trajectory export."""
 
 import shutil
 from pathlib import Path
@@ -14,59 +9,69 @@ from typing import Any, Dict, Iterable, Tuple
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
 
 
-def tracks_to_trajectories(tracks_jsonl: Path, video_id: str, out_json: Path) -> None:
+def tracks_to_trajectories(tracks_path: Path, video_id: str, out_path: Path) -> None:
     tracks: Dict[int, Dict[str, Any]] = {}
-    for row in iter_jsonl(tracks_jsonl):
+    for row in iter_jsonl(tracks_path):
         try:
-            frame = int(row.get("frame"))
-        except Exception:
+            frame = int(row["frame"])
+        except (KeyError, TypeError, ValueError):
             continue
-        for item in row.get("tracks", []) or []:
+        for item in row.get("tracks", []):
             if not isinstance(item, dict):
                 continue
-            try:
-                tid = int(item.get("track_id"))
-            except Exception:
+            box = item.get("bbox")
+            if not isinstance(box, list) or len(box) != 4:
                 continue
-            bbox = item.get("bbox_observed", item.get("bbox"))
-            if not (isinstance(bbox, list) and len(bbox) == 4):
-                continue
-            if tid not in tracks:
-                tracks[tid] = {
-                    "track_id": tid,
-                    "category": str(item.get("class_name", "") or "unknown"),
+            track_id = int(item["track_id"])
+            track = tracks.setdefault(
+                track_id,
+                {
+                    "track_id": track_id,
+                    "category": str(item.get("class_name", "unknown")),
                     "trajectory": {},
-                }
-            tracks[tid]["trajectory"][str(frame)] = [float(x) for x in bbox]
-    write_json(out_json, {video_id: [tracks[k] for k in sorted(tracks.keys())]})
+                    "box_sources": {},
+                },
+            )
+            track["trajectory"][str(frame)] = [float(value) for value in box]
+            track["box_sources"][str(frame)] = str(item.get("box_source", "observed"))
+    write_json(out_path, {video_id: [tracks[key] for key in sorted(tracks)]})
 
 
 def export_video_outputs(
     *,
-    verified_relations_json: Path,
-    relation_qc_json: Path,
-    tracks_jsonl: Path,
+    verified_path: Path,
+    qc_path: Path,
+    tracks_path: Path,
     video_id: str,
-    relations_pred_json: Path,
-    trajectories_pred_json: Path,
+    relations_path: Path,
+    trajectories_path: Path,
 ) -> None:
-    relations_pred_json.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(verified_relations_json, relations_pred_json)
-    if relation_qc_json.exists():
-        shutil.copyfile(relation_qc_json, relations_pred_json.parent / "relation_qc.json")
-    tracks_to_trajectories(tracks_jsonl, video_id, trajectories_pred_json)
+    relations_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(verified_path, relations_path)
+    if qc_path.exists():
+        shutil.copyfile(qc_path, relations_path.parent / "qc.json")
+    tracks_to_trajectories(tracks_path, video_id, trajectories_path)
 
 
-def merge_relation_files(video_exports: Iterable[Tuple[str, Path]], out_json: Path) -> Dict[str, Any]:
+def merge_relation_files(video_exports: Iterable[Tuple[str, Path]], out_path: Path) -> Dict[str, Any]:
     merged: Dict[str, Any] = {}
     for video_id, path in video_exports:
         if not path.exists():
             continue
-        obj = read_json(path)
-        if isinstance(obj, dict):
-            if video_id in obj:
-                merged[video_id] = obj.get(video_id, [])
-            else:
-                merged.update(obj)
-    write_json(out_json, merged)
+        value = read_json(path)
+        if isinstance(value, dict):
+            merged[video_id] = value.get(video_id, [])
+    write_json(out_path, merged)
+    return merged
+
+
+def merge_trajectory_files(video_exports: Iterable[Tuple[str, Path]], out_path: Path) -> Dict[str, Any]:
+    merged: Dict[str, Any] = {}
+    for video_id, path in video_exports:
+        if not path.exists():
+            continue
+        value = read_json(path)
+        if isinstance(value, dict):
+            merged[video_id] = value.get(video_id, [])
+    write_json(out_path, merged)
     return merged

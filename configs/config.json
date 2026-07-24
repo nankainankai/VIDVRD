@@ -1,0 +1,27 @@
+{
+  "video_ingest": {"download_timeout_sec": 120, "overwrite_download": false},
+  "vocabulary": {"discovery_enabled": false, "discovery_model": "qwen-vl-max", "sample_frames": 8, "max_discovered_categories": 24, "extra_categories": [], "retries": 2, "backoff_sec": 1.5, "dry_run": false},
+  "detector": {
+    "rex_model_path": "models/Rex-Omni-AWQ", "rex_backend": "transformers",
+    "detection_interval": 5, "min_detection_interval": 2, "scene_change_threshold": 0.2,
+    "rex_min_box_area": 500.0, "rex_max_detections_per_frame": 60,
+    "rex_max_tokens": 512, "rex_max_pixels": 409600, "batch_size": 5, "save_box_video": false
+  },
+  "tracking": {
+    "window_size": 30, "stride": 15, "iou_threshold": 0.3, "max_age": 30, "min_hits": 3,
+    "class_aware": true, "min_new_track_conf": 0.35,
+    "delta_t": 3, "inertia": 0.2, "class_vote_window": 12,
+    "max_output_age": 8, "max_interpolation_gap": 8
+  },
+  "track_qc": {"min_track_frames": 2, "max_class_changes": 1, "max_center_jump_ratio": 0.45},
+  "relation_rule": {
+    "enabled": true, "min_vote_ratio": 0.6, "axis_margin_ratio": 0.08, "near_distance_ratio": 0.35,
+    "overlap_iou_threshold": 0.05, "max_pairs_per_window": 0, "min_observed_pair_frames": 1,
+    "predicted_bbox_weight": 0.25, "interpolated_bbox_weight": 0.75
+  },
+  "relations": {"api_model": "qwen-vl-max", "max_windows": 0, "max_frames_per_window": 8, "max_pairs_per_window": 6, "min_pair_frames": 2, "predicate_split": "all", "retries": 2, "backoff_sec": 1.5, "sleep_sec": 0.0, "dry_run": false},
+  "relation_merge": {"apply_coupling": false},
+  "global_relation": {"max_window_gap": 1},
+  "relation_verify": {"low_confidence_threshold": 0.45, "strong_model_review_enabled": false, "strong_model": "qwen-vl-max", "strong_model_dry_run": false, "apply_actions": false, "category_constraints_enabled": false, "min_export_confidence": 0.0, "apply_coupling": true, "max_review_storyboards": 8},
+  "evaluate": {"enabled": false, "gold_relations": "gold/vidvrd_50_relations.json", "gold_trajectories": "gold/vidvrd_50_trajectories.json", "track_viou_threshold": 0.3, "relation_tiou_threshold": 0.5}
+}

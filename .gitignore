@@ -1,6 +1,11 @@
 # DINO-X
 outputs/*
 
+# Local models, datasets, and pipeline artifacts
+/models/
+/runs/
+/sample_folder/
+
 .vscode/
 .DS_Store
 *-checkpoint.ipynb

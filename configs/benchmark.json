@@ -1,0 +1,18 @@
+{
+  "vocabulary": {"discovery_enabled": false},
+  "relations": {"dry_run": false, "max_windows": 0, "sleep_sec": 0.2},
+  "relation_verify": {
+    "strong_model_review_enabled": true,
+    "strong_model": "qwen-vl-max",
+    "strong_model_dry_run": false,
+    "apply_actions": true,
+    "category_constraints_enabled": false
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_relations": "gold/vidvrd_50_relations.json",
+    "gold_trajectories": "gold/vidvrd_50_trajectories.json",
+    "track_viou_threshold": 0.3,
+    "relation_tiou_threshold": 0.5
+  }
+}

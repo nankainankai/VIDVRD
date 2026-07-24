@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict
 
+from vidvrd_auto.core.config import AppConfig
+
 from vidvrd_auto.utils.io import read_json
 from vidvrd_auto.utils.paths import repo_root
 
@@ -18,7 +20,7 @@ def deep_merge(base: Dict[str, Any], overlay: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def load_config(config_path: Path | None = None) -> Dict[str, Any]:
-    default_path = repo_root() / "configs" / "default.json"
+    default_path = repo_root() / "configs" / "config.json"
     cfg = read_json(default_path)
     if config_path is not None and config_path.exists() and config_path.resolve() != default_path.resolve():
         user_cfg = read_json(config_path)
@@ -26,3 +28,9 @@ def load_config(config_path: Path | None = None) -> Dict[str, Any]:
             raise SystemExit(f"ERROR: config must be a JSON object: {config_path}")
         cfg = deep_merge(cfg, user_cfg)
     return cfg
+
+
+def load_app_config(config_path: Path | None = None) -> AppConfig:
+    """Load the application configuration."""
+
+    return AppConfig(load_config(config_path))

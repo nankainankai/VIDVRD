@@ -1,11 +1,19 @@
 {
+  "vocabulary": {
+    "discovery_enabled": true,
+    "discovery_model": "qwen-vl-max"
+  },
   "relations": {
     "dry_run": false,
     "max_windows": 0,
     "sleep_sec": 0.2
   },
-  "evaluate": {
-    "enabled": true,
-    "gold_json": "gold/relations_gold.json"
-  }
+  "relation_verify": {
+    "strong_model_review_enabled": true,
+    "strong_model": "qwen-vl-max",
+    "strong_model_dry_run": false,
+    "apply_actions": true,
+    "category_constraints_enabled": true
+  },
+  "evaluate": {"enabled": false}
 }

@@ -1,4 +1,6 @@
-"""检测能力迁移层。
+"""Object detection models, video execution, and temporal fusion."""
 
-当前先由 adapter 调用旧 Step1 脚本，后续逐步把视频解码、检测、插值补框迁入本包。
-"""
+from vidvrd_auto.detection.rex import RexDetector
+from vidvrd_auto.detection.video import detect_video
+
+__all__ = ["RexDetector", "detect_video"]

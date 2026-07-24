@@ -1,4 +1,6 @@
-"""追踪能力迁移层。
+"""Tracking capabilities for the automatic VIDVRD pipeline."""
 
-当前先由 adapter 调用旧 Step2 脚本，后续逐步把 OC-SORT、窗口化和 pair 可视化迁入本包。
-"""
+from .ocsort import OCSort, ObjectTracker
+from .video import track_video
+
+__all__ = ["OCSort", "ObjectTracker", "track_video"]

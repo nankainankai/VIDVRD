@@ -1,0 +1,1523 @@
+{
+  "version": 1,
+  "dataset": "ImageNet-VidVRD",
+  "objects": [
+    {
+      "id": 0,
+      "name": "airplane",
+      "split": "base"
+    },
+    {
+      "id": 1,
+      "name": "antelope",
+      "split": "novel"
+    },
+    {
+      "id": 2,
+      "name": "ball",
+      "split": "base"
+    },
+    {
+      "id": 3,
+      "name": "bear",
+      "split": "novel"
+    },
+    {
+      "id": 4,
+      "name": "bicycle",
+      "split": "base"
+    },
+    {
+      "id": 5,
+      "name": "bird",
+      "split": "base"
+    },
+    {
+      "id": 6,
+      "name": "bus",
+      "split": "base"
+    },
+    {
+      "id": 7,
+      "name": "car",
+      "split": "base"
+    },
+    {
+      "id": 8,
+      "name": "cattle",
+      "split": "novel"
+    },
+    {
+      "id": 9,
+      "name": "dog",
+      "split": "base"
+    },
+    {
+      "id": 10,
+      "name": "domestic_cat",
+      "split": "base"
+    },
+    {
+      "id": 11,
+      "name": "elephant",
+      "split": "base"
+    },
+    {
+      "id": 12,
+      "name": "fox",
+      "split": "novel"
+    },
+    {
+      "id": 13,
+      "name": "frisbee",
+      "split": "base"
+    },
+    {
+      "id": 14,
+      "name": "giant_panda",
+      "split": "novel"
+    },
+    {
+      "id": 15,
+      "name": "hamster",
+      "split": "base"
+    },
+    {
+      "id": 16,
+      "name": "horse",
+      "split": "novel"
+    },
+    {
+      "id": 17,
+      "name": "lion",
+      "split": "base"
+    },
+    {
+      "id": 18,
+      "name": "lizard",
+      "split": "novel"
+    },
+    {
+      "id": 19,
+      "name": "monkey",
+      "split": "base"
+    },
+    {
+      "id": 20,
+      "name": "motorcycle",
+      "split": "novel"
+    },
+    {
+      "id": 21,
+      "name": "person",
+      "split": "base"
+    },
+    {
+      "id": 22,
+      "name": "rabbit",
+      "split": "base"
+    },
+    {
+      "id": 23,
+      "name": "red_panda",
+      "split": "novel"
+    },
+    {
+      "id": 24,
+      "name": "sheep",
+      "split": "base"
+    },
+    {
+      "id": 25,
+      "name": "skateboard",
+      "split": "base"
+    },
+    {
+      "id": 26,
+      "name": "snake",
+      "split": "base"
+    },
+    {
+      "id": 27,
+      "name": "sofa",
+      "split": "base"
+    },
+    {
+      "id": 28,
+      "name": "squirrel",
+      "split": "base"
+    },
+    {
+      "id": 29,
+      "name": "tiger",
+      "split": "base"
+    },
+    {
+      "id": 30,
+      "name": "train",
+      "split": "base"
+    },
+    {
+      "id": 31,
+      "name": "turtle",
+      "split": "base"
+    },
+    {
+      "id": 32,
+      "name": "watercraft",
+      "split": "novel"
+    },
+    {
+      "id": 33,
+      "name": "whale",
+      "split": "base"
+    },
+    {
+      "id": 34,
+      "name": "zebra",
+      "split": "base"
+    }
+  ],
+  "predicates": [
+    {
+      "id": 0,
+      "name": "above",
+      "split": "novel",
+      "components": {
+        "action": "",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 1,
+      "name": "away",
+      "split": "novel",
+      "components": {
+        "action": "",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 2,
+      "name": "behind",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 3,
+      "name": "beneath",
+      "split": "novel",
+      "components": {
+        "action": "",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 4,
+      "name": "bite",
+      "split": "novel",
+      "components": {
+        "action": "bite",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 5,
+      "name": "chase",
+      "split": "base",
+      "components": {
+        "action": "chase",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 6,
+      "name": "creep_above",
+      "split": "novel",
+      "components": {
+        "action": "creep",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 7,
+      "name": "creep_away",
+      "split": "novel",
+      "components": {
+        "action": "creep",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 8,
+      "name": "creep_behind",
+      "split": "base",
+      "components": {
+        "action": "creep",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 9,
+      "name": "creep_beneath",
+      "split": "base",
+      "components": {
+        "action": "creep",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 10,
+      "name": "creep_front",
+      "split": "base",
+      "components": {
+        "action": "creep",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 11,
+      "name": "creep_left",
+      "split": "base",
+      "components": {
+        "action": "creep",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 12,
+      "name": "creep_next_to",
+      "split": "novel",
+      "components": {
+        "action": "creep",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 13,
+      "name": "creep_past",
+      "split": "novel",
+      "components": {
+        "action": "creep",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 14,
+      "name": "creep_right",
+      "split": "base",
+      "components": {
+        "action": "creep",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 15,
+      "name": "creep_toward",
+      "split": "novel",
+      "components": {
+        "action": "creep",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 16,
+      "name": "drive",
+      "split": "novel",
+      "components": {
+        "action": "drive",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 17,
+      "name": "fall_off",
+      "split": "base",
+      "components": {
+        "action": "fall_off",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 18,
+      "name": "faster",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "",
+        "comparative": "faster"
+      }
+    },
+    {
+      "id": 19,
+      "name": "feed",
+      "split": "novel",
+      "components": {
+        "action": "feed",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 20,
+      "name": "fight",
+      "split": "novel",
+      "components": {
+        "action": "fight",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 21,
+      "name": "fly_above",
+      "split": "base",
+      "components": {
+        "action": "fly",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 22,
+      "name": "fly_away",
+      "split": "novel",
+      "components": {
+        "action": "fly",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 23,
+      "name": "fly_behind",
+      "split": "novel",
+      "components": {
+        "action": "fly",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 24,
+      "name": "fly_front",
+      "split": "novel",
+      "components": {
+        "action": "fly",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 25,
+      "name": "fly_left",
+      "split": "novel",
+      "components": {
+        "action": "fly",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 26,
+      "name": "fly_next_to",
+      "split": "base",
+      "components": {
+        "action": "fly",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 27,
+      "name": "fly_past",
+      "split": "base",
+      "components": {
+        "action": "fly",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 28,
+      "name": "fly_right",
+      "split": "novel",
+      "components": {
+        "action": "fly",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 29,
+      "name": "fly_toward",
+      "split": "base",
+      "components": {
+        "action": "fly",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 30,
+      "name": "fly_with",
+      "split": "base",
+      "components": {
+        "action": "fly",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 31,
+      "name": "follow",
+      "split": "base",
+      "components": {
+        "action": "follow",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 32,
+      "name": "front",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 33,
+      "name": "hold",
+      "split": "novel",
+      "components": {
+        "action": "hold",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 34,
+      "name": "jump_above",
+      "split": "novel",
+      "components": {
+        "action": "jump",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 35,
+      "name": "jump_away",
+      "split": "novel",
+      "components": {
+        "action": "jump",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 36,
+      "name": "jump_behind",
+      "split": "novel",
+      "components": {
+        "action": "jump",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 37,
+      "name": "jump_beneath",
+      "split": "base",
+      "components": {
+        "action": "jump",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 38,
+      "name": "jump_front",
+      "split": "base",
+      "components": {
+        "action": "jump",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 39,
+      "name": "jump_left",
+      "split": "base",
+      "components": {
+        "action": "jump",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 40,
+      "name": "jump_next_to",
+      "split": "base",
+      "components": {
+        "action": "jump",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 41,
+      "name": "jump_past",
+      "split": "novel",
+      "components": {
+        "action": "jump",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 42,
+      "name": "jump_right",
+      "split": "base",
+      "components": {
+        "action": "jump",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 43,
+      "name": "jump_toward",
+      "split": "base",
+      "components": {
+        "action": "jump",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 44,
+      "name": "jump_with",
+      "split": "novel",
+      "components": {
+        "action": "jump",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 45,
+      "name": "kick",
+      "split": "novel",
+      "components": {
+        "action": "kick",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 46,
+      "name": "larger",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "",
+        "comparative": "larger"
+      }
+    },
+    {
+      "id": 47,
+      "name": "left",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 48,
+      "name": "lie_above",
+      "split": "novel",
+      "components": {
+        "action": "lie",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 49,
+      "name": "lie_behind",
+      "split": "base",
+      "components": {
+        "action": "lie",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 50,
+      "name": "lie_beneath",
+      "split": "novel",
+      "components": {
+        "action": "lie",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 51,
+      "name": "lie_front",
+      "split": "base",
+      "components": {
+        "action": "lie",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 52,
+      "name": "lie_inside",
+      "split": "novel",
+      "components": {
+        "action": "lie",
+        "spatial": "inside",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 53,
+      "name": "lie_left",
+      "split": "base",
+      "components": {
+        "action": "lie",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 54,
+      "name": "lie_next_to",
+      "split": "base",
+      "components": {
+        "action": "lie",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 55,
+      "name": "lie_right",
+      "split": "base",
+      "components": {
+        "action": "lie",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 56,
+      "name": "lie_with",
+      "split": "novel",
+      "components": {
+        "action": "lie",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 57,
+      "name": "move_above",
+      "split": "novel",
+      "components": {
+        "action": "move",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 58,
+      "name": "move_away",
+      "split": "novel",
+      "components": {
+        "action": "move",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 59,
+      "name": "move_behind",
+      "split": "base",
+      "components": {
+        "action": "move",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 60,
+      "name": "move_beneath",
+      "split": "base",
+      "components": {
+        "action": "move",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 61,
+      "name": "move_front",
+      "split": "base",
+      "components": {
+        "action": "move",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 62,
+      "name": "move_left",
+      "split": "base",
+      "components": {
+        "action": "move",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 63,
+      "name": "move_next_to",
+      "split": "novel",
+      "components": {
+        "action": "move",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 64,
+      "name": "move_past",
+      "split": "novel",
+      "components": {
+        "action": "move",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 65,
+      "name": "move_right",
+      "split": "base",
+      "components": {
+        "action": "move",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 66,
+      "name": "move_toward",
+      "split": "novel",
+      "components": {
+        "action": "move",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 67,
+      "name": "move_with",
+      "split": "base",
+      "components": {
+        "action": "move",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 68,
+      "name": "next_to",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 69,
+      "name": "past",
+      "split": "novel",
+      "components": {
+        "action": "",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 70,
+      "name": "play",
+      "split": "base",
+      "components": {
+        "action": "play",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 71,
+      "name": "pull",
+      "split": "novel",
+      "components": {
+        "action": "pull",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 72,
+      "name": "ride",
+      "split": "base",
+      "components": {
+        "action": "ride",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 73,
+      "name": "right",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 74,
+      "name": "run_above",
+      "split": "novel",
+      "components": {
+        "action": "run",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 75,
+      "name": "run_away",
+      "split": "novel",
+      "components": {
+        "action": "run",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 76,
+      "name": "run_behind",
+      "split": "base",
+      "components": {
+        "action": "run",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 77,
+      "name": "run_beneath",
+      "split": "novel",
+      "components": {
+        "action": "run",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 78,
+      "name": "run_front",
+      "split": "base",
+      "components": {
+        "action": "run",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 79,
+      "name": "run_left",
+      "split": "base",
+      "components": {
+        "action": "run",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 80,
+      "name": "run_next_to",
+      "split": "novel",
+      "components": {
+        "action": "run",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 81,
+      "name": "run_past",
+      "split": "base",
+      "components": {
+        "action": "run",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 82,
+      "name": "run_right",
+      "split": "base",
+      "components": {
+        "action": "run",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 83,
+      "name": "run_toward",
+      "split": "novel",
+      "components": {
+        "action": "run",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 84,
+      "name": "run_with",
+      "split": "base",
+      "components": {
+        "action": "run",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 85,
+      "name": "sit_above",
+      "split": "base",
+      "components": {
+        "action": "sit",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 86,
+      "name": "sit_behind",
+      "split": "novel",
+      "components": {
+        "action": "sit",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 87,
+      "name": "sit_beneath",
+      "split": "novel",
+      "components": {
+        "action": "sit",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 88,
+      "name": "sit_front",
+      "split": "base",
+      "components": {
+        "action": "sit",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 89,
+      "name": "sit_inside",
+      "split": "novel",
+      "components": {
+        "action": "sit",
+        "spatial": "inside",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 90,
+      "name": "sit_left",
+      "split": "base",
+      "components": {
+        "action": "sit",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 91,
+      "name": "sit_next_to",
+      "split": "novel",
+      "components": {
+        "action": "sit",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 92,
+      "name": "sit_right",
+      "split": "base",
+      "components": {
+        "action": "sit",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 93,
+      "name": "stand_above",
+      "split": "novel",
+      "components": {
+        "action": "stand",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 94,
+      "name": "stand_behind",
+      "split": "base",
+      "components": {
+        "action": "stand",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 95,
+      "name": "stand_beneath",
+      "split": "novel",
+      "components": {
+        "action": "stand",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 96,
+      "name": "stand_front",
+      "split": "base",
+      "components": {
+        "action": "stand",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 97,
+      "name": "stand_inside",
+      "split": "novel",
+      "components": {
+        "action": "stand",
+        "spatial": "inside",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 98,
+      "name": "stand_left",
+      "split": "base",
+      "components": {
+        "action": "stand",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 99,
+      "name": "stand_next_to",
+      "split": "base",
+      "components": {
+        "action": "stand",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 100,
+      "name": "stand_right",
+      "split": "base",
+      "components": {
+        "action": "stand",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 101,
+      "name": "stand_with",
+      "split": "novel",
+      "components": {
+        "action": "stand",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 102,
+      "name": "stop_above",
+      "split": "novel",
+      "components": {
+        "action": "stop",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 103,
+      "name": "stop_behind",
+      "split": "base",
+      "components": {
+        "action": "stop",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 104,
+      "name": "stop_beneath",
+      "split": "novel",
+      "components": {
+        "action": "stop",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 105,
+      "name": "stop_front",
+      "split": "base",
+      "components": {
+        "action": "stop",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 106,
+      "name": "stop_left",
+      "split": "base",
+      "components": {
+        "action": "stop",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 107,
+      "name": "stop_next_to",
+      "split": "novel",
+      "components": {
+        "action": "stop",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 108,
+      "name": "stop_right",
+      "split": "base",
+      "components": {
+        "action": "stop",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 109,
+      "name": "stop_with",
+      "split": "novel",
+      "components": {
+        "action": "stop",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 110,
+      "name": "swim_behind",
+      "split": "novel",
+      "components": {
+        "action": "swim",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 111,
+      "name": "swim_beneath",
+      "split": "novel",
+      "components": {
+        "action": "swim",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 112,
+      "name": "swim_front",
+      "split": "base",
+      "components": {
+        "action": "swim",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 113,
+      "name": "swim_left",
+      "split": "base",
+      "components": {
+        "action": "swim",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 114,
+      "name": "swim_next_to",
+      "split": "novel",
+      "components": {
+        "action": "swim",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 115,
+      "name": "swim_right",
+      "split": "base",
+      "components": {
+        "action": "swim",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 116,
+      "name": "swim_with",
+      "split": "base",
+      "components": {
+        "action": "swim",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 117,
+      "name": "taller",
+      "split": "base",
+      "components": {
+        "action": "",
+        "spatial": "",
+        "comparative": "taller"
+      }
+    },
+    {
+      "id": 118,
+      "name": "touch",
+      "split": "base",
+      "components": {
+        "action": "touch",
+        "spatial": "",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 119,
+      "name": "toward",
+      "split": "novel",
+      "components": {
+        "action": "",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 120,
+      "name": "walk_above",
+      "split": "novel",
+      "components": {
+        "action": "walk",
+        "spatial": "above",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 121,
+      "name": "walk_away",
+      "split": "novel",
+      "components": {
+        "action": "walk",
+        "spatial": "away",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 122,
+      "name": "walk_behind",
+      "split": "base",
+      "components": {
+        "action": "walk",
+        "spatial": "behind",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 123,
+      "name": "walk_beneath",
+      "split": "novel",
+      "components": {
+        "action": "walk",
+        "spatial": "beneath",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 124,
+      "name": "walk_front",
+      "split": "base",
+      "components": {
+        "action": "walk",
+        "spatial": "front",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 125,
+      "name": "walk_left",
+      "split": "base",
+      "components": {
+        "action": "walk",
+        "spatial": "left",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 126,
+      "name": "walk_next_to",
+      "split": "base",
+      "components": {
+        "action": "walk",
+        "spatial": "next_to",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 127,
+      "name": "walk_past",
+      "split": "novel",
+      "components": {
+        "action": "walk",
+        "spatial": "past",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 128,
+      "name": "walk_right",
+      "split": "base",
+      "components": {
+        "action": "walk",
+        "spatial": "right",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 129,
+      "name": "walk_toward",
+      "split": "novel",
+      "components": {
+        "action": "walk",
+        "spatial": "toward",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 130,
+      "name": "walk_with",
+      "split": "base",
+      "components": {
+        "action": "walk",
+        "spatial": "with",
+        "comparative": ""
+      }
+    },
+    {
+      "id": 131,
+      "name": "watch",
+      "split": "base",
+      "components": {
+        "action": "watch",
+        "spatial": "",
+        "comparative": ""
+      }
+    }
+  ],
+  "object_aliases": {
+    "cat": "domestic_cat",
+    "kitten": "domestic_cat",
+    "domestic cat": "domestic_cat",
+    "bike": "bicycle",
+    "motorbike": "motorcycle",
+    "motor bike": "motorcycle",
+    "panda": "giant_panda",
+    "giant panda": "giant_panda",
+    "red panda": "red_panda",
+    "boat": "watercraft",
+    "ship": "watercraft",
+    "cow": "cattle",
+    "cows": "cattle",
+    "people": "person",
+    "man": "person",
+    "woman": "person",
+    "boy": "person",
+    "girl": "person"
+  }
+}
