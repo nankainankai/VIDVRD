@@ -48,18 +48,14 @@ class OfficialOCSortAdapterTests(unittest.TestCase):
             self.assertEqual(tracks[0]["bbox_observed"], detection(x)["bbox"])
         self.assertEqual(len(set(ids)), 1)
 
-    def test_occlusion_emits_prediction_with_no_observed_bbox_then_recovers_id(self) -> None:
+    def test_official_output_does_not_emit_unobserved_predictions(self) -> None:
         tracker = self.make_tracker()
         first = tracker.track(self.frame, [detection(10.0)], 0)[0]
         second = tracker.track(self.frame, [detection(12.0)], 1)[0]
-        hidden = tracker.track(self.frame, [], 2)[0]
+        hidden = tracker.track(self.frame, [], 2)
 
         self.assertEqual(first["track_id"], second["track_id"])
-        self.assertEqual(hidden["track_id"], first["track_id"])
-        self.assertTrue(hidden["is_predicted"])
-        self.assertIsNone(hidden["bbox_observed"])
-        self.assertEqual(hidden["time_since_update"], 1)
-        self.assertEqual(len(hidden["bbox"]), 4)
+        self.assertEqual(hidden, [])
 
         recovered = tracker.track(self.frame, [detection(16.0)], 3)[0]
         self.assertEqual(recovered["track_id"], first["track_id"])
@@ -71,18 +67,31 @@ class OfficialOCSortAdapterTests(unittest.TestCase):
         person = tracker.track(self.frame, [detection(10.0, "person")], 0)[0]
         tracks = tracker.track(self.frame, [detection(10.0, "car")], 1)
         by_class = {track["class_name"]: track for track in tracks}
-        self.assertEqual(by_class["person"]["track_id"], person["track_id"])
-        self.assertTrue(by_class["person"]["is_predicted"])
         self.assertNotEqual(by_class["car"]["track_id"], person["track_id"])
+        self.assertNotIn("person", by_class)
 
     def test_new_class_backend_cannot_reset_project_track_ids(self) -> None:
         tracker = self.make_tracker()
         first = tracker.track(self.frame, [detection(10.0, "person")], 0)[0]
-        tracker.track(self.frame, [detection(80.0, "car")], 1)
-        tracks = tracker.track(self.frame, [detection(120.0, "person")], 2)
-        ids = [item["track_id"] for item in tracks]
-        self.assertEqual(len(ids), len(set(ids)))
-        self.assertIn(first["track_id"], ids)
+        car = tracker.track(self.frame, [detection(80.0, "car")], 1)[0]
+        person = tracker.track(self.frame, [detection(12.0, "person")], 2)[0]
+        self.assertEqual(person["track_id"], first["track_id"])
+        self.assertNotEqual(car["track_id"], first["track_id"])
+
+    def test_unconfirmed_internal_tracker_is_not_emitted(self) -> None:
+        tracker = self.make_tracker(min_hits=2)
+        for frame_num, x in enumerate((10.0, 11.0, 12.0)):
+            self.assertTrue(tracker.track(self.frame, [detection(x)], frame_num))
+        tracks = tracker.track(self.frame, [detection(13.0), detection(100.0)], 3)
+        self.assertEqual(len(tracks), 1)
+        self.assertLess(tracks[0]["bbox"][0], 50.0)
+
+    def test_missing_detector_score_uses_uniform_association_weight(self) -> None:
+        tracker = self.make_tracker()
+        item = detection(10.0)
+        item["confidence"] = None
+        track = tracker.track(self.frame, [item], 0)[0]
+        self.assertIsNone(track["confidence"])
 
     def test_confidence_weighted_vote_accepts_configured_alias(self) -> None:
         tracker = self.make_tracker(class_compatibility={"person": ["human"]})

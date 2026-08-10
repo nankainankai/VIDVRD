@@ -22,11 +22,15 @@ def _compact(objects: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not isinstance(box, (list, tuple)) or len(box) != 4:
             continue
         try:
+            raw_score = obj.get("score", obj.get("confidence"))
+            score = None if raw_score is None else float(raw_score)
             item: Dict[str, Any] = {
                 "bbox": [float(value) for value in box],
                 "class": int(obj.get("class", -1)),
                 "class_name": str(obj.get("class_name", "unknown")),
-                "confidence": float(obj.get("confidence", 0.0)),
+                "score": score,
+                "confidence": score,
+                "score_kind": str(obj.get("score_kind", "legacy_confidence" if score is not None else "unavailable")),
             }
         except (TypeError, ValueError):
             continue
@@ -44,7 +48,10 @@ def _draw(frame: Any, objects: Sequence[Dict[str, Any]]) -> Any:
         if not isinstance(box, (list, tuple)) or len(box) != 4:
             continue
         x1, y1, x2, y2 = [int(float(value)) for value in box]
-        label = f"{obj.get('class_name', 'unknown')} {float(obj.get('confidence', 0.0)):.2f}"
+        score = obj.get("score", obj.get("confidence"))
+        label = str(obj.get("class_name", "unknown"))
+        if score is not None:
+            label += f" {float(score):.2f}"
         cv2.rectangle(image, (x1, y1), (x2, y2), (0, 200, 255), 2)
         cv2.putText(image, label, (x1 + 4, max(20, y1 - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
     return image
@@ -61,6 +68,10 @@ def _make_detector(config: Dict[str, Any], factory: DetectorFactory) -> RexDetec
         max_tokens=int(config.get("rex_max_tokens", 512)),
         max_pixels=int(config.get("rex_max_pixels", 640 * 640)),
         category_aliases=dict(config.get("category_aliases", {})),
+        temperature=float(config.get("temperature", 0.0)),
+        top_p=float(config.get("top_p", 0.05)),
+        top_k=int(config.get("top_k", 1)),
+        repetition_penalty=float(config.get("repetition_penalty", 1.05)),
     )
 
 
@@ -155,7 +166,7 @@ def detect_video(
                 changed = last_anchor_thumb is not None and gap >= min_interval and scene_threshold > 0 and score >= scene_threshold
                 anchor = index == 0 or scheduled or changed
                 reason = "first" if index == 0 else ("scene_change" if changed and not scheduled else "interval")
-                pending.append((index, frame, anchor, reason if anchor else "propagate", score))
+                pending.append((index, frame, anchor, reason if anchor else "sparse_schedule", score))
                 if anchor:
                     pending_anchors.append((index, frame))
                     anchor_count += 1
@@ -184,6 +195,7 @@ def detect_video(
         },
         "detector_stats": detector.get_stats(),
         "sampling": {
+            "mode": str(config.get("sampling_mode", "adaptive_sparse")),
             "detection_interval": interval,
             "min_detection_interval": min_interval,
             "scene_change_threshold": scene_threshold,
@@ -232,7 +244,7 @@ def _flush_records(
         batch = {
             "batch_id": int(batch_id) if anchor else None,
             "frame_indices": indices if anchor else [],
-            "source": "rexomni" if anchor else "tracker_propagation",
+            "source": "rexomni" if anchor else "sparse_schedule",
             "status": "observed" if anchor else "skipped",
             "reason": reason,
             "scene_change_score": round(score, 6),

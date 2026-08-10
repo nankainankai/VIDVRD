@@ -1,0 +1,34 @@
+{
+  "project": {
+    "run_mode": "reference_dense",
+    "schema_version": "1.3",
+    "artifact_span_convention": "inclusive",
+    "canonical_span_convention": "half_open",
+    "prompt_version": "reference-v4-hierarchical-agent"
+  },
+  "vocabulary": {"discovery_enabled": false},
+  "detector": {
+    "sampling_mode": "dense",
+    "detection_interval": 1,
+    "min_detection_interval": 1,
+    "scene_change_threshold": 0.0,
+    "batch_size": 5,
+    "temperature": 0.0,
+    "top_p": 0.05,
+    "top_k": 1
+  },
+  "tracking": {
+    "algorithm": "ocsort_reference",
+    "max_age": 30,
+    "min_hits": 3,
+    "min_new_track_conf": 0.0
+  },
+  "relations": {"dry_run": true},
+  "relation_rule": {"enabled": true},
+  "relation_verify": {
+    "strong_model_review_enabled": false,
+    "apply_actions": false,
+    "apply_coupling": false
+  },
+  "evaluate": {"enabled": false}
+}

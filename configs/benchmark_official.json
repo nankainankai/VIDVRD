@@ -1,4 +1,5 @@
 {
+  "project": {"run_mode": "main", "prompt_version": "main-v4-hierarchical-agent"},
   "vocabulary": {"discovery_enabled": false},
   "relations": {"dry_run": false, "max_windows": 0, "sleep_sec": 0.2},
   "relation_verify": {
@@ -12,7 +13,12 @@
     "enabled": true,
     "gold_relations": "gold/vidvrd_50_relations.json",
     "gold_trajectories": "gold/vidvrd_50_trajectories.json",
-    "track_viou_threshold": 0.3,
-    "relation_tiou_threshold": 0.5
+    "gold_manifest": "gold/vidvrd_50_manifest.json",
+    "dataset_split": "test",
+    "scope": "gold_split",
+    "expected_official_video_count": 200,
+    "official_viou_threshold": 0.5,
+    "diagnostic_track_viou_threshold": 0.3,
+    "diagnostic_relation_tiou_threshold": 0.5
   }
 }

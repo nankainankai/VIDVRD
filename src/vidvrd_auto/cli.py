@@ -11,7 +11,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--video", type=str, default="", help="Single video path or URL")
     ap.add_argument("--videos", type=str, default="", help="Video list file or comma-separated paths/URLs")
     ap.add_argument("--run-dir", dest="run_dir", type=str, required=True, help="Run output directory")
-    ap.add_argument("--config", type=str, default="configs/config.json", help="JSON config path")
+    ap.add_argument("--config", type=str, default="configs/main.json", help="JSON config path")
     ap.add_argument("--api-key", dest="api_key", type=str, default="", help="DashScope API key")
     ap.add_argument("--resume", action="store_true", help="Skip succeeded nodes when input hash matches")
     ap.add_argument("--force", action="store_true", help="Re-run selected nodes even when cache is valid")

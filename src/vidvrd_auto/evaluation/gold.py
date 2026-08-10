@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
 from vidvrd_auto.core.ontology import normalize_object, predicate_splits
+from vidvrd_auto.core.schema import serialize_relation_artifact
 from vidvrd_auto.utils.io import read_json, write_json
 
 
@@ -76,7 +77,7 @@ def build_gold(*, annotations_dir: Path, relations_path: Path, trajectories_path
             if predicate not in predicate_split or end < start:
                 continue
             video_relations.append(
-                {
+                serialize_relation_artifact({
                     "subject_track_id": subject_id,
                     "predicate": predicate,
                     "object_track_id": object_id,
@@ -84,7 +85,7 @@ def build_gold(*, annotations_dir: Path, relations_path: Path, trajectories_path
                     "end_frame": end,
                     "predicate_split": predicate_split[predicate],
                     "source": "vidvrd_gold",
-                }
+                })
             )
             relation_counts[predicate] += 1
         relations[video_id] = video_relations

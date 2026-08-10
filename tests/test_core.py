@@ -67,7 +67,7 @@ class SchemaTests(unittest.TestCase):
                 }
             )
 
-    def test_relation_uses_inclusive_span(self) -> None:
+    def test_relation_normalizes_legacy_inclusive_span(self) -> None:
         relation = Relation.from_dict(
             {
                 "subject_id": 1,
@@ -79,7 +79,9 @@ class SchemaTests(unittest.TestCase):
             }
         )
         self.assertEqual(relation.predicate, "follow")
+        self.assertEqual((relation.start_frame, relation.end_frame), (5, 11))
         self.assertEqual(relation.evidence_frames, (5, 10))
+        self.assertEqual(relation.to_legacy_dict()["end_frame"], 10)
         with self.assertRaisesRegex(ValueError, "inside"):
             Relation(1, "follow", 2, 5, 10, evidence_frames=(11,))
 

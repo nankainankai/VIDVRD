@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "families": {
+    "geometry": {
+      "description": "relative position, containment, and depth",
+      "actions": [],
+      "spatials": ["above", "behind", "beneath", "front", "inside", "left", "next_to", "right"]
+    },
+    "relative_motion": {
+      "description": "approaching, separating, passing, following, or moving together",
+      "actions": ["chase", "follow"],
+      "spatials": ["away", "past", "toward", "with"]
+    },
+    "locomotion_state": {
+      "description": "the subject's movement or posture while related to the object",
+      "actions": ["creep", "fly", "jump", "lie", "move", "run", "sit", "stand", "stop", "swim", "walk"],
+      "spatials": []
+    },
+    "contact": {
+      "description": "visible physical contact or impact",
+      "actions": ["bite", "fight", "kick", "play", "touch"],
+      "spatials": []
+    },
+    "manipulation": {
+      "description": "the subject controls, carries, operates, or transfers the object",
+      "actions": ["drive", "fall_off", "feed", "hold", "pull", "ride"],
+      "spatials": []
+    },
+    "attention_social": {
+      "description": "attention or sustained social interaction",
+      "actions": ["chase", "fight", "follow", "play", "watch"],
+      "spatials": []
+    },
+    "comparative": {
+      "description": "relative size, height, or speed",
+      "actions": [],
+      "spatials": []
+    }
+  },
+  "confusion_groups": {
+    "contact_kind": ["touch", "bite", "kick"],
+    "contact_control": ["touch", "hold", "pull", "feed"],
+    "social_contact": ["fight", "play", "touch"],
+    "pursuit": ["follow", "chase", "watch"],
+    "vehicle_control": ["ride", "drive"],
+    "motion_direction": ["toward", "away", "past"],
+    "locomotion": ["creep", "move", "walk", "run"],
+    "posture": ["sit", "stand", "lie", "stop"],
+    "depth": ["front", "behind"]
+  },
+  "family_neighbors": {
+    "geometry": ["relative_motion", "comparative"],
+    "relative_motion": ["geometry", "locomotion_state", "attention_social"],
+    "locomotion_state": ["relative_motion", "attention_social"],
+    "contact": ["manipulation", "attention_social"],
+    "manipulation": ["contact", "relative_motion"],
+    "attention_social": ["contact", "relative_motion", "locomotion_state"],
+    "comparative": ["geometry", "relative_motion"]
+  }
+}

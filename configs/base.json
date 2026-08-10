@@ -1,0 +1,60 @@
+{
+  "project": {
+    "run_mode": "main",
+    "schema_version": "1.3",
+    "artifact_span_convention": "inclusive",
+    "canonical_span_convention": "half_open",
+    "prompt_version": "main-v4-hierarchical-agent"
+  },
+  "video_ingest": {"download_timeout_sec": 120, "overwrite_download": false},
+  "vocabulary": {"discovery_enabled": false, "discovery_model": "qwen-vl-max", "sample_frames": 8, "max_discovered_categories": 24, "extra_categories": [], "retries": 2, "backoff_sec": 1.5, "dry_run": false},
+  "detector": {
+    "rex_model_path": "models/Rex-Omni-AWQ", "rex_backend": "transformers",
+    "sampling_mode": "adaptive_sparse",
+    "detection_interval": 5, "min_detection_interval": 2, "scene_change_threshold": 0.2,
+    "rex_min_box_area": 500.0, "rex_max_detections_per_frame": 60,
+    "rex_max_tokens": 512, "rex_max_pixels": 409600,
+    "temperature": 0.0, "top_p": 0.05, "top_k": 1,
+    "batch_size": 5, "save_box_video": false
+  },
+  "tracking": {
+    "window_size": 30, "stride": 15, "iou_threshold": 0.3, "max_age": 6, "min_hits": 2,
+    "algorithm": "hybrid_sparse_reid",
+    "class_aware": false, "min_new_track_conf": 0.0,
+    "max_lost_frames": 30,
+    "appearance_weight": 0.45, "iou_weight": 0.30, "motion_weight": 0.20, "class_weight": 0.05,
+    "max_match_cost": 0.72, "min_iou": 0.01, "min_appearance_similarity": 0.35,
+    "max_center_distance": 4.0, "appearance_memory": 20,
+    "masa_config": "external/masa/configs/masa-one/masa_r50_plug_and_play.py",
+    "masa_checkpoint": "models/MASA/masa_r50.pth", "masa_revision": "c5472b9c7615f35abdf1188cb1a0c5408fe50d66",
+    "appearance_device": "cuda:0", "appearance_fp16": true,
+    "stitch_max_gap_frames": 90, "stitch_across_scenes": false,
+    "stitch_min_appearance_similarity": 0.60, "stitch_max_center_distance": 4.0,
+    "stitch_appearance_weight": 0.55, "stitch_motion_weight": 0.25,
+    "stitch_iou_weight": 0.15, "stitch_class_weight": 0.05, "stitch_max_link_cost": 0.58,
+    "max_interpolation_gap": 8
+  },
+  "track_qc": {"min_track_frames": 2, "max_class_changes": 1, "max_center_jump_ratio": 0.45},
+  "relation_rule": {
+    "enabled": true, "min_vote_ratio": 0.6, "axis_margin_ratio": 0.08, "near_distance_ratio": 0.35,
+    "overlap_iou_threshold": 0.05, "max_pairs_per_window": 0, "min_observed_pair_frames": 1,
+    "min_evidence_frames": 2, "evidence_max_gap": 0,
+    "predicted_bbox_weight": 0.25, "interpolated_bbox_weight": 0.75
+  },
+  "relations": {"api_model": "qwen-vl-max", "max_windows": 0, "max_frames_per_window": 8, "event_burst_size": 5, "max_pairs_per_window": 0, "min_pair_frames": 2, "predicate_split": "all", "candidate_limit": 14, "expanded_candidate_limit": 24, "allow_request_more_frames": true, "max_additional_frames": 4, "retries": 2, "backoff_sec": 1.5, "sleep_sec": 0.0, "dry_run": false},
+  "relation_merge": {"apply_coupling": false},
+  "global_relation": {"max_relation_gap_frames": 1, "max_evidence_gap": 4},
+  "relation_verify": {"low_ranking_score_threshold": 0.45, "strong_model_review_enabled": false, "strong_model": "qwen-vl-max", "strong_model_dry_run": false, "apply_actions": false, "category_constraints_enabled": false, "min_export_ranking_score": 0.0, "apply_coupling": false, "max_review_storyboards": 8},
+  "evaluate": {
+    "enabled": false,
+    "gold_relations": "gold/vidvrd_50_relations.json",
+    "gold_trajectories": "gold/vidvrd_50_trajectories.json",
+    "gold_manifest": "gold/vidvrd_50_manifest.json",
+    "dataset_split": "test",
+    "scope": "requested",
+    "expected_official_video_count": 200,
+    "official_viou_threshold": 0.5,
+    "diagnostic_track_viou_threshold": 0.3,
+    "diagnostic_relation_tiou_threshold": 0.5
+  }
+}

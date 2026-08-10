@@ -7,7 +7,10 @@ from typing import List
 from vidvrd_auto.core.ontology import normalize_object, predicate_names
 
 
-GEOMETRY_PREDICATES = {"left", "right", "above", "beneath", "front", "behind", "next_to"}
+# Only relations that can be determined from 2-D boxes belong here.  In
+# particular, front/behind require visual depth or scene semantics and must be
+# left for the vision-language classifier.
+GEOMETRY_PREDICATES = {"left", "right", "above", "beneath", "next_to"}
 SYMMETRIC_PREDICATES = {"next_to", "touch", "fight", "play", "with"}
 
 

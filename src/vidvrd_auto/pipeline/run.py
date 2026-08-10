@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 from vidvrd_auto.config.loader import load_app_config
 from vidvrd_auto.core import Secrets, VideoPaths
-from vidvrd_auto.evaluation.vidvrd import run_vidvrd_eval
+from vidvrd_auto.evaluation.vidvrd import run_evaluation_suite
 from vidvrd_auto.nodes.export import merge_relation_files, merge_trajectory_files
 from vidvrd_auto.nodes.ingest import video_id_for_source
 from vidvrd_auto.pipeline.constants import NODE_ORDER
 from vidvrd_auto.pipeline.files import Artifacts
-from vidvrd_auto.pipeline.manifest import collect_node_statuses, now_text
+from vidvrd_auto.pipeline.manifest import build_run_provenance, collect_node_statuses, now_text
 from vidvrd_auto.pipeline.media import run_media
 from vidvrd_auto.pipeline.relation_flow import run_relations
 from vidvrd_auto.pipeline.stage import StageRunner
@@ -51,12 +51,15 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
     exports: List[Tuple[str, Path]] = []
     trajectory_exports: List[Tuple[str, Path]] = []
     used_ids: set[str] = set()
+    resolved_config_path = (config_path or root / "configs/base.json").resolve()
+    effective_config = config.to_dict()
 
     manifest: Dict[str, Any] = {
         "run_dir": safe_rel(run_dir),
         "started_at": now_text(),
-        "config": safe_rel(config_path or root / "configs/config.json"),
-        "config_hash": stable_hash(config.to_dict()),
+        "config": safe_rel(resolved_config_path),
+        "config_hash": stable_hash(effective_config),
+        "provenance": build_run_provenance(root=root, config=effective_config, config_path=resolved_config_path),
         "nodes": NODE_ORDER,
         "options": {
             "resume": bool(args.resume),
@@ -77,7 +80,7 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
         item: Dict[str, Any] = {"video_id": video_id, "source": source, "state": "running"}
         items.append(item)
         try:
-            run_media(
+            video_path, video_hash = run_media(
                 source=source,
                 video_id=video_id,
                 config=config,
@@ -86,6 +89,11 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                 files=files,
                 stages=stages,
             )
+            item["input"] = {
+                "video_path": safe_rel(video_path),
+                "video_hash": video_hash,
+                "hash_algorithm": "sha256_full_file",
+            }
             run_relations(
                 video_id=video_id,
                 config=config,
@@ -111,12 +119,13 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
 
     all_relations = run_dir / "pred" / "relations.json"
     all_trajectories = run_dir / "pred" / "trajectories.json"
-    merged = merge_relation_files(exports, all_relations)
-    merge_trajectory_files(trajectory_exports, all_trajectories)
+    requested_video_ids = [str(item["video_id"]) for item in items]
+    merged = merge_relation_files(exports, all_relations, requested_video_ids)
+    merge_trajectory_files(trajectory_exports, all_trajectories, requested_video_ids)
     evaluation = _evaluate(
         config=config.section("evaluate").to_dict(),
         disabled=bool(args.skip_eval),
-        exports=exports,
+        requested_video_ids=requested_video_ids,
         relations=all_relations,
         trajectories=all_trajectories,
         run_dir=run_dir,
@@ -143,7 +152,7 @@ def _evaluate(
     *,
     config: Dict[str, Any],
     disabled: bool,
-    exports: List[Tuple[str, Path]],
+    requested_video_ids: Sequence[str],
     relations: Path,
     trajectories: Path,
     run_dir: Path,
@@ -155,22 +164,47 @@ def _evaluate(
     gold_trajectories = Path(str(config.get("gold_trajectories", "gold/vidvrd_50_trajectories.json"))).expanduser()
     gold_relations = (root / gold_relations).resolve() if not gold_relations.is_absolute() else gold_relations.resolve()
     gold_trajectories = (root / gold_trajectories).resolve() if not gold_trajectories.is_absolute() else gold_trajectories.resolve()
-    if not enabled or not exports:
+    if not enabled:
         result["state"] = "skipped"
         return result
     if not gold_relations.exists() or not gold_trajectories.exists():
         result.update(state="failed", error="Gold relations or trajectories are missing")
         return result
-    report = run_dir / "reports" / "vidvrd.md"
-    metrics = run_vidvrd_eval(
+    gold_manifest = Path(str(config.get("gold_manifest", "gold/vidvrd_50_manifest.json"))).expanduser()
+    gold_manifest = (root / gold_manifest).resolve() if not gold_manifest.is_absolute() else gold_manifest.resolve()
+    if not gold_manifest.exists():
+        result.update(state="failed", error="Gold manifest is missing")
+        return result
+    official_report = run_dir / "reports" / "official_vidvrd.md"
+    official_metrics = run_dir / "reports" / "official_vidvrd.json"
+    diagnostic_report = run_dir / "reports" / "diagnostic_track_aligned.md"
+    diagnostic_metrics = run_dir / "reports" / "diagnostic_track_aligned.json"
+    metrics = run_evaluation_suite(
         gold_relations=gold_relations,
         gold_trajectories=gold_trajectories,
+        gold_manifest=gold_manifest,
         pred_relations=relations,
         pred_trajectories=trajectories,
-        report_path=report,
-        metrics_path=run_dir / "reports" / "metrics.json",
-        track_viou_threshold=float(config.get("track_viou_threshold", 0.3) or 0.3),
-        relation_tiou_threshold=float(config.get("relation_tiou_threshold", 0.5) or 0.5),
+        requested_video_ids=requested_video_ids,
+        official_report_path=official_report,
+        official_metrics_path=official_metrics,
+        diagnostic_report_path=diagnostic_report,
+        diagnostic_metrics_path=diagnostic_metrics,
+        dataset_split=str(config.get("dataset_split", "test")),
+        scope=str(config.get("scope", "gold_split")),
+        expected_official_video_count=int(config.get("expected_official_video_count", 200)),
+        official_viou_threshold=float(config.get("official_viou_threshold", 0.5) or 0.5),
+        diagnostic_track_viou_threshold=float(config.get("diagnostic_track_viou_threshold", 0.3) or 0.3),
+        diagnostic_relation_tiou_threshold=float(config.get("diagnostic_relation_tiou_threshold", 0.5) or 0.5),
     )
-    result.update(state="succeeded", report=safe_rel(report), metrics=safe_rel(run_dir / "reports" / "metrics.json"), overall=metrics.get("overall", {}))
+    result.update(
+        state="succeeded",
+        official={
+            "report": safe_rel(official_report),
+            "metrics": safe_rel(official_metrics),
+            "relation_detection": metrics["official"]["relation_detection"],
+            "relation_tagging": metrics["official"]["relation_tagging"],
+        },
+        diagnostic={"report": safe_rel(diagnostic_report), "metrics": safe_rel(diagnostic_metrics)},
+    )
     return result

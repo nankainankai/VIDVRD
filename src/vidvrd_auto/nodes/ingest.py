@@ -48,6 +48,28 @@ def planned_video_path(source: str, inputs_dir: Path) -> Path:
     return (repo_root() / p).resolve() if not p.is_absolute() else p.resolve()
 
 
+def source_fingerprint(source: str, inputs_dir: Path) -> Dict[str, Any]:
+    """Build the cache identity available before the ingest stage runs.
+
+    Local sources include the complete file digest, so replacing a video at
+    the same path invalidates ``--resume``.  A cached URL can only be
+    fingerprinted from its local materialization without making an additional
+    network request.
+    """
+
+    video_path = planned_video_path(source, inputs_dir)
+    identity: Dict[str, Any] = {
+        "source": str(source),
+        "source_type": "url" if is_url(source) else "local",
+        "video_path": str(video_path),
+        "exists": video_path.exists(),
+    }
+    if video_path.exists() and video_path.is_file():
+        identity["file_size"] = int(video_path.stat().st_size)
+        identity["file_hash"] = sha256_file(video_path)
+    return identity
+
+
 def materialize_video(source: str, inputs_dir: Path, config: Dict[str, Any]) -> Dict[str, Any]:
     inputs_dir.mkdir(parents=True, exist_ok=True)
     video_path = planned_video_path(source, inputs_dir)

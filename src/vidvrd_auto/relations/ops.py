@@ -8,10 +8,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from vidvrd_auto.providers import DashScopeProvider
+from vidvrd_auto.agents import validate_review_actions
 from vidvrd_auto.prompts.templates import relation_verify_prompt
 from vidvrd_auto.relations.object_candidates import normalize_category
 from vidvrd_auto.relations.taxonomy import coupling_inverse, mutex_pairs, predicate_defs
 from vidvrd_auto.core.ontology import predicate_components
+from vidvrd_auto.core.schema import serialize_relation_artifact
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
 
 
@@ -93,6 +95,16 @@ def _load_tracks_by_frame(tracks_jsonl: Path) -> Dict[int, Dict[int, Dict[str, A
     return out
 
 
+def _frame_runs(frames: Sequence[int], max_gap: int) -> List[List[int]]:
+    runs: List[List[int]] = []
+    for frame in sorted(set(frames)):
+        if not runs or frame > runs[-1][-1] + max_gap + 1:
+            runs.append([frame])
+        else:
+            runs[-1].append(frame)
+    return runs
+
+
 def generate_rule_relations(
     *,
     windows_json: Path,
@@ -114,6 +126,8 @@ def generate_rule_relations(
     max_pairs_per_window = int(config.get("max_pairs_per_window", 0) or 0)
     max_track_ids_per_window = int(config.get("max_track_ids_per_window", 0) or 0)
     min_observed_pair_frames = max(0, int(config.get("min_observed_pair_frames", 1) or 0))
+    min_evidence_frames = max(1, int(config.get("min_evidence_frames", 2) or 2))
+    evidence_max_gap = max(0, int(config.get("evidence_max_gap", 0) or 0))
 
     relations: List[Dict[str, Any]] = []
     for wi, w in enumerate(windows):
@@ -130,8 +144,8 @@ def generate_rule_relations(
         if max_track_ids_per_window > 0:
             track_ids = track_ids[:max_track_ids_per_window]
 
-        pair_stats: Dict[Tuple[int, int], Dict[str, float]] = {}
-        pair_totals: Dict[Tuple[int, int], float] = {}
+        pair_frames: Dict[Tuple[int, int], Dict[int, float]] = {}
+        pair_evidence: Dict[Tuple[int, int], Dict[str, Dict[int, float]]] = {}
         pair_observed: Dict[Tuple[int, int], int] = {}
         pair_count = 0
         for index, sid in enumerate(track_ids):
@@ -160,47 +174,59 @@ def generate_rule_relations(
                     overlap = _iou(subject_box, object_box)
                     for left_id, right_id, dx, dy in ((sid, oid, sx - ox, sy - oy), (oid, sid, ox - sx, oy - sy)):
                         key = (left_id, right_id)
-                        pair_totals[key] = pair_totals.get(key, 0.0) + weight
+                        pair_frames.setdefault(key, {})[frame] = weight
                         if subject.get("box_source", "observed") == "observed" and obj.get("box_source", "observed") == "observed":
                             pair_observed[key] = pair_observed.get(key, 0) + 1
-                        stats = pair_stats.setdefault(key, {})
+                        evidence = pair_evidence.setdefault(key, {})
                         if dx < -margin:
-                            stats["left"] = stats.get("left", 0.0) + weight
+                            evidence.setdefault("left", {})[frame] = weight
                         elif dx > margin:
-                            stats["right"] = stats.get("right", 0.0) + weight
+                            evidence.setdefault("right", {})[frame] = weight
                         if dy < -margin:
-                            stats["above"] = stats.get("above", 0.0) + weight
+                            evidence.setdefault("above", {})[frame] = weight
                         elif dy > margin:
-                            stats["beneath"] = stats.get("beneath", 0.0) + weight
+                            evidence.setdefault("beneath", {})[frame] = weight
                         if distance <= near_ratio * scale or overlap >= overlap_threshold:
-                            stats["next_to"] = stats.get("next_to", 0.0) + weight
+                            evidence.setdefault("next_to", {})[frame] = weight
             if max_pairs_per_window > 0 and pair_count >= max_pairs_per_window:
                 break
 
-        for (subject_id, object_id), stats in sorted(pair_stats.items()):
+        for (subject_id, object_id), predicates in sorted(pair_evidence.items()):
             if pair_observed.get((subject_id, object_id), 0) < min_observed_pair_frames:
                 continue
-            total = max(1e-9, pair_totals[(subject_id, object_id)])
-            for predicate, support in sorted(stats.items()):
-                ratio = support / total
-                if ratio < min_votes:
-                    continue
-                relations.append(
-                    {
-                        "subject_track_id": subject_id,
-                        "predicate": predicate,
-                        "object_track_id": object_id,
-                        "start_frame": start,
-                        "end_frame": end,
-                        "confidence": round(ratio, 4),
-                        "source": "window_geometry",
-                        "predicate_components": predicate_components(predicate),
-                        "segment_id": segment_id,
-                        "evidence": f"window support {support:.2f}/{total:.2f}",
-                    }
-                )
+            available = pair_frames[(subject_id, object_id)]
+            for predicate, support_by_frame in sorted(predicates.items()):
+                for evidence_frames in _frame_runs(support_by_frame, evidence_max_gap):
+                    if len(evidence_frames) < min_evidence_frames:
+                        continue
+                    relation_start, relation_end = evidence_frames[0], evidence_frames[-1]
+                    support = sum(support_by_frame[frame] for frame in evidence_frames)
+                    total = sum(
+                        weight for frame, weight in available.items()
+                        if relation_start <= frame <= relation_end
+                    )
+                    ratio = support / max(1e-9, total)
+                    if ratio < min_votes:
+                        continue
+                    relations.append(
+                        {
+                            "subject_track_id": subject_id,
+                            "predicate": predicate,
+                            "object_track_id": object_id,
+                            "start_frame": relation_start,
+                            "end_frame": relation_end,
+                            "evidence_frames": evidence_frames,
+                            "rule_support": round(ratio, 4),
+                            "ranking_score": round(ratio, 4),
+                            "score_kind": "rule_support",
+                            "source": "window_geometry",
+                            "predicate_components": predicate_components(predicate),
+                            "segment_id": segment_id,
+                            "evidence": f"frame support {support:.2f}/{total:.2f}",
+                        }
+                    )
 
-    out = {video_id: relations}
+    out = {video_id: [serialize_relation_artifact(item) for item in relations]}
     write_json(out_json, out)
     return out
 
@@ -210,11 +236,11 @@ def _relation_items(obj: Any, video_id: str) -> List[Dict[str, Any]]:
         return []
     items = obj.get(video_id)
     if isinstance(items, list):
-        return [dict(x) for x in items if isinstance(x, dict)]
+        return [serialize_relation_artifact(x) for x in items if isinstance(x, dict)]
     out: List[Dict[str, Any]] = []
     for v in obj.values():
         if isinstance(v, list):
-            out.extend(dict(x) for x in v if isinstance(x, dict))
+            out.extend(serialize_relation_artifact(x) for x in v if isinstance(x, dict))
     return out
 
 
@@ -232,12 +258,28 @@ def _rel_key(item: Dict[str, Any]) -> Optional[Tuple[int, str, int, int, int]]:
     return sid, pred, oid, start, end
 
 
+def _ranking_score(item: Dict[str, Any]) -> float:
+    for field in ("ranking_score", "agent_score", "rule_support", "confidence"):
+        if item.get(field) is not None:
+            return max(0.0, min(1.0, float(item[field])))
+    return 0.0
+
+
+def _merge_score_fields(target: Dict[str, Any], source: Dict[str, Any]) -> None:
+    for field in ("rule_support", "agent_score"):
+        if source.get(field) is not None:
+            target[field] = max(float(target.get(field, 0.0) or 0.0), float(source[field]))
+    target["ranking_score"] = max(_ranking_score(target), _ranking_score(source))
+    kinds = {str(value) for value in (target.get("score_kind"), source.get("score_kind")) if value}
+    target["score_kind"] = next(iter(kinds)) if len(kinds) == 1 else "mixed_ranking"
+
+
 def merge_relations(
     *,
     video_id: str,
     relation_jsons: Sequence[Path],
     out_json: Path,
-    apply_coupling: bool = True,
+    apply_coupling: bool = False,
 ) -> Dict[str, Any]:
     merged: Dict[Tuple[int, str, int, int, int], Dict[str, Any]] = {}
     for path in relation_jsons:
@@ -250,7 +292,6 @@ def merge_relations(
             sid, pred, oid, start, end = key
             cur = merged.get(key)
             source = str(item.get("source", "") or "unknown")
-            conf = float(item.get("confidence", 0.0) or 0.0)
             if cur is None:
                 cur = dict(item)
                 cur["subject_track_id"] = sid
@@ -259,14 +300,17 @@ def merge_relations(
                 cur["start_frame"] = start
                 cur["end_frame"] = end
                 cur["sources"] = [source]
-                cur["confidence"] = conf
+                cur["ranking_score"] = _ranking_score(item)
                 merged[key] = cur
             else:
-                cur["confidence"] = min(1.0, max(float(cur.get("confidence", 0.0) or 0.0), conf) + 0.05)
+                _merge_score_fields(cur, item)
                 sources = list(cur.get("sources", []))
                 if source not in sources:
                     sources.append(source)
                 cur["sources"] = sources
+                cur["evidence_frames"] = sorted(
+                    {int(frame) for frame in list(cur.get("evidence_frames", [])) + list(item.get("evidence_frames", []))}
+                )
 
     if apply_coupling:
         for key, item in list(merged.items()):
@@ -294,7 +338,7 @@ def merge_relations(
 
 def _safe_conf(item: Dict[str, Any]) -> float:
     try:
-        return float(item.get("confidence", 0.0) or 0.0)
+        return _ranking_score(item)
     except Exception:
         return 0.0
 
@@ -382,7 +426,7 @@ def _resolve_mutex_conflicts(items: List[Dict[str, Any]]) -> Tuple[List[Dict[str
                             "relation_id": items[idx].get("relation_id", ""),
                             "reason": f"mutex conflict on {sid}-{oid} {start}-{end}; keep {best_pred}",
                             "predicate": pred,
-                            "confidence": conf,
+                            "ranking_score": conf,
                         }
                     )
 
@@ -403,18 +447,19 @@ def _apply_final_actions(items: List[Dict[str, Any]], actions: Sequence[Dict[str
         if item is None:
             continue
         op = str(action.get("action", "") or "").strip().lower()
-        if op == "delete":
+        before = dict(item)
+        if op == "reject_relation":
             to_delete.add(relation_id)
-            applied.append(dict(action))
-        elif op == "keep":
-            applied.append(dict(action))
+            applied.append({**action, "before": before, "after": None})
+        elif op == "accept_relation":
+            applied.append({**action, "before": before, "after": dict(item)})
         elif op == "change_predicate":
-            new_pred = str(action.get("new_predicate", "") or action.get("predicate", "") or "").strip().lower()
+            new_pred = str(action.get("new_predicate", "")).strip().lower()
             if new_pred in allowed_predicates:
                 item["predicate"] = new_pred
                 item["source"] = "verify_corrected"
-                applied.append(dict(action))
-        elif op == "adjust_span":
+                applied.append({**action, "before": before, "after": dict(item)})
+        elif op == "refine_interval":
             try:
                 start = int(action.get("start_frame", item.get("start_frame", 0)))
                 end = int(action.get("end_frame", item.get("end_frame", start)))
@@ -422,8 +467,9 @@ def _apply_final_actions(items: List[Dict[str, Any]], actions: Sequence[Dict[str
                 continue
             if start <= end:
                 item["start_frame"], item["end_frame"] = start, end
+                item["evidence_frames"] = list(action.get("evidence_frames", []))
                 item["source"] = "verify_corrected"
-                applied.append(dict(action))
+                applied.append({**action, "before": before, "after": dict(item)})
     if to_delete:
         out = [item for item in out if str(item.get("relation_id", "")) not in to_delete]
     return out, applied
@@ -492,13 +538,13 @@ def verify_relations(
 ) -> Dict[str, Any]:
     obj = read_json(relations_json) if relations_json.exists() else {video_id: []}
     items = _relation_items(obj, video_id)
-    low_conf_thresh = float(config.get("low_confidence_threshold", 0.45))
+    low_conf_thresh = float(config.get("low_ranking_score_threshold", config.get("low_confidence_threshold", 0.45)))
     strong_review_enabled = bool(config.get("strong_model_review_enabled", False))
     strong_model = str(config.get("strong_model", "") or "").strip()
     strong_model_dry_run = bool(config.get("strong_model_dry_run", False))
 
     source_counts: Dict[str, int] = {}
-    low_confidence: List[Dict[str, Any]] = []
+    low_ranking_score: List[Dict[str, Any]] = []
     review_items: List[Dict[str, Any]] = []
     risk_track_ids = {int(value) for value in config.get("risk_track_ids", [])}
     conflicts: List[Dict[str, Any]] = []
@@ -508,18 +554,15 @@ def verify_relations(
         item.setdefault("relation_id", f"r{index:06d}")
         source = str(item.get("source", "") or ",".join(item.get("sources", []) or []) or "unknown")
         source_counts[source] = source_counts.get(source, 0) + 1
-        try:
-            conf = float(item.get("confidence", 0.0) or 0.0)
-        except Exception:
-            conf = 0.0
+        conf = _safe_conf(item)
         if conf < low_conf_thresh:
-            low_confidence.append(item)
+            low_ranking_score.append(item)
         try:
             involves_risk = int(item.get("subject_track_id")) in risk_track_ids or int(item.get("object_track_id")) in risk_track_ids
         except (TypeError, ValueError):
             involves_risk = False
         if strong_review_enabled and (conf < low_conf_thresh or involves_risk):
-            review_items.append(dict(item, review_reasons=[reason for reason, active in (("low_confidence", conf < low_conf_thresh), ("risky_track", involves_risk)) if active]))
+            review_items.append(dict(item, review_reasons=[reason for reason, active in (("low_ranking_score", conf < low_conf_thresh), ("risky_track", involves_risk)) if active]))
         key = _rel_key(item)
         if key is None:
             continue
@@ -553,6 +596,7 @@ def verify_relations(
     review_items.extend(dict(item, review_reasons=["conflict"]) for item in items if str(item.get("relation_id", "")) in conflict_ids - known_review_ids)
 
     final_actions: List[Dict[str, Any]] = []
+    rejected_agent_actions: List[Dict[str, Any]] = []
     review_result: Dict[str, Any] = {"state": "disabled"}
     if strong_review_enabled and review_items:
         client_cfg = {
@@ -593,7 +637,7 @@ def verify_relations(
                 except Exception:
                     parsed = {}
                 if isinstance(parsed.get("actions"), list):
-                    final_actions = [x for x in parsed["actions"] if isinstance(x, dict)]
+                    final_actions, rejected_agent_actions = validate_review_actions(parsed["actions"], evidenced_items)
 
     track_main_classes, track_frames = _collect_track_main_classes(tracks_jsonl)
 
@@ -619,18 +663,18 @@ def verify_relations(
                 filtered_by_category += 1
         final_items = kept
 
-    min_export_conf = float(config.get("min_export_confidence", 0.0) or 0.0)
-    filtered_by_confidence = 0
+    min_export_conf = float(config.get("min_export_ranking_score", config.get("min_export_confidence", 0.0)) or 0.0)
+    filtered_by_ranking_score = 0
     if min_export_conf > 0:
         kept = []
         for item in final_items:
             if _safe_conf(item) >= min_export_conf:
                 kept.append(item)
             else:
-                filtered_by_confidence += 1
+                filtered_by_ranking_score += 1
         final_items = kept
 
-    if bool(config.get("apply_coupling", True)):
+    if bool(config.get("apply_coupling", False)):
         final_items = _add_coupling(final_items)
 
     qc = {
@@ -638,8 +682,8 @@ def verify_relations(
         "original_relation_count": len(items),
         "relation_count": len(final_items),
         "source_counts": source_counts,
-        "low_confidence_count": len(low_confidence),
-        "low_confidence_examples": low_confidence[:20],
+        "low_ranking_score_count": len(low_ranking_score),
+        "low_ranking_score_examples": low_ranking_score[:20],
         "conflict_count": len(conflicts),
         "conflicts": conflicts[:50],
         "strong_model_review_enabled": strong_review_enabled,
@@ -648,14 +692,18 @@ def verify_relations(
         "strong_model_review_result": review_result,
         "risk_track_ids": sorted(risk_track_ids),
         "final_actions": final_actions[:100],
+        "rejected_agent_actions": rejected_agent_actions[:100],
         "applied_actions": applied_actions[:100],
         "filtered_by_category_count": filtered_by_category,
-        "filtered_by_confidence_count": filtered_by_confidence,
+        "filtered_by_ranking_score_count": filtered_by_ranking_score,
         "track_count": len(track_frames),
         "track_frame_counts": {str(k): v for k, v in sorted(track_frames.items())},
         "track_main_classes": {str(k): v for k, v in sorted(track_main_classes.items())},
         "passed": len(conflicts) == 0 and filtered_by_category == 0,
     }
-    write_json(out_relations_json, {video_id: final_items})
+    write_json(
+        out_relations_json,
+        {video_id: [serialize_relation_artifact(item) for item in final_items]},
+    )
     write_json(out_qc_json, qc)
     return qc

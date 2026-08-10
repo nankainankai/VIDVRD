@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 
 from vidvrd_auto.detection.temporal_fusion import annotate_batch_detections, make_frame_batches
+from vidvrd_auto.detection.rex import RexDetector
 from vidvrd_auto.detection.video import detect_video
 
 
@@ -35,6 +36,16 @@ class FakeDetector:
 
 
 class DetectionBatchTests(unittest.TestCase):
+    def test_rex_defaults_are_deterministic_and_do_not_invent_scores(self) -> None:
+        detector = RexDetector("fake", min_box_area=0)
+        parsed = detector._parse(
+            {"extracted_predictions": {"person": [{"type": "box", "coords": [1, 2, 11, 12]}]}}
+        )
+        self.assertEqual((detector.temperature, detector.top_p, detector.top_k), (0.0, 0.05, 1))
+        self.assertIsNone(parsed[0]["score"])
+        self.assertEqual(parsed[0]["score_kind"], "unavailable")
+        self.assertNotIn("confidence", parsed[0])
+
     def test_batches_use_distinct_real_frames(self) -> None:
         self.assertEqual(make_frame_batches(list(range(7)), 5), [[0, 1, 2, 3, 4], [5, 6]])
 

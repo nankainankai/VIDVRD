@@ -9,7 +9,7 @@ description: 运行、恢复和诊断 VIDVRD 全自动视频关系检测流水�
 
 1. 使用 `vidvrd` Conda 环境并执行 `pip install -e .`。
 2. Rex-Omni 默认位于 `models/Rex-Omni-AWQ`。
-3. `configs/config.json` 是基础配置；`dry_run.json`、`production.json`、`benchmark.json` 是覆盖配置。
+3. `configs/base.json` 是内部合并基座；CLI 默认和正式路线使用 `main.json`，`config.json` 是等价兼容入口，逐帧参照使用 `reference_dense.json`，评测覆盖使用 `benchmark_official.json`。
 4. 生产语义调用需要 `DASHSCOPE_API_KEY`；dry-run 不需要云密钥。
 
 ## 强制执行顺序
@@ -23,22 +23,22 @@ vidvrd-auto --video <video> --run-dir runs/<unique-smoke-run> --config configs/d
 完成后检查 `run_manifest.json`、每个阶段的 `status.json`、词表、检测间隔、轨迹 ID、窗口和最终 JSON。确认无误后才允许运行云端生产配置：
 
 ```powershell
-vidvrd-auto --video <video> --run-dir runs/<run> --config configs/production.json
+vidvrd-auto --video <video> --run-dir runs/<run> --config configs/main.json
 ```
 
 固定官方词表评测使用：
 
 ```powershell
-vidvrd-auto --videos <list.txt> --run-dir runs/<run> --config configs/benchmark.json
+vidvrd-auto --videos <list.txt> --run-dir runs/<run> --config configs/benchmark_official.json
 ```
 
 中断后在原命令增加 `--resume`；只有确认所有缓存都应失效时才用 `--force`。
 
 ## 云调用边界
 
-1. `vocabulary`：仅 `production.json` 开启，每个视频一次开放对象发现。
-2. `semantic`：每个有效窗口轨迹对一次视觉关系判断。
-3. `verify`：仅存在风险关系和对应拼图时，最多一次批量复核。
+1. `vocabulary`：正式 main 路线开启，每个视频一次开放对象发现。
+2. `semantic`：每个有效窗口轨迹对先做分层小候选路由，再用事件中心连续帧双视图做一次视觉关系判断；Agent 只能读取 `EvidencePacket` 并返回有限动作，必要时最多触发一次共享的补帧/邻接候选扩展，不能触发重检测或重跟踪。
+3. `verify`：仅存在风险关系和对应拼图时，最多一次批量复核；动作经确定性校验后才允许应用，并记录修改前后快照。
 
 Rex-Omni、OC-SORT、几何规则、跨窗口聚合、导出和评测均为本地执行。
 

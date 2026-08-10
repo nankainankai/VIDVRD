@@ -1,4 +1,5 @@
 {
+  "project": {"run_mode": "main", "prompt_version": "main-v4-hierarchical-agent"},
   "relations": {
     "dry_run": true,
     "max_windows": 2

@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
 
+from vidvrd_auto.core.schema import serialize_relation_artifact
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
 
 
@@ -47,13 +48,26 @@ def export_video_outputs(
     trajectories_path: Path,
 ) -> None:
     relations_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(verified_path, relations_path)
+    verified = read_json(verified_path)
+    values = verified.get(video_id, []) if isinstance(verified, dict) else []
+    write_json(
+        relations_path,
+        {
+            video_id: [
+                serialize_relation_artifact(item)
+                for item in values
+                if isinstance(item, dict)
+            ]
+        },
+    )
     if qc_path.exists():
         shutil.copyfile(qc_path, relations_path.parent / "qc.json")
     tracks_to_trajectories(tracks_path, video_id, trajectories_path)
 
 
-def merge_relation_files(video_exports: Iterable[Tuple[str, Path]], out_path: Path) -> Dict[str, Any]:
+def merge_relation_files(
+    video_exports: Iterable[Tuple[str, Path]], out_path: Path, video_ids: Iterable[str] = ()
+) -> Dict[str, Any]:
     merged: Dict[str, Any] = {}
     for video_id, path in video_exports:
         if not path.exists():
@@ -61,11 +75,15 @@ def merge_relation_files(video_exports: Iterable[Tuple[str, Path]], out_path: Pa
         value = read_json(path)
         if isinstance(value, dict):
             merged[video_id] = value.get(video_id, [])
+    for video_id in video_ids:
+        merged.setdefault(str(video_id), [])
     write_json(out_path, merged)
     return merged
 
 
-def merge_trajectory_files(video_exports: Iterable[Tuple[str, Path]], out_path: Path) -> Dict[str, Any]:
+def merge_trajectory_files(
+    video_exports: Iterable[Tuple[str, Path]], out_path: Path, video_ids: Iterable[str] = ()
+) -> Dict[str, Any]:
     merged: Dict[str, Any] = {}
     for video_id, path in video_exports:
         if not path.exists():
@@ -73,5 +91,7 @@ def merge_trajectory_files(video_exports: Iterable[Tuple[str, Path]], out_path: 
         value = read_json(path)
         if isinstance(value, dict):
             merged[video_id] = value.get(video_id, [])
+    for video_id in video_ids:
+        merged.setdefault(str(video_id), [])
     write_json(out_path, merged)
     return merged

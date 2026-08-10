@@ -37,6 +37,9 @@ def run_relations(
     )
 
     semantic_cfg = config.section("relations").to_dict()
+    semantic_cfg["prompt_version"] = config.section("project").get(
+        "prompt_version", "main-v4-hierarchical-agent"
+    )
     dry_run = bool(stages.args.dry_run_relations) or bool(semantic_cfg.get("dry_run", False))
     stages.run(
         "semantic",
@@ -46,7 +49,7 @@ def run_relations(
             "config": semantic_cfg,
             "dry_run": dry_run,
         },
-        [files.semantics],
+        [files.semantics, files.semantic_evidence],
         lambda: classify_relations(
             windows_path=files.windows,
             tracks_path=files.tracks,
@@ -68,7 +71,7 @@ def run_relations(
             video_id=video_id,
             relation_jsons=[files.rules, files.semantics],
             out_json=files.merged,
-            apply_coupling=bool(merge_cfg.get("apply_coupling", True)),
+            apply_coupling=bool(merge_cfg.get("apply_coupling", False)),
         ),
     )
 
@@ -86,6 +89,9 @@ def run_relations(
     )
 
     verify_cfg = config.section("relation_verify").to_dict()
+    verify_cfg["prompt_version"] = config.section("project").get(
+        "prompt_version", "main-v4-hierarchical-agent"
+    )
     if files.track_report.exists():
         verify_cfg["risk_track_ids"] = read_json(files.track_report).get("risk_track_ids", [])
     stages.run(

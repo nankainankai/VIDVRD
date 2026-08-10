@@ -13,10 +13,13 @@ class Artifacts:
     detections: Path
     detect_meta: Path
     tracks: Path
+    tracklets: Path
+    stitch_links: Path
     windows: Path
     track_report: Path
     rules: Path
     semantics: Path
+    semantic_evidence: Path
     merged: Path
     global_relations: Path
     verified: Path
@@ -35,10 +38,13 @@ class Artifacts:
             file("detect", "detections.jsonl"),
             file("detect", "meta.json"),
             file("track", "tracks.jsonl"),
+            file("track", "tracklets.json"),
+            file("track", "stitch_links.json"),
             file("track", "windows.json"),
             file("track_qc", "report.json"),
             file("rule", "relations.json"),
             file("semantic", "relations.json"),
+            file("semantic", "evidence_packets.json"),
             file("merge", "relations.json"),
             file("global", "relations.json"),
             file("verify", "relations.json"),

@@ -76,6 +76,9 @@ class RexDetector:
         self.min_box_area = float(min_box_area)
         self.max_detections_per_frame = max(1, int(max_detections_per_frame))
         self.kwargs = dict(kwargs)
+        self.temperature = float(self.kwargs.get("temperature", 0.0))
+        self.top_p = float(self.kwargs.get("top_p", 0.05))
+        self.top_k = int(self.kwargs.get("top_k", 1))
         self.category_aliases = {
             str(key).strip().lower(): str(value).strip().lower()
             for key, value in dict(self.kwargs.get("category_aliases", {})).items()
@@ -105,9 +108,9 @@ class RexDetector:
             backend=self.backend,
             torch_dtype=torch_dtype,
             attn_implementation=attention,
-            temperature=float(self.kwargs.get("temperature", 1.0)),
-            top_p=float(self.kwargs.get("top_p", 1.0)),
-            top_k=int(self.kwargs.get("top_k", 50)),
+            temperature=self.temperature,
+            top_p=self.top_p,
+            top_k=self.top_k,
             repetition_penalty=float(self.kwargs.get("repetition_penalty", 1.05)),
             max_tokens=int(self.kwargs.get("max_tokens", 2048)),
             max_pixels=int(self.kwargs.get("max_pixels", 640 * 640)),
@@ -163,7 +166,8 @@ class RexDetector:
                         "class": self._class_id(canonical_name),
                         "class_name": canonical_name,
                         "raw_class_name": raw_name,
-                        "confidence": 1.0,
+                        "score": None,
+                        "score_kind": "unavailable",
                         "source": "rexomni",
                     }
                 )
@@ -208,6 +212,10 @@ class RexDetector:
             "categories": list(self.categories),
             "category_aliases": dict(self.category_aliases),
             "detection_interval": self.detection_interval,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "top_k": self.top_k,
+            "score_kind": "unavailable",
             "frame_calls": self._frame_calls,
             "batch_calls": self._batch_calls,
             "trigger_calls": self._trigger_calls,

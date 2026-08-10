@@ -5,7 +5,7 @@ from typing import Tuple
 
 from vidvrd_auto.core import AppConfig, VideoPaths
 from vidvrd_auto.nodes.detect import detect_video
-from vidvrd_auto.nodes.ingest import materialize_video, planned_video_path
+from vidvrd_auto.nodes.ingest import materialize_video, planned_video_path, source_fingerprint
 from vidvrd_auto.nodes.track import track_video
 from vidvrd_auto.nodes.track_qc import run_track_qc
 from vidvrd_auto.nodes.vocabulary import build_vocabulary
@@ -29,15 +29,20 @@ def run_media(
 
     video_path = planned_video_path(source, paths.inputs_dir)
     ingest_cfg = config.section("video_ingest").to_dict()
+    input_identity = source_fingerprint(source, paths.inputs_dir)
     stages.run(
         "ingest",
-        {"source": source, "config": ingest_cfg},
+        {"source": source, "source_fingerprint": input_identity, "config": ingest_cfg},
         [files.source, video_path],
         lambda: materialize_video(source, paths.inputs_dir, ingest_cfg),
     )
     if not files.source.exists() or not video_path.exists():
         materialize_video(source, paths.inputs_dir, ingest_cfg)
-    video_hash = str(read_json(files.source).get("file_hash", "")) or sha256_file(video_path)
+    actual_video_hash = sha256_file(video_path)
+    source_meta = read_json(files.source)
+    if str(source_meta.get("file_hash", "")) != actual_video_hash:
+        source_meta = materialize_video(source, paths.inputs_dir, ingest_cfg)
+    video_hash = str(source_meta.get("file_hash", "")) or actual_video_hash
 
     vocabulary_cfg = config.section("vocabulary").to_dict()
     stages.run(
@@ -73,7 +78,7 @@ def run_media(
     stages.run(
         "track",
         {"video": video_hash, "detections": sha256_file(files.detections), "config": track_cfg},
-        [files.tracks, files.windows],
+        [files.tracks, files.tracklets, files.stitch_links, files.windows],
         lambda: track_video(
             video_path=video_path,
             detections_path=files.detections,
