@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-import json
-import tempfile
 import unittest
-from pathlib import Path
 
-import cv2
 import numpy as np
 
 from vidvrd_auto.tracking.hybrid import HybridTracker
 from vidvrd_auto.tracking.stitching import stitch_tracklets
-from vidvrd_auto.tracking.video import track_video
 
 
 FRAME = np.zeros((80, 120, 3), dtype=np.uint8)
@@ -128,57 +123,6 @@ class StitchingTests(unittest.TestCase):
         self.assertEqual(mapping[1], mapping[2])
         self.assertNotEqual(mapping[1], mapping[3])
         self.assertEqual([(link["from_local_tracklet_id"], link["to_local_tracklet_id"]) for link in links], [(1, 2)])
-
-
-class _FakeAppearance:
-    def encode(self, frame, detections, *, frame_num, video_len):
-        return np.asarray([item["embedding"] for item in detections], dtype=np.float32)
-
-
-class HybridVideoStageTests(unittest.TestCase):
-    def test_offline_stitching_precedes_interpolation(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            video = root / "clip.avi"
-            writer = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"MJPG"), 5, (64, 48))
-            for _ in range(6):
-                writer.write(np.zeros((48, 64, 3), dtype=np.uint8))
-            writer.release()
-
-            rows = []
-            for frame in range(6):
-                anchor = frame in {0, 5}
-                rows.append(
-                    {
-                        "frame": frame,
-                        "objects": [
-                            {"bbox": [5, 5, 25, 35], "class_name": "person", "score": 0.9, "embedding": [1.0, 0.0]}
-                        ] if anchor else [],
-                        "detection_batch": {"status": "observed" if anchor else "skipped", "reason": "interval"},
-                    }
-                )
-            detections = root / "detections.jsonl"
-            detections.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
-            out = root / "track"
-            track_video(
-                video_path=video,
-                detections_path=detections,
-                out_dir=out,
-                config={
-                    "algorithm": "hybrid_sparse_reid",
-                    "min_hits": 1,
-                    "max_lost_frames": 3,
-                    "max_interpolation_gap": 4,
-                    "stitch_max_gap_frames": 10,
-                },
-                appearance_encoder_factory=lambda _: _FakeAppearance(),
-            )
-            tracked = [json.loads(line) for line in (out / "tracks.jsonl").read_text(encoding="utf-8").splitlines()]
-            self.assertTrue(all(row["tracks"][0]["track_id"] == 1 for row in tracked))
-            self.assertEqual(tracked[1]["tracks"][0]["box_source"], "interpolated")
-            links = json.loads((out / "stitch_links.json").read_text(encoding="utf-8"))
-            self.assertEqual(len(links["links"]), 1)
-            self.assertEqual(links["local_to_global"], {"1": 1, "2": 1})
 
 
 if __name__ == "__main__":

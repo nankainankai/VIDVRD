@@ -190,13 +190,17 @@ class NativeStageTests(unittest.TestCase):
                 "windows": [{"window_id": 1, "start_frame": 0, "end_frame": 3, "track_ids": [1, 2]}],
             }), encoding="utf-8")
             provider_type.return_value.call.side_effect = [
-                VLResult(ok=True, model="mock", text=json.dumps({"actions": [{
-                    "action": "request_more_frames", "frame_ids": [3], "reason": "need later evidence",
+                VLResult(ok=True, model="mock", text=json.dumps({"packet_results": [{
+                    "packet_id": "clip:w1:A1:B2",
+                    "actions": [{"action": "request_more_frames", "frame_ids": [3], "reason": "need later evidence"}],
                 }]})),
-                VLResult(ok=True, model="mock", text=json.dumps({"actions": [{
-                    "action": "accept_relation", "subject_track_id": 1, "predicate": "front", "object_track_id": 2,
-                    "start_frame": 0, "end_frame": 3, "evidence_frames": [3], "agent_score": 0.7,
-                    "reason": "depth ordering is visible",
+                VLResult(ok=True, model="mock", text=json.dumps({"packet_results": [{
+                    "packet_id": "clip:w1:A1:B2:supplemental",
+                    "actions": [{
+                        "action": "accept_relation", "subject_track_id": 1, "predicate": "front", "object_track_id": 2,
+                        "start_frame": 0, "end_frame": 3, "evidence_frames": [3], "agent_score": 0.7,
+                        "reason": "depth ordering is visible",
+                    }],
                 }]})),
             ]
             provider_type.return_value.stats.to_dict.return_value = {"calls": 2, "succeeded": 2}
@@ -215,6 +219,69 @@ class NativeStageTests(unittest.TestCase):
             self.assertEqual(audit["supplemental_call_count"], 1)
             self.assertEqual([packet["packet_id"] for packet in packets], ["clip:w1:A1:B2", "clip:w1:A1:B2:supplemental"])
             self.assertEqual(provider_type.return_value.call.call_count, 2)
+
+    @patch("vidvrd_auto.relations.semantic.DashScopeProvider")
+    def test_semantic_batches_consecutive_windows_for_the_same_pair(self, provider_type) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            video = root / "clip.avi"
+            tracks = root / "tracks.jsonl"
+            windows = root / "windows.json"
+            output = root / "semantic" / "relations.json"
+            _video(video, frames=6)
+            tracks.write_text(
+                "".join(json.dumps({"frame": frame, "tracks": [
+                    {"track_id": 1, "bbox": [2, 2, 22, 32], "class_name": "person", "box_source": "observed"},
+                    {"track_id": 2, "bbox": [35, 4, 55, 34], "class_name": "dog", "box_source": "observed"},
+                ]}) + "\n" for frame in range(6)),
+                encoding="utf-8",
+            )
+            windows.write_text(json.dumps({
+                "video": {"path": str(video), "fps": 5.0},
+                "windows": [
+                    {"window_id": 1, "start_frame": 0, "end_frame": 3, "track_ids": [1, 2]},
+                    {"window_id": 2, "start_frame": 2, "end_frame": 5, "track_ids": [1, 2]},
+                ],
+            }), encoding="utf-8")
+            provider_type.return_value.call.return_value = VLResult(
+                ok=True,
+                model="mock",
+                text=json.dumps({"packet_results": [
+                    {"packet_id": "clip:w1:A1:B2", "actions": [{
+                        "action": "accept_relation", "subject_track_id": 1, "predicate": "front", "object_track_id": 2,
+                        "start_frame": 0, "end_frame": 3, "evidence_frames": [0, 3], "agent_score": 0.7,
+                        "reason": "first window evidence",
+                    }]},
+                    {"packet_id": "clip:w2:A1:B2", "actions": [{
+                        "action": "accept_relation", "subject_track_id": 1, "predicate": "front", "object_track_id": 2,
+                        "start_frame": 2, "end_frame": 5, "evidence_frames": [2, 5], "agent_score": 0.8,
+                        "reason": "second window evidence",
+                    }]},
+                ]}),
+            )
+            provider_type.return_value.stats.to_dict.return_value = {"calls": 1, "succeeded": 1}
+            classify_relations(
+                windows_path=windows,
+                tracks_path=tracks,
+                out_path=output,
+                storyboards_dir=output.parent / "storyboards",
+                config={
+                    "model": "mock",
+                    "max_frames_per_window": 4,
+                    "batch_windows_per_call": 6,
+                    "allow_request_more_frames": False,
+                },
+                api_key="",
+                dry_run=False,
+                video_id="clip",
+            )
+            relations = json.loads(output.read_text(encoding="utf-8"))["clip"]
+            run_log = json.loads((output.parent / "run.log").read_text(encoding="utf-8"))
+            self.assertEqual(provider_type.return_value.call.call_count, 1)
+            self.assertEqual(provider_type.return_value.call.call_args.kwargs["image_paths"].__len__(), 2)
+            self.assertEqual([item["segment_id"] for item in relations], [1, 2])
+            self.assertEqual(run_log["batch_windows_per_call"], 6)
+            self.assertEqual(run_log["batch_audit"][0]["packet_ids"], ["clip:w1:A1:B2", "clip:w2:A1:B2"])
 
     def test_diagnostic_evaluation_aligns_track_ids_by_trajectory(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -251,10 +318,19 @@ class NativeStageTests(unittest.TestCase):
             self.assertIn("## Per predicate", text)
             self.assertIn("| next_to |", text)
             self.assertIn("not official VidVRD metrics", text)
-            self.assertEqual(metrics["evaluator"], "diagnostic_track_aligned_v1")
+            self.assertEqual(metrics["evaluator"], "diagnostic_track_aligned_v2")
             self.assertEqual(metrics["diagnostic_tracks"]["matched"], 2)
             self.assertEqual(metrics["diagnostic_predicate_macro_ap"], 1.0)
             self.assertEqual(metrics["evaluated_videos"], ["clip"])
+
+    def test_diagnostic_track_alignment_ignores_unannotated_gold_gaps(self) -> None:
+        from vidvrd_auto.evaluation.diagnostic.track_aligned import gold_supported_trajectory_iou
+
+        gold = {"trajectory": {"0": [0, 0, 10, 10], "10": [0, 0, 10, 10]}}
+        prediction = {
+            "trajectory": {str(frame): [0, 0, 10, 10] for frame in range(11)}
+        }
+        self.assertEqual(gold_supported_trajectory_iou(prediction, gold), 1.0)
 
 
 if __name__ == "__main__":

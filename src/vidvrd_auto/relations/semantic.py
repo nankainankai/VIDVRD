@@ -16,7 +16,7 @@ from vidvrd_auto.providers import DashScopeProvider
 from vidvrd_auto.agents import EvidencePacket, validate_semantic_actions
 from vidvrd_auto.core.ontology import predicate_components
 from vidvrd_auto.core.schema import serialize_relation_artifact
-from vidvrd_auto.prompts.templates import semantic_relation_prompt
+from vidvrd_auto.prompts.templates import semantic_relation_batch_prompt
 from vidvrd_auto.relations.candidate_router import expand_route, route_predicates
 from vidvrd_auto.relations.evidence_features import trajectory_evidence
 from vidvrd_auto.relations.object_candidates import GEOMETRY_PREDICATES, normalize_category
@@ -220,6 +220,82 @@ def _track_evidence(
     }
 
 
+def _same_pair_batches(items: List[Dict[str, Any]], size: int) -> List[List[Dict[str, Any]]]:
+    by_pair: Dict[tuple[int, int], List[Dict[str, Any]]] = {}
+    pair_order: List[tuple[int, int]] = []
+    for item in items:
+        pair = (int(item["left"]), int(item["right"]))
+        if pair not in by_pair:
+            by_pair[pair] = []
+            pair_order.append(pair)
+        by_pair[pair].append(item)
+    batches: List[List[Dict[str, Any]]] = []
+    for pair in pair_order:
+        pair_items = by_pair[pair]
+        for offset in range(0, len(pair_items), size):
+            batches.append(pair_items[offset : offset + size])
+    return batches
+
+
+def _packet_actions(text: str) -> Dict[str, List[Dict[str, Any]]]:
+    parsed = _parse_json(text)
+    packet_results = parsed.get("packet_results", [])
+    if not isinstance(packet_results, list):
+        return {}
+    output: Dict[str, List[Dict[str, Any]]] = {}
+    for result in packet_results:
+        if not isinstance(result, dict):
+            continue
+        packet_id = str(result.get("packet_id", ""))
+        actions = result.get("actions", [])
+        if packet_id and isinstance(actions, list):
+            output[packet_id] = [action for action in actions if isinstance(action, dict)]
+    return output
+
+
+def _append_relations(
+    output: List[Dict[str, Any]],
+    accepted: List[Dict[str, Any]],
+    *,
+    item: Dict[str, Any],
+    classes: Dict[int, str],
+    supplemental_call_count: int,
+) -> None:
+    packet: EvidencePacket = item["packet"]
+    for action_index, relation in enumerate(accepted):
+        subject = int(relation["subject_track_id"])
+        obj = int(relation["object_track_id"])
+        predicate = str(relation["predicate"])
+        agent_score = float(relation["agent_score"])
+        output.append(
+            {
+                "subject_track_id": subject,
+                "predicate": predicate,
+                "object_track_id": obj,
+                "start_frame": int(relation["start_frame"]),
+                "end_frame": int(relation["end_frame"]),
+                "evidence_frames": list(relation["evidence_frames"]),
+                "agent_score": agent_score,
+                "ranking_score": agent_score,
+                "score_kind": "agent_ranking",
+                "source": "window_semantic_vl",
+                "predicate_components": predicate_components(predicate),
+                "segment_id": packet.window_id,
+                "subject_category": classes.get(subject, "unknown"),
+                "object_category": classes.get(obj, "unknown"),
+                "evidence": str(relation["reason"]),
+                "agent_execution": {
+                    "packet_id": packet.packet_id,
+                    "action": "accept_relation",
+                    "action_index": action_index,
+                    "candidate_policy": packet.candidate_policy,
+                    "evidence_mode": packet.evidence_mode,
+                    "supplemental_call_count": supplemental_call_count,
+                },
+            }
+        )
+
+
 def classify_relations(
     *,
     windows_path: Path,
@@ -231,7 +307,7 @@ def classify_relations(
     dry_run: bool,
     video_id: str,
 ) -> None:
-    """Classify semantic relations once per valid track pair and window."""
+    """Classify per-window relations in same-pair, consecutive-window batches."""
 
     windows_obj = read_json(windows_path)
     windows = windows_obj.get("windows", []) if isinstance(windows_obj, dict) else []
@@ -255,11 +331,13 @@ def classify_relations(
         candidate_limit, int(config.get("expanded_candidate_limit", 24) or 24)
     )
     event_burst_size = max(1, int(config.get("event_burst_size", 5) or 5))
+    batch_size = max(1, int(config.get("batch_windows_per_call", 6) or 6))
     video_meta = windows_obj.get("video", {}) if isinstance(windows_obj, dict) else {}
     fps = float(video_meta.get("fps", 0.0) or 0.0)
     if max_windows > 0:
         windows = windows[:max_windows]
     coverage: List[Dict[str, Any]] = []
+    work_items: List[Dict[str, Any]] = []
 
     for window_index, window in enumerate(windows, 1):
         if not isinstance(window, dict):
@@ -332,123 +410,162 @@ def classify_relations(
             if dry_run or not routes:
                 agent_audit.append({"packet_id": packet.packet_id, "state": "dry_run" if dry_run else "no_candidates"})
                 continue
-            result = provider.call(prompt=semantic_relation_prompt(packet), image_paths=[image_path])
-            if not result.ok:
-                errors.append({"window": window_index, "pair": [left, right], "error": result.error})
-                agent_audit.append({"packet_id": packet.packet_id, "state": "provider_failed", "response": result.to_dict()})
-                continue
-            try:
-                actions = _parse_json(result.text).get("actions", [])
-            except Exception as exc:
-                errors.append({"window": window_index, "pair": [left, right], "error": f"invalid JSON: {exc}"})
-                agent_audit.append({"packet_id": packet.packet_id, "state": "invalid_json", "response": result.to_dict()})
+            work_items.append(
+                {
+                    "window_index": window_index,
+                    "left": left,
+                    "right": right,
+                    "frames": frames,
+                    "routes": routes,
+                    "packet": packet,
+                    "image_path": image_path,
+                }
+            )
+
+    audit_by_packet: Dict[str, Dict[str, Any]] = {}
+    accepted_by_packet: Dict[str, List[Dict[str, Any]]] = {}
+    batch_audit: List[Dict[str, Any]] = []
+    supplemental_items: List[Dict[str, Any]] = []
+
+    for batch_index, batch in enumerate(_same_pair_batches(work_items, batch_size), 1):
+        batch_id = f"initial-{batch_index:04d}"
+        packets = [item["packet"] for item in batch]
+        result = provider.call(
+            prompt=semantic_relation_batch_prompt(packets),
+            image_paths=[item["image_path"] for item in batch],
+        )
+        batch_audit.append(
+            {"batch_id": batch_id, "packet_ids": [packet.packet_id for packet in packets], "response": result.to_dict()}
+        )
+        if not result.ok:
+            for item in batch:
+                packet = item["packet"]
+                errors.append({"window": packet.window_id, "pair": [item["left"], item["right"]], "error": result.error})
+                audit_by_packet[packet.packet_id] = {
+                    "packet_id": packet.packet_id,
+                    "batch_id": batch_id,
+                    "state": "provider_failed",
+                    "supplemental_call_count": 0,
+                }
+            continue
+        actions_by_packet = _packet_actions(result.text)
+        for item in batch:
+            packet = item["packet"]
+            if packet.packet_id not in actions_by_packet:
+                errors.append(
+                    {"window": packet.window_id, "pair": [item["left"], item["right"]], "error": "packet missing from batch response"}
+                )
+                audit_by_packet[packet.packet_id] = {
+                    "packet_id": packet.packet_id,
+                    "batch_id": batch_id,
+                    "state": "missing_batch_result",
+                    "supplemental_call_count": 0,
+                }
                 continue
             validation = validate_semantic_actions(
-                actions if isinstance(actions, list) else [],
+                actions_by_packet[packet.packet_id],
                 packet,
                 request_budget_available=allow_more_frames and max_additional_frames > 0,
             )
             call_audit: Dict[str, Any] = {
                 "packet_id": packet.packet_id,
+                "batch_id": batch_id,
                 "state": "validated",
-                "initial_response": result.to_dict(),
                 "initial_validation": validation,
                 "supplemental_call_count": 0,
             }
-            accepted = list(validation["accepted_relations"])
+            audit_by_packet[packet.packet_id] = call_audit
+            accepted_by_packet[packet.packet_id] = list(validation["accepted_relations"])
             requested_frames = list(validation["requested_frames"])
             requested_expansions = list(validation["requested_expansions"])
-            if requested_frames or requested_expansions:
-                supplemental_routes = {direction: dict(route) for direction, route in routes.items()}
-                for request in requested_expansions:
-                    direction = (
-                        int(request["subject_track_id"]),
-                        int(request["object_track_id"]),
-                    )
-                    supplemental_routes[direction] = expand_route(
-                        supplemental_routes[direction],
-                        list(request["candidate_families"]),
-                        limit=expanded_candidate_limit,
-                        split=predicate_split,
-                    )
-                supplemental_frames = sorted(set(frames + requested_frames))
-                supplemental_packet = replace(
-                    packet,
-                    packet_id=f"{packet.packet_id}:supplemental",
-                    displayed_frames=supplemental_frames,
-                    candidate_directions=_candidate_directions(supplemental_routes, classes),
-                    max_additional_frames=0,
+            if not requested_frames and not requested_expansions:
+                continue
+            supplemental_routes = {direction: dict(route) for direction, route in item["routes"].items()}
+            for request in requested_expansions:
+                direction = (int(request["subject_track_id"]), int(request["object_track_id"]))
+                supplemental_routes[direction] = expand_route(
+                    supplemental_routes[direction],
+                    list(request["candidate_families"]),
+                    limit=expanded_candidate_limit,
+                    split=predicate_split,
                 )
-                evidence_packets.append(supplemental_packet.to_dict())
-                call_audit["supplemental_packet_id"] = supplemental_packet.packet_id
-                supplemental_path = storyboards_dir / f"window_{window_index:04d}_A{left}_B{right}_supplemental.jpg"
-                _save_jpeg(
-                    supplemental_path,
-                    _pair_storyboard(video_path, supplemental_frames, tracks, left, right, classes),
-                )
-                supplemental_result = provider.call(
-                    prompt=semantic_relation_prompt(supplemental_packet, supplemental=True),
-                    image_paths=[supplemental_path],
-                )
-                call_audit["supplemental_call_count"] = 1
-                call_audit["supplemental_response"] = supplemental_result.to_dict()
-                if supplemental_result.ok:
-                    try:
-                        supplemental_actions = _parse_json(supplemental_result.text).get("actions", [])
-                        supplemental_validation = validate_semantic_actions(
-                            supplemental_actions if isinstance(supplemental_actions, list) else [],
-                            supplemental_packet,
-                            request_budget_available=False,
-                        )
-                    except Exception as exc:
-                        supplemental_validation = {
-                            "accepted_relations": [],
-                            "actions": [],
-                            "requested_frames": [],
-                            "requested_expansions": [],
-                            "rejected_actions": [{"reason": f"invalid_supplemental_json: {exc}"}],
-                        }
-                    call_audit["supplemental_validation"] = supplemental_validation
-                    accepted.extend(supplemental_validation["accepted_relations"])
-            agent_audit.append(call_audit)
-            for action_index, relation in enumerate(accepted):
-                subject = int(relation["subject_track_id"])
-                obj = int(relation["object_track_id"])
-                predicate = str(relation["predicate"])
-                agent_score = float(relation["agent_score"])
-                output.append(
-                    {
-                        "subject_track_id": subject,
-                        "predicate": predicate,
-                        "object_track_id": obj,
-                        "start_frame": int(relation["start_frame"]),
-                        "end_frame": int(relation["end_frame"]),
-                        "evidence_frames": list(relation["evidence_frames"]),
-                        "agent_score": agent_score,
-                        "ranking_score": agent_score,
-                        "score_kind": "agent_ranking",
-                        "source": "window_semantic_vl",
-                        "predicate_components": predicate_components(predicate),
-                        "segment_id": int(window.get("window_id", window_index)),
-                        "subject_category": classes.get(subject, "unknown"),
-                        "object_category": classes.get(obj, "unknown"),
-                        "evidence": str(relation["reason"]),
-                        "agent_execution": {
-                            "packet_id": packet.packet_id,
-                            "action": "accept_relation",
-                            "action_index": action_index,
-                            "candidate_policy": packet.candidate_policy,
-                            "evidence_mode": packet.evidence_mode,
-                            "supplemental_call_count": call_audit["supplemental_call_count"],
-                        },
-                    }
-                )
+            supplemental_frames = sorted(set(item["frames"] + requested_frames))
+            supplemental_packet = replace(
+                packet,
+                packet_id=f"{packet.packet_id}:supplemental",
+                displayed_frames=supplemental_frames,
+                candidate_directions=_candidate_directions(supplemental_routes, classes),
+                max_additional_frames=0,
+            )
+            evidence_packets.append(supplemental_packet.to_dict())
+            supplemental_path = storyboards_dir / (
+                f"window_{item['window_index']:04d}_A{item['left']}_B{item['right']}_supplemental.jpg"
+            )
+            _save_jpeg(
+                supplemental_path,
+                _pair_storyboard(video_path, supplemental_frames, tracks, item["left"], item["right"], classes),
+            )
+            call_audit["supplemental_packet_id"] = supplemental_packet.packet_id
+            call_audit["supplemental_call_count"] = 1
+            supplemental_items.append(
+                {
+                    **item,
+                    "packet": supplemental_packet,
+                    "image_path": supplemental_path,
+                    "parent_packet_id": packet.packet_id,
+                }
+            )
+
+    for batch_index, batch in enumerate(_same_pair_batches(supplemental_items, batch_size), 1):
+        batch_id = f"supplemental-{batch_index:04d}"
+        packets = [item["packet"] for item in batch]
+        result = provider.call(
+            prompt=semantic_relation_batch_prompt(packets, supplemental=True),
+            image_paths=[item["image_path"] for item in batch],
+        )
+        batch_audit.append(
+            {"batch_id": batch_id, "packet_ids": [packet.packet_id for packet in packets], "response": result.to_dict()}
+        )
+        actions_by_packet = _packet_actions(result.text) if result.ok else {}
+        for item in batch:
+            parent_id = str(item["parent_packet_id"])
+            audit = audit_by_packet[parent_id]
+            audit["supplemental_batch_id"] = batch_id
+            packet = item["packet"]
+            actions = actions_by_packet.get(packet.packet_id)
+            if actions is None:
+                audit["supplemental_state"] = "provider_failed" if not result.ok else "missing_batch_result"
+                continue
+            validation = validate_semantic_actions(actions, packet, request_budget_available=False)
+            audit["supplemental_state"] = "validated"
+            audit["supplemental_validation"] = validation
+            accepted_by_packet.setdefault(parent_id, []).extend(validation["accepted_relations"])
+
+    for item in work_items:
+        packet = item["packet"]
+        audit = audit_by_packet.get(packet.packet_id)
+        if audit is not None:
+            agent_audit.append(audit)
+        _append_relations(
+            output,
+            accepted_by_packet.get(packet.packet_id, []),
+            item=item,
+            classes=classes,
+            supplemental_call_count=int((audit or {}).get("supplemental_call_count", 0)),
+        )
 
     write_json(out_path, {video_id: [serialize_relation_artifact(item) for item in output]})
     write_json(out_path.parent / "evidence_packets.json", {"video_id": video_id, "packets": evidence_packets})
     (out_path.parent / "run.log").write_text(
         json.dumps(
-            {"provider": provider.stats.to_dict(), "errors": errors, "pair_coverage": coverage, "agent_audit": agent_audit},
+            {
+                "provider": provider.stats.to_dict(),
+                "batch_windows_per_call": batch_size,
+                "batch_audit": batch_audit,
+                "errors": errors,
+                "pair_coverage": coverage,
+                "agent_audit": agent_audit,
+            },
             ensure_ascii=False,
             indent=2,
         ),

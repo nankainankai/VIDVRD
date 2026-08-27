@@ -38,18 +38,18 @@
 `track/tracks.jsonl` 每帧一行：
 
 ```json
-{"frame": 1, "tracks": [{"track_id": 1, "local_tracklet_id": 2, "bbox": [5, 5, 25, 35], "bbox_observed": null, "box_source": "interpolated", "class_name": "person", "class_distribution": {"person": 0.8, "man": 0.2}, "identity_source": "offline_stitch", "identity_support": 0.84, "is_predicted": true}]}
+{"frame": 1, "tracks": [{"track_id": 1, "bbox": [5, 5, 25, 35], "bbox_observed": [5, 5, 25, 35], "box_source": "observed", "class_name": "person", "confidence": null, "track_status": "confirmed", "is_predicted": false}]}
 ```
 
 `box_source`：
 
 - `observed`：来自 Rex-Omni 且被跟踪器接收。
-- `interpolated`：前后真实观测之间的短缺口插值。
-- `predicted`：旧产物或未来显式预测使用；当前两条路线的正式输出不读取 OC-SORT 内部预测。
+- `interpolated`：main 在两个真实观测之间补齐的不超过 8 帧的短缺口。
+- `predicted`：旧产物或未来显式预测使用。
 
 `track_status` 区分 `tentative` 与 `confirmed`；`track_quality` 保存真实观测数、距最近观测帧数和类别稳定度。旧产物缺少这些字段时由兼容层填充，不改变原 JSON。
 
-`local_tracklet_id` 是在线阶段永不复用的局部编号，`track_id` 是离线拼接后的最终全局编号。`identity_support` 是关联代价转换出的启发式支持度，不是校准概率。`track/tracklets.json` 保存每个局部片段的时间、框、软类别和平均外观向量；`track/stitch_links.json` 保存被接受的有向拼接边、逐项代价与 local-to-global 映射。所有跟踪时间阈值均以真实视频帧计。
+当前正式路线直接使用 OC-SORT 经适配器映射后的 `track_id`。OC-SORT 的更新步按检测锚点计，输出帧号和插值间隔按真实视频帧计。`track/tracklets.json` 和 `track/stitch_links.json` 为兼容旧产物保留，但在正式路线中分别为空列表和 `enabled=false`。
 
 最终 `pred/trajectories.json`：
 
@@ -107,7 +107,7 @@
 
 ## Agent-lite 证据与动作
 
-`semantic/evidence_packets.json` 保存语义 Agent 实际看到的证据边界。每个 `EvidencePacket` 至少包含：视频与窗口标识、闭区间帧范围、已展示帧、当前轨迹对共同可见帧、两个轨迹的 ID 与类别、允许判断的有向候选谓词及谓词族、轨迹特征、框来源统计、`candidate_policy`、`evidence_mode`，以及允许补看的最大帧数。初始 packet 使用 `hierarchical_predicate_v1` 和 `event_burst_dual_view`；若 Agent 申请补帧或扩候选，补充调用使用独立的 `:supplemental` packet 并一并落盘。
+`semantic/evidence_packets.json` 保存语义 Agent 实际看到的证据边界。每个 `EvidencePacket` 至少包含：视频与窗口标识、闭区间帧范围、已展示帧、当前轨迹对共同可见帧、两个轨迹的 ID 与类别、允许判断的有向候选谓词及谓词族、轨迹特征、框来源统计、`candidate_policy`、`evidence_mode`，以及允许补看的最大帧数。初始 packet 使用 `hierarchical_predicate_v1` 和 `event_burst_dual_view`。同一对象对的连续 packet 最多 6 个组成一次请求，模型以 `packet_results[].packet_id` 分别返回动作；若 Agent 申请补帧或扩候选，补充调用使用独立的 `:supplemental` packet 并一并落盘。
 
 语义阶段只接受以下动作：
 
@@ -120,4 +120,4 @@
 
 最终复核阶段只接受 `accept_relation`、`reject_relation`、`change_predicate`、`refine_interval` 和 `defer_for_review`。动作必须引用既有 `relation_id`；谓词只能来自官方词表；区间只能收窄，证据帧只能取自该关系已有证据。Agent 不能触发重检测、重跟踪、外部写入、模型升级或循环调用。
 
-语义调用、原始响应、校验结果和被拒动作写入 `semantic/run.log` 的 `agent_audit`；复核动作、被拒动作以及应用前后快照写入 `verify/qc.json`。互斥规则产生的内部 `delete` 是确定性程序动作，不属于 AgentAction。
+语义调用批次与原始响应写入 `semantic/run.log.batch_audit`；逐 packet 校验结果和被拒动作写入 `agent_audit`。复核动作、被拒动作以及应用前后快照写入 `verify/qc.json`。互斥规则产生的内部 `delete` 是确定性程序动作，不属于 AgentAction。

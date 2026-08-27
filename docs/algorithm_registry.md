@@ -8,7 +8,7 @@
 | `run_mode` | 定位 | 当前状态 |
 |---|---|---|
 | `reference_dense` | 逐帧检测与 OC-SORT 参照 | 每个视频帧调用 `update_public()`；关闭 Agent 语义调用 |
-| `main` | 项目正式路线 | 稀疏检测、MASA 外观联合关联、离线 tracklet 拼接、有界插值和 Agent 关系判断 |
+| `main` | 项目正式路线 | 稀疏 Rex 检测、锚点帧 OC-SORT、短缺口补全、批量 Agent 关系判断 |
 
 旧版配置保存在 `configs/archive/legacy_agent_v1.json`，只用于追溯，不是第三种模式。
 
@@ -31,12 +31,12 @@
 - 冻结源码：`src/vidvrd_auto/tracking/third_party/oc_sort/`
 - 来源和文件哈希：`src/vidvrd_auto/tracking/third_party/oc_sort/SOURCE.md`
 - 项目适配器：`src/vidvrd_auto/tracking/ocsort/adapter.py`
-- 当前项目修改：按类别拆分 backend、全局轨迹 ID、类别投票、裁框和轨迹元数据。
-- `ocsort_reference`：每个视频帧调用上游 `update_public()`，只消费其返回结果。类别分组和全局 ID 仍属于项目适配，因此称“参照”而不是未经修改的完整系统。
-- `sparse_ocsort`：旧产物兼容入口，不再是 `main`。它只在检测锚点调用相同核心，时间以锚点步计。
+- 工程适配：检测框裁剪与格式转换、输出 ID 映射、类别投票和轨迹元数据；不修改 `third_party` 中的 OC-SORT 算法源码。
+- `ocsort_reference`：`reference_dense` 在每个视频帧调用上游 `update_public()`，只用于逐帧检测参照。
+- `sparse_ocsort`：当前 `main`。只在 Rex 检测锚点调用同一上游核心，OC-SORT 时间步为检测锚点；确认输出映射回真实帧号，短缺口补全发生在跟踪器之外。
 - Rex 没有分数时，OC-SORT 内部关联统一使用常量权重；该值不写成检测或轨迹置信度。
 
-## MASA 外观与项目联合跟踪
+## 未接入的 MASA/hybrid 实验模块
 
 - 上游仓库：<https://github.com/siyuanliii/masa>
 - 核对 commit：`c5472b9c7615f35abdf1188cb1a0c5408fe50d66`
@@ -45,10 +45,11 @@
 - 项目外观适配器：`src/vidvrd_auto/tracking/appearance/masa.py`
 - 项目在线关联器：`src/vidvrd_auto/tracking/hybrid/tracker.py`
 - 项目离线拼接器：`src/vidvrd_auto/tracking/stitching.py`
-- `hybrid_sparse_reid`：只在真实检测锚点提取 MASA embedding；联合代价由运动、外观、IoU 和软类别组成，并用 Hungarian 做一对一关联。速度、失联寿命和间隔全部按真实视频帧号计算。
+- 这组源码不在 `track_video()` 的算法选择集合中，正式配置也没有 `hybrid_sparse_reid` 入口。
+- 实验实现原计划只在真实检测锚点提取 MASA embedding，再用运动、外观、IoU 和软类别联合代价做关联。
 - 类别不是硬分区。每条 tracklet 保存加权类别分布，类别不一致只产生低权重惩罚。
 - 在线编号写为 `local_tracklet_id`；离线同场景 DAG 路径覆盖生成最终 `track_id`，边及各项代价完整落盘。全局 ID 写回之后才允许短缺口插值。
-- 该实现借用 MASA 官方外观特征，但联合代价、稀疏时钟与离线拼接均为项目自有实现，不得把整体称为 MASA 官方 tracker。
+- 该模块借用 MASA 官方外观特征，但其联合代价、稀疏时钟与离线拼接均为项目自有实验代码，不属于当前工程路线，也不作为算法效果结论。
 - 无原生检测分数时，传给 MASA 的 `1.0` 仅表示统一关联权重；不得把它写为检测或轨迹置信度。轨迹 `confidence` 在没有原生分数时保持 `null`。
 
 ## 关系候选与时间聚合
@@ -71,8 +72,8 @@
 - 词表发现：`src/vidvrd_auto/nodes/vocabulary.py`
 - 关系判断：`src/vidvrd_auto/relations/semantic.py`
 - 关系复核：`src/vidvrd_auto/relations/ops.py`
-- Agent 契约：`src/vidvrd_auto/agents/`，登记名 `bounded_hierarchical_agent_v2`。
-- 当前性质：EvidencePacket + 有限 AgentAction + 确定性 validator。语义节点允许 `request_more_frames` 和一次邻接谓词族扩展，两者共享一次补充调用；补帧只能来自目标对共同可见帧。
+- Agent 契约：`src/vidvrd_auto/agents/`，登记名 `bounded_batched_agent_v3`。
+- 当前性质：EvidencePacket + 有限 AgentAction + 确定性 validator。同一对象对最多 6 个连续窗口共享一次请求，响应仍按 `packet_id` 独立验证。语义节点允许 `request_more_frames` 和一次邻接谓词族扩展，两者共享一次补充调用；补帧只能来自目标对共同可见帧。
 - 正式写入：语义接受动作验证后才生成候选关系；最终复核只有在 `apply_actions=true` 且动作通过关系 ID、谓词和区间校验后才修改结果，并保存前后快照。
 - 明确不支持：自动重检测、重跟踪、模型升级、多轮循环和 Agent 直接修改轨迹。
 
@@ -81,7 +82,7 @@
 - 官方兼容实现：`src/vidvrd_auto/evaluation/official/vidvrd.py`，登记名 `imagenet_vidvrd_official_2017_compatible_v1`。
 - 对照来源：MIT 许可的 `xdshang/VidVRD-helper`；逐视频 VOC AP、每视频 top-K 后累计 Recall、类别三元组 tagging P@K 与上游协议一致。
 - 项目适配：ID 关系与轨迹字典先转换为类别三元组和关系区间内连续 tubes；轨迹缺口会切成多个连续预测并记录数量。
-- 诊断实现：`src/vidvrd_auto/evaluation/diagnostic/track_aligned.py`，登记名 `diagnostic_track_aligned_v1`；全轨迹匈牙利映射、时间 IoU、base/novel 与逐谓词分析仅用于内部定位问题。
+- 诊断实现：`src/vidvrd_auto/evaluation/diagnostic/track_aligned.py`，登记名 `diagnostic_track_aligned_v2`；在 VidVRD 实际有标注的 Gold 帧上计算轨迹 IoU 并做匈牙利映射，时间 IoU、base/novel 与逐谓词分析仅用于内部定位问题。
 - 数据边界：`benchmark_official.json` 只选择 test split。当前本地 50 视频 Gold 中只有 10 个 test 视频，所以只能产生协议兼容的部分结果，不能冒充完整 200 视频测试集结果。
 
 ## 代码治理规则

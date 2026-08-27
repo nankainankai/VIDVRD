@@ -114,13 +114,16 @@ class ProvenanceAndHashTests(unittest.TestCase):
         provenance = build_run_provenance(root=root, config=config, config_path=path)
         self.assertEqual(provenance["run_mode"], "main")
         self.assertEqual(provenance["canonical_span_convention"], "half_open")
-        self.assertEqual(provenance["algorithms"]["tracker"]["name"], "hybrid_sparse_reid")
-        self.assertEqual(provenance["algorithms"]["tracker"]["time_unit"], "video_frame")
+        self.assertEqual(provenance["algorithms"]["tracker"]["name"], "sparse_ocsort")
+        self.assertEqual(provenance["algorithms"]["tracker"]["upstream"], "oc_sort")
+        self.assertEqual(provenance["algorithms"]["tracker"]["time_unit"], "detector_anchor")
+        self.assertFalse(provenance["algorithms"]["tracker"]["offline_stitching"])
         self.assertEqual(provenance["algorithms"]["detector"]["sampling"], "adaptive_sparse")
         self.assertEqual(
             provenance["algorithms"]["agent_policy"]["name"],
-            "bounded_hierarchical_agent_v2",
+            "bounded_batched_agent_v3",
         )
+        self.assertEqual(provenance["algorithms"]["agent_policy"]["batch_windows_per_call"], 6)
         self.assertEqual(provenance["algorithms"]["agent_policy"]["candidate_limit"], 14)
         self.assertEqual(provenance["algorithms"]["agent_policy"]["max_supplemental_calls"], 1)
         self.assertEqual(

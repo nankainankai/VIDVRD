@@ -4,11 +4,11 @@
     "schema_version": "1.3",
     "artifact_span_convention": "inclusive",
     "canonical_span_convention": "half_open",
-    "prompt_version": "main-v4-hierarchical-agent"
+    "prompt_version": "main-v7-batched-direction-schema"
   },
   "vocabulary": {
     "discovery_enabled": true,
-    "discovery_model": "qwen-vl-max"
+    "discovery_model": "qwen3.7-plus"
   },
   "detector": {
     "sampling_mode": "adaptive_sparse",
@@ -21,23 +21,21 @@
     "top_k": 1
   },
   "tracking": {
-    "algorithm": "hybrid_sparse_reid",
-    "max_lost_frames": 30,
+    "algorithm": "sparse_ocsort",
+    "max_age": 6,
     "min_hits": 2,
     "min_new_track_conf": 0.0,
-    "appearance_weight": 0.45,
-    "iou_weight": 0.30,
-    "motion_weight": 0.20,
-    "class_weight": 0.05,
-    "stitch_max_gap_frames": 90
+    "class_aware": true,
+    "max_interpolation_gap": 8
   },
   "relations": {
-    "api_model": "qwen-vl-max",
+    "api_model": "qwen3.7-plus",
     "dry_run": false,
     "max_windows": 0,
     "max_pairs_per_window": 0,
     "max_frames_per_window": 8,
     "event_burst_size": 5,
+    "batch_windows_per_call": 6,
     "candidate_limit": 14,
     "expanded_candidate_limit": 24,
     "allow_request_more_frames": true,

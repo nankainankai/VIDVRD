@@ -10,7 +10,7 @@ src/vidvrd_auto/core/            配置、路径、数据契约、本体访问
 src/vidvrd_auto/pipeline/        单视频和多视频编排
 src/vidvrd_auto/nodes/           阶段接口
 src/vidvrd_auto/detection/       Rex-Omni 与时序检测调度
-src/vidvrd_auto/tracking/        OC-SORT 参照、MASA 外观、联合关联、离线拼接与窗口生成
+src/vidvrd_auto/tracking/        OC-SORT 工程适配、实验跟踪模块与窗口生成
 src/vidvrd_auto/relations/       几何、语义、聚合与复核
 src/vidvrd_auto/evaluation/      Gold 转换、轨迹对齐和关系指标
 ```
@@ -20,7 +20,7 @@ src/vidvrd_auto/evaluation/      Gold 转换、轨迹对齐和关系指标
 ## 两条运行路线
 
 - `reference_dense`：逐帧检测，每个视频帧推进一次 OC-SORT，关闭 Agent 关系调用；只用于算法参照。
-- `main`：默认每 5 帧及场景变化时检测；在锚点上用运动、MASA 外观、IoU 和软类别联合关联，再离线拼接 tracklet、插值短缺口，并调用 Agent 判断语义关系；这是项目正式路线。
+- `main`：默认每 5 帧及场景变化时调用 Rex；只在这些检测锚点推进同一 OC-SORT 核心，并在相邻真实观测间补齐短缺口；随后调用 Agent 判断语义关系。这是项目正式路线。
 
 稀疏检测、词表发现和强模型复核都是 `main` 的配置，不再单独定义运行模式。旧版配置只保存在 `configs/archive/`，不属于可运行路线。
 
@@ -36,9 +36,9 @@ src/vidvrd_auto/evaluation/      Gold 转换、轨迹对齐和关系指标
 
 视频逐帧解码，Rex-Omni 默认处理第 0、5、10…帧；若与上一锚点的缩略图差异超过阈值且满足最小间隔，则提前检测。未检测帧仍写入 JSONL 并明确标记 `skipped`。
 
-`reference_dense` 使用固定提交、未经修改的官方 OC-SORT 核心，每帧更新，只作为参照。`main` 使用项目自有 `hybrid_sparse_reid`：所有目标进入同一个关联空间，真实视频帧号决定速度和失联寿命；类别只形成概率分布和小权重代价，不再按类别拆分 tracker。在线关联使用 Hungarian 求解运动、MASA 外观、IoU 与软类别的联合代价。
+两条路线使用同一固定提交、未修改的 OC-SORT 核心。`reference_dense` 每个视频帧调用一次；`main` 只在 Rex 检测锚点调用一次，避免稀疏检测之间的空帧重置 OC-SORT 的确认连续性。项目适配器负责把 Rex 框转换为 `update_public()` 输入，并把确认输出映射回真实视频帧号；随后只在两个真实观测之间做不超过 8 帧的线性补全。主路线不使用外观关联或离线 tracklet 拼接。
 
-在线 ID 明确称为 `local_tracklet_id`。视频结束后，同场景、时间有向且不重叠的 tracklet 进入一前驱一后继的最小代价匹配，得到最终 `track_id`。拼接边及代价写入 `stitch_links.json`；最终全局 ID 写回后，才在两个真实观测之间做有界线性插值。场景切换默认禁止跨场景拼接。
+MASA 外观、hybrid 关联和离线 stitching 源码保留在 `tracking/appearance/`、`tracking/hybrid/` 与 `tracking/stitching.py`，但没有配置入口，也不会被生产流水线导入。
 
 ## 窗口级关系
 
@@ -52,7 +52,7 @@ src/vidvrd_auto/evaluation/      Gold 转换、轨迹对齐和关系指标
 
 几何投票对 observed/interpolated/predicted 分别赋权，并要求至少一帧成对真实观测；输出的是连续证据片段及 `rule_support`，不是整窗口概率。语义节点默认覆盖全部共同可见目标对。每个方向计算归一化距离、边缘间隔、IoU、接近速率、双目标速度、共运动、尺寸比和身份支持等轨迹证据，再按 action/spatial/comparative 根规则映射到可重叠的谓词族。初始候选不超过 14 个，保留易混淆谓词用于对比，不使用类别硬删除。二维可确定的五个几何谓词仍由规则层处理，`front/behind` 和组合谓词保留在语义层。跨窗口阶段按 `(subject, predicate, object)` 聚合区间与证据均连续的片段并生成稳定关系 ID。若人为配置目标对上限，未处理目标对会明确进入 `deferred_pairs`。
 
-语义调用使用 `bounded_hierarchical_agent_v2`。程序优先选择距离最近、IoU 最大和接近变化最强的事件帧，并取最多 5 帧连续局部片段；每帧同时展示带 ID 框的完整场景和高分辨率对象对近景。`EvidencePacket` 包含候选策略、候选谓词族、轨迹特征和证据模式。Agent 可用 `request_more_frames` 补看最多 4 个共同可见帧，也可用 `request_candidate_expansion` 扩展一个已登记的邻接谓词族；两类请求共享唯一一次补充调用，补充后不得再次请求。响应经确定性校验后才转为关系，完整 packet 和调用审计保存在 semantic 目录。
+语义调用使用 `bounded_batched_agent_v3`。程序优先选择距离最近、IoU 最大和接近变化最强的事件帧，并取最多 5 帧连续局部片段；每帧同时展示带 ID 框的完整场景和高分辨率对象对近景。每个窗口仍生成完整 `EvidencePacket`，包含候选策略、候选谓词族、轨迹特征和证据模式。同一无序对象对的连续窗口按时间排序，默认每 6 个 packet 连同原故事板合并为一次请求；模型按 `packet_id` 分别返回结果，每个结果仍由原 validator 独立检查，因此批处理不放宽谓词、区间或证据约束。Agent 可补看最多 4 个共同可见帧或扩展一个邻接谓词族；同一批次产生的补充 packet 也合并调用，补充后不得再次请求。完整 packet、批次和调用审计保存在 semantic 目录。
 
 ## 复核
 

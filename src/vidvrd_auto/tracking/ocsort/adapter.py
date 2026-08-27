@@ -51,9 +51,8 @@ class _Metadata:
 class ObjectTracker:
     """Expose only tracks returned as confirmed by official ``update_public``.
 
-    The caller defines the clock.  ``reference_dense`` calls once per video
-    frame; ``main`` calls once per detector anchor, so ages and hit streaks are
-    measured in anchor observations.
+    The caller defines the clock. The dense reference calls once per video
+    frame; the production route calls once per Rex detection anchor.
     """
 
     def __init__(

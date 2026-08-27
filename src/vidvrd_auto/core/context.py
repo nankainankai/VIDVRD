@@ -10,6 +10,26 @@ from typing import Any, Mapping
 from .config import AppConfig, ConfigSection
 from .paths import VideoPaths
 
+_API_KEY_ENV = "DASHSCOPE_API_KEY"
+
+
+def _default_dotenv_path() -> Path:
+    return Path(__file__).resolve().parents[3] / ".env"
+
+
+def _read_dotenv_value(path: Path, key: str) -> str:
+    if not path.is_file():
+        return ""
+    for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, _, value = line.partition("=")
+        if name.strip() != key:
+            continue
+        return value.strip().strip("'").strip('"')
+    return ""
+
 
 @dataclass(frozen=True)
 class Secrets:
@@ -20,10 +40,16 @@ class Secrets:
         cls,
         *,
         dashscope_api_key: str | None = None,
+        dotenv_path: Path | None = None,
     ) -> Secrets:
-        return cls(
-            dashscope_api_key=(dashscope_api_key or os.getenv("DASHSCOPE_API_KEY", "")).strip(),
-        )
+        explicit = (dashscope_api_key or "").strip()
+        if explicit:
+            return cls(dashscope_api_key=explicit)
+        from_environment = os.getenv(_API_KEY_ENV, "").strip()
+        if from_environment:
+            return cls(dashscope_api_key=from_environment)
+        from_file = _read_dotenv_value(dotenv_path or _default_dotenv_path(), _API_KEY_ENV)
+        return cls(dashscope_api_key=from_file)
 
     @property
     def has_dashscope(self) -> bool:

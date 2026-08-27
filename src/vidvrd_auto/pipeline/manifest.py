@@ -73,7 +73,7 @@ def build_run_provenance(*, root: Path, config: Dict[str, Any], config_path: Pat
         "schema_version": str(project.get("schema_version", "1.3")),
         "artifact_span_convention": str(project.get("artifact_span_convention", "inclusive")),
         "canonical_span_convention": str(project.get("canonical_span_convention", "half_open")),
-        "prompt_version": str(project.get("prompt_version", "main-v4-hierarchical-agent")),
+        "prompt_version": str(project.get("prompt_version", "main-v7-batched-direction-schema")),
         "code_revision": git_revision(root),
         "code_fingerprint": source_tree_fingerprint(root),
         "effective_config_hash": stable_hash(config),
@@ -88,21 +88,22 @@ def build_run_provenance(*, root: Path, config: Dict[str, Any], config_path: Pat
             },
             "tracker": {
                 "name": str(tracking.get("algorithm", "sparse_ocsort")),
-                "upstream": "masa_r50+project_hybrid" if str(tracking.get("algorithm")) == "hybrid_sparse_reid" else "oc_sort",
-                "time_unit": "video_frame",
-                "upstream_revision": str(tracking.get("masa_revision", "")),
-                "appearance_config": str(tracking.get("masa_config", "")),
-                "appearance_model": str(tracking.get("masa_checkpoint", "")),
-                "offline_stitching": str(tracking.get("algorithm")) == "hybrid_sparse_reid",
+                "upstream": "oc_sort",
+                "time_unit": "detector_anchor"
+                if str(tracking.get("algorithm")) == "sparse_ocsort"
+                else "video_frame",
+                "adapter": "project_io_adapter",
+                "offline_stitching": False,
             },
             "vocabulary_agent": str(vocabulary.get("discovery_model", "")),
             "relation_agent": str(relations.get("api_model", "")),
             "agent_policy": {
-                "name": "bounded_hierarchical_agent_v2",
+                "name": "bounded_batched_agent_v3",
                 "candidate_policy": "hierarchical_predicate_v1",
                 "evidence_mode": "event_burst_dual_view",
                 "candidate_limit": int(relations.get("candidate_limit", 14) or 14),
                 "expanded_candidate_limit": int(relations.get("expanded_candidate_limit", 24) or 24),
+                "batch_windows_per_call": int(relations.get("batch_windows_per_call", 6) or 6),
                 "max_supplemental_calls": 1 if bool(relations.get("allow_request_more_frames", True)) else 0,
                 "max_additional_frames": int(relations.get("max_additional_frames", 4) or 0),
                 "allowed_external_mutations": [],
@@ -112,7 +113,7 @@ def build_run_provenance(*, root: Path, config: Dict[str, Any], config_path: Pat
                 "name": "imagenet_vidvrd_official_2017_compatible_v1",
                 "viou_threshold": float(evaluation.get("official_viou_threshold", 0.5) or 0.5),
             },
-            "diagnostic_evaluator": "diagnostic_track_aligned_v1",
+            "diagnostic_evaluator": "diagnostic_track_aligned_v2",
         },
     }
 

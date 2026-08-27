@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any, Dict, List
 
 import cv2
 
 from vidvrd_auto.tracking.ocsort import ObjectTracker
-from vidvrd_auto.tracking.stitching import apply_global_ids, stitch_tracklets
 from vidvrd_auto.utils.io import iter_jsonl, write_json
 
 
@@ -174,9 +173,8 @@ def track_video(
     detections_path: Path,
     out_dir: Path,
     config: Dict[str, Any],
-    appearance_encoder_factory: Callable[[Dict[str, Any]], Any] | None = None,
 ) -> None:
-    """Run the selected reference or hybrid tracker and write frame tracks."""
+    """Run OC-SORT and adapt its confirmed outputs to the project artifacts."""
 
     out_dir.mkdir(parents=True, exist_ok=True)
     cap = cv2.VideoCapture(str(video_path))
@@ -186,49 +184,20 @@ def track_video(
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     detector_rows, anchor_frames, scene_by_frame = _detections(detections_path)
-    algorithm = str(config.get("algorithm", "sparse_ocsort"))
-    if algorithm not in {"ocsort_reference", "sparse_ocsort", "hybrid_sparse_reid"}:
+    algorithm = str(config.get("algorithm", "ocsort_reference"))
+    if algorithm not in {"ocsort_reference", "sparse_ocsort"}:
         raise ValueError(f"unknown tracking algorithm: {algorithm}")
-    if algorithm == "hybrid_sparse_reid":
-        from vidvrd_auto.tracking.hybrid import HybridTracker
-
-        tracker = HybridTracker(
-            min_hits=int(config.get("min_hits", 2)),
-            max_lost_frames=int(config.get("max_lost_frames", 30)),
-            min_new_track_conf=float(config.get("min_new_track_conf", 0.0)),
-            appearance_weight=float(config.get("appearance_weight", 0.45)),
-            iou_weight=float(config.get("iou_weight", 0.30)),
-            motion_weight=float(config.get("motion_weight", 0.20)),
-            class_weight=float(config.get("class_weight", 0.05)),
-            max_match_cost=float(config.get("max_match_cost", 0.72)),
-            min_iou=float(config.get("min_iou", 0.01)),
-            min_appearance_similarity=float(config.get("min_appearance_similarity", 0.35)),
-            max_center_distance=float(config.get("max_center_distance", 4.0)),
-            appearance_memory=int(config.get("appearance_memory", 20)),
-        )
-        if appearance_encoder_factory is not None:
-            appearance_encoder = appearance_encoder_factory(config)
-        else:
-            from vidvrd_auto.tracking.appearance import MasaAppearanceEncoder
-
-            appearance_encoder = MasaAppearanceEncoder(
-                config_path=str(config["masa_config"]),
-                checkpoint_path=str(config["masa_checkpoint"]),
-                device=str(config.get("appearance_device", "cuda:0")),
-                fp16=bool(config.get("appearance_fp16", True)),
-            )
-    else:
-        tracker = ObjectTracker(
-            iou_threshold=float(config.get("iou_threshold", 0.5)),
-            max_age=int(config.get("max_age", 30)),
-            min_hits=int(config.get("min_hits", 3)),
-            class_aware=bool(config.get("class_aware", True)),
-            min_new_track_conf=float(config.get("min_new_track_conf", 0.35)),
-            delta_t=int(config.get("delta_t", 3)),
-            inertia=float(config.get("inertia", 0.2)),
-            class_vote_window=int(config.get("class_vote_window", 12)),
-            class_compatibility=config.get("class_compatibility", {}),
-        )
+    tracker = ObjectTracker(
+        iou_threshold=float(config.get("iou_threshold", 0.5)),
+        max_age=int(config.get("max_age", 30)),
+        min_hits=int(config.get("min_hits", 3)),
+        class_aware=bool(config.get("class_aware", True)),
+        min_new_track_conf=float(config.get("min_new_track_conf", 0.35)),
+        delta_t=int(config.get("delta_t", 3)),
+        inertia=float(config.get("inertia", 0.2)),
+        class_vote_window=int(config.get("class_vote_window", 12)),
+        class_compatibility=config.get("class_compatibility", {}),
+    )
 
     tracks_path = out_dir / "tracks.jsonl"
     frame_outputs: Dict[int, Dict[int, Dict[str, Any]]] = {}
@@ -241,26 +210,11 @@ def track_video(
                 break
             should_update = algorithm == "ocsort_reference" or frame_count in anchor_frames
             if should_update:
-                if algorithm == "hybrid_sparse_reid":
-                    detections = detector_rows.get(frame_count, [])
-                    embeddings = appearance_encoder.encode(
-                        frame, detections, frame_num=frame_count, video_len=total_frames
-                    )
-                    tracks = _compact(
-                        tracker.update(
-                            frame,
-                            detections,
-                            embeddings,
-                            frame_num=frame_count,
-                            scene_id=scene_by_frame.get(frame_count, 0),
-                        )
-                    )
-                else:
-                    try:
-                        tracks = _compact(tracker.track(frame, detector_rows.get(frame_count, []), frame_num=frame_count))
-                    except Exception as exc:
-                        tracks = []
-                        errors.append(f"frame {frame_count}: {exc}")
+                try:
+                    tracks = _compact(tracker.track(frame, detector_rows.get(frame_count, []), frame_num=frame_count))
+                except Exception as exc:
+                    tracks = []
+                    errors.append(f"frame {frame_count}: {exc}")
                 for track in tracks:
                     target_frame = int(track.pop("frame", frame_count))
                     frame_outputs.setdefault(target_frame, {})[int(track["track_id"])] = track
@@ -268,26 +222,8 @@ def track_video(
     finally:
         cap.release()
 
-    if algorithm == "hybrid_sparse_reid":
-        summaries = tracker.summaries()
-        write_json(
-            out_dir / "tracklets.json",
-            {"schema": "tracklet-summary-v1", "time_unit": "video_frame", "tracklets": summaries},
-        )
-        global_ids, links = stitch_tracklets(summaries, config)
-        frame_outputs = apply_global_ids(frame_outputs, global_ids, links)
-        write_json(
-            out_dir / "stitch_links.json",
-            {
-                "enabled": True,
-                "method": "minimum_cost_dag_path_cover",
-                "local_to_global": {str(key): value for key, value in sorted(global_ids.items())},
-                "links": links,
-            },
-        )
-    else:
-        write_json(out_dir / "tracklets.json", {"schema": "tracklet-summary-v1", "tracklets": []})
-        write_json(out_dir / "stitch_links.json", {"enabled": False, "links": []})
+    write_json(out_dir / "tracklets.json", {"schema": "tracklet-summary-v1", "tracklets": []})
+    write_json(out_dir / "stitch_links.json", {"enabled": False, "links": []})
 
     with tracks_path.open("w", encoding="utf-8") as handle:
         for frame in range(frame_count):

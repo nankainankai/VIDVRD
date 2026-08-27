@@ -39,7 +39,7 @@ def load_config(config_path: Path | None = None) -> Dict[str, Any]:
     project.setdefault("schema_version", "1.3")
     project.setdefault("artifact_span_convention", "inclusive")
     project.setdefault("canonical_span_convention", "half_open")
-    project.setdefault("prompt_version", "main-v4-hierarchical-agent")
+    project.setdefault("prompt_version", "main-v7-batched-direction-schema")
     return cfg
 
 

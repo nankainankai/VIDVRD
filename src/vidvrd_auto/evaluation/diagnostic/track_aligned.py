@@ -23,21 +23,22 @@ def _box_iou(left: Sequence[float], right: Sequence[float]) -> Tuple[float, floa
     return intersection, left_area + right_area - intersection
 
 
-def trajectory_viou(left: Dict[str, Any], right: Dict[str, Any]) -> float:
-    left_boxes = left.get("trajectory", {})
-    right_boxes = right.get("trajectory", {})
-    frames = set(left_boxes) | set(right_boxes)
+def gold_supported_trajectory_iou(prediction: Dict[str, Any], gold: Dict[str, Any]) -> float:
+    """Measure tube overlap only where the sparse VidVRD Gold tube is annotated."""
+
+    pred_boxes = prediction.get("trajectory", {})
+    gold_boxes = gold.get("trajectory", {})
+    frames = set(gold_boxes)
     intersection = 0.0
     union = 0.0
     for frame in frames:
-        left_box, right_box = left_boxes.get(frame), right_boxes.get(frame)
-        if left_box is not None and right_box is not None:
-            current_intersection, current_union = _box_iou(left_box, right_box)
+        pred_box, gold_box = pred_boxes.get(frame), gold_boxes.get(frame)
+        if pred_box is not None:
+            current_intersection, current_union = _box_iou(pred_box, gold_box)
             intersection += current_intersection
             union += current_union
         else:
-            box = left_box if left_box is not None else right_box
-            union += max(0.0, box[2] - box[0]) * max(0.0, box[3] - box[1])
+            union += max(0.0, gold_box[2] - gold_box[0]) * max(0.0, gold_box[3] - gold_box[1])
     return intersection / union if union > 0 else 0.0
 
 
@@ -52,7 +53,7 @@ def align_trajectories(
         for gold_index, gold_track in enumerate(gold):
             if pred_category != normalize_object(str(gold_track.get("category", "unknown"))):
                 continue
-            matrix[pred_index, gold_index] = trajectory_viou(pred_track, gold_track)
+            matrix[pred_index, gold_index] = gold_supported_trajectory_iou(pred_track, gold_track)
     pred_indices, gold_indices = linear_sum_assignment(-matrix)
     mapping: Dict[int, int] = {}
     matches: List[Dict[str, Any]] = []
@@ -63,7 +64,7 @@ def align_trajectories(
         pred_id = int(pred[pred_index]["track_id"])
         gold_id = int(gold[gold_index]["track_id"])
         mapping[pred_id] = gold_id
-        matches.append({"pred_track_id": pred_id, "gold_track_id": gold_id, "viou": round(score, 6)})
+        matches.append({"pred_track_id": pred_id, "gold_track_id": gold_id, "gold_supported_iou": round(score, 6)})
     return mapping, matches
 
 
@@ -260,17 +261,19 @@ def run_track_aligned_diagnostic(
     gold_track_count = sum(len(values) for values in gold_tracks.values())
     pred_track_count = sum(len(values) for values in pred_tracks.values())
     metrics: Dict[str, Any] = {
-        "evaluator": "diagnostic_track_aligned_v1",
+        "evaluator": "diagnostic_track_aligned_v2",
         "metric_namespace": "diagnostic",
         "evaluated_videos": sorted(prediction_videos),
         "evaluated_video_count": len(prediction_videos),
-        "thresholds": {"track_viou": track_viou_threshold, "relation_tiou": relation_tiou_threshold},
+        "thresholds": {"track_gold_supported_iou": track_viou_threshold, "relation_tiou": relation_tiou_threshold},
         "diagnostic_tracks": {
             "gold": gold_track_count,
             "predicted": pred_track_count,
             "matched": matched_tracks,
             "gold_recall": matched_tracks / gold_track_count if gold_track_count else 0.0,
-            "mean_viou": sum(item["viou"] for values in match_rows.values() for item in values) / matched_tracks if matched_tracks else 0.0,
+            "mean_gold_supported_iou": sum(
+                item["gold_supported_iou"] for values in match_rows.values() for item in values
+            ) / matched_tracks if matched_tracks else 0.0,
             "matches": match_rows,
         },
         "diagnostic_relation_summary": overall,
@@ -288,10 +291,10 @@ def run_track_aligned_diagnostic(
     lines = [
         "# Track-aligned diagnostic (not official VidVRD metrics)",
         "",
-        f"- Track matching: vIoU >= {track_viou_threshold:.2f}",
+        f"- Track matching on annotated Gold frames: IoU >= {track_viou_threshold:.2f}",
         f"- Relation matching: tIoU >= {relation_tiou_threshold:.2f}",
-        f"- Evaluator: `diagnostic_track_aligned_v1`",
-        f"- Tracks: {matched_tracks}/{gold_track_count} matched, mean vIoU={metrics['diagnostic_tracks']['mean_viou']:.4f}",
+        f"- Evaluator: `diagnostic_track_aligned_v2`",
+        f"- Tracks: {matched_tracks}/{gold_track_count} matched, mean Gold-supported IoU={metrics['diagnostic_tracks']['mean_gold_supported_iou']:.4f}",
         "",
         "## Overall",
         "",

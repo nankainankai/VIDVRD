@@ -42,6 +42,17 @@ class ContextTests(unittest.TestCase):
         self.assertEqual(secrets.dashscope_api_key, "env-key")
         self.assertEqual(overridden.dashscope_api_key, "cli-key")
 
+    def test_secrets_load_from_dotenv_when_environment_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dotenv = Path(tmp) / ".env"
+            dotenv.write_text('DASHSCOPE_API_KEY="file-key"\n', encoding="utf-8")
+            with patch.dict(os.environ, {"DASHSCOPE_API_KEY": ""}):
+                from_file = Secrets.from_env(dotenv_path=dotenv)
+            with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "env-key"}):
+                env_wins = Secrets.from_env(dotenv_path=dotenv)
+        self.assertEqual(from_file.dashscope_api_key, "file-key")
+        self.assertEqual(env_wins.dashscope_api_key, "env-key")
+
 
 class SchemaTests(unittest.TestCase):
     def test_detection_round_trip_preserves_extra_fields(self) -> None:
