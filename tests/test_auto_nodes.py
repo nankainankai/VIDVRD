@@ -64,6 +64,36 @@ class AutoNodeTests(unittest.TestCase):
             self.assertEqual(result["risk_track_ids"], [1])
             self.assertTrue(result["needs_strong_review"])
 
+    def test_track_qc_reports_internal_gaps_without_promoting_them_to_policy(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            tracks = root / "tracks.jsonl"
+            windows = root / "windows.json"
+            out = root / "track_qc.json"
+            rows = [
+                {"frame": 0, "tracks": [{"track_id": 3, "bbox": [0, 0, 10, 10], "bbox_observed": [0, 0, 10, 10], "box_source": "observed", "class_name": "bicycle"}]},
+                {"frame": 1, "tracks": [{"track_id": 3, "bbox": [1, 0, 11, 10], "bbox_observed": None, "box_source": "interpolated", "class_name": "bicycle"}]},
+                {"frame": 2, "tracks": []},
+                {"frame": 3, "tracks": []},
+                {"frame": 4, "tracks": [{"track_id": 3, "bbox": [4, 0, 14, 10], "bbox_observed": [4, 0, 14, 10], "box_source": "observed", "class_name": "bicycle"}]},
+            ]
+            _write_text(tracks, "".join(json.dumps(row) + "\n" for row in rows))
+            _write_text(windows, json.dumps({"windows": []}))
+            result = run_track_qc(
+                tracks_jsonl=tracks,
+                windows_json=windows,
+                out_json=out,
+                config={"min_track_frames": 1, "max_center_jump_ratio": 10.0},
+            )
+            metrics = result["track_continuity"]["3"]
+            self.assertEqual(metrics["segment_count"], 2)
+            self.assertEqual(metrics["max_gap_frames"], 2)
+            self.assertEqual(metrics["coverage_ratio"], 0.6)
+            self.assertEqual(metrics["observed_ratio"], 0.4)
+            self.assertEqual(metrics["interpolation_ratio"], 0.3333)
+            self.assertEqual(result["continuity_issue_count"], 1)
+            self.assertEqual(result["risk_track_ids"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

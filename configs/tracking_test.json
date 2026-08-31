@@ -1,0 +1,5 @@
+{
+  "project": {"run_mode": "main"},
+  "vocabulary": {"discovery_enabled": false},
+  "evaluate": {"enabled": false}
+}

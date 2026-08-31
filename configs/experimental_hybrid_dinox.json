@@ -11,7 +11,7 @@
     "discovery_model": "qwen3.7-plus"
   },
   "detector": {
-    "detector_backend": "rexomni",
+    "detector_backend": "hybrid_rex_dinox",
     "sampling_mode": "fixed_sparse",
     "detection_interval": 3,
     "min_detection_interval": 3,
@@ -19,7 +19,12 @@
     "batch_size": 5,
     "temperature": 0.0,
     "top_p": 0.05,
-    "top_k": 1
+    "top_k": 1,
+    "dinox_interval": 15,
+    "dinox_model": "DINO-X-1.0",
+    "dinox_api_key_env": "DDS_API_TOKEN",
+    "dinox_bbox_threshold": 0.25,
+    "dinox_iou_threshold": 0.8
   },
   "tracking": {
     "algorithm": "sparse_ocsort",

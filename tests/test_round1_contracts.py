@@ -118,7 +118,10 @@ class ProvenanceAndHashTests(unittest.TestCase):
         self.assertEqual(provenance["algorithms"]["tracker"]["upstream"], "oc_sort")
         self.assertEqual(provenance["algorithms"]["tracker"]["time_unit"], "detector_anchor")
         self.assertFalse(provenance["algorithms"]["tracker"]["offline_stitching"])
-        self.assertEqual(provenance["algorithms"]["detector"]["sampling"], "adaptive_sparse")
+        self.assertEqual(provenance["algorithms"]["detector"]["name"], "rexomni")
+        self.assertEqual(provenance["algorithms"]["detector"]["dinox_model"], "")
+        self.assertEqual(provenance["algorithms"]["detector"]["dinox_interval"], 0)
+        self.assertEqual(provenance["algorithms"]["detector"]["sampling"], "fixed_sparse")
         self.assertEqual(
             provenance["algorithms"]["agent_policy"]["name"],
             "bounded_batched_agent_v3",

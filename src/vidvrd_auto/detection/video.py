@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import cv2
 
@@ -12,7 +12,7 @@ from vidvrd_auto.detection.rex import RexDetector
 from vidvrd_auto.detection.temporal_fusion import annotate_batch_detections
 
 
-DetectorFactory = Callable[..., RexDetector]
+DetectorFactory = Callable[..., Any]
 
 
 def _compact(objects: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -34,7 +34,7 @@ def _compact(objects: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
             }
         except (TypeError, ValueError):
             continue
-        for key in ("source", "batch_id", "batch_frame_indices", "raw_class_name"):
+        for key in ("source", "batch_id", "batch_frame_indices", "raw_class_name", "association_weight"):
             if key in obj:
                 item[key] = obj[key]
         output.append(item)
@@ -57,22 +57,46 @@ def _draw(frame: Any, objects: Sequence[Dict[str, Any]]) -> Any:
     return image
 
 
-def _make_detector(config: Dict[str, Any], factory: DetectorFactory) -> RexDetector:
-    return factory(
-        model_path=str(config.get("rex_model_path", "")),
-        backend=str(config.get("rex_backend", "transformers")),
-        categories=config.get("rex_categories", "person"),
-        detection_interval=1,
-        min_box_area=float(config.get("rex_min_box_area", 500.0)),
-        max_detections_per_frame=int(config.get("rex_max_detections_per_frame", 60)),
-        max_tokens=int(config.get("rex_max_tokens", 512)),
-        max_pixels=int(config.get("rex_max_pixels", 640 * 640)),
+def _rex_kwargs(config: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "model_path": str(config.get("rex_model_path", "")),
+        "backend": str(config.get("rex_backend", "transformers")),
+        "categories": config.get("rex_categories", "person"),
+        "detection_interval": 1,
+        "min_box_area": float(config.get("rex_min_box_area", 500.0)),
+        "max_detections_per_frame": int(config.get("rex_max_detections_per_frame", 60)),
+        "max_tokens": int(config.get("rex_max_tokens", 512)),
+        "max_pixels": int(config.get("rex_max_pixels", 640 * 640)),
+        "category_aliases": dict(config.get("category_aliases", {})),
+        "temperature": float(config.get("temperature", 0.0)),
+        "top_p": float(config.get("top_p", 0.05)),
+        "top_k": int(config.get("top_k", 1)),
+        "repetition_penalty": float(config.get("repetition_penalty", 1.05)),
+    }
+
+
+def _make_detector(config: Dict[str, Any], factory: Optional[DetectorFactory]) -> Any:
+    rex_kwargs = _rex_kwargs(config)
+    if factory is not None:
+        return factory(**rex_kwargs)
+    detector_backend = str(config.get("detector_backend", "rexomni")).strip().lower()
+    rex = RexDetector(**rex_kwargs)
+    if detector_backend not in {"hybrid", "hybrid_rex_dinox"}:
+        return rex
+
+    from vidvrd_auto.detection.dinox import DinoXDetector
+    from vidvrd_auto.detection.hybrid import HybridDetector
+
+    dinox = DinoXDetector(
+        categories=config.get("rex_categories", []),
         category_aliases=dict(config.get("category_aliases", {})),
-        temperature=float(config.get("temperature", 0.0)),
-        top_p=float(config.get("top_p", 0.05)),
-        top_k=int(config.get("top_k", 1)),
-        repetition_penalty=float(config.get("repetition_penalty", 1.05)),
+        model=str(config.get("dinox_model", "DINO-X-1.0")),
+        api_key_env=str(config.get("dinox_api_key_env", "DDS_API_TOKEN")),
+        bbox_threshold=float(config.get("dinox_bbox_threshold", 0.25)),
+        iou_threshold=float(config.get("dinox_iou_threshold", 0.8)),
+        max_detections_per_frame=int(config.get("rex_max_detections_per_frame", 60)),
     )
+    return HybridDetector(rex=rex, dinox=dinox, dinox_interval=int(config.get("dinox_interval", 15)))
 
 
 def _thumbnail(frame: Any) -> Any:
@@ -90,7 +114,7 @@ def detect_video(
     out_dir: Path,
     config: Dict[str, Any],
     log_path: Path,
-    detector_factory: DetectorFactory = RexDetector,
+    detector_factory: Optional[DetectorFactory] = None,
 ) -> None:
     """Decode a video and write the established frame-wise detection artifacts."""
 
@@ -100,6 +124,7 @@ def detect_video(
     meta_path = out_dir / "meta.json"
     box_video_path = out_dir / "preview.mp4"
     batch_size = max(1, int(config.get("batch_size", 5)))
+    sampling_mode = str(config.get("sampling_mode", "adaptive_sparse")).strip().lower()
     interval = max(1, int(config.get("detection_interval", 5)))
     min_interval = min(interval, max(1, int(config.get("min_detection_interval", 2))))
     scene_threshold = max(0.0, float(config.get("scene_change_threshold", 0.2)))
@@ -163,9 +188,12 @@ def detect_video(
                 gap = index - last_anchor
                 score = _change_score(last_anchor_thumb, thumb) if last_anchor_thumb is not None else 0.0
                 scheduled = gap >= interval
-                changed = last_anchor_thumb is not None and gap >= min_interval and scene_threshold > 0 and score >= scene_threshold
+                if sampling_mode == "fixed_sparse":
+                    changed = scheduled and last_anchor_thumb is not None and scene_threshold > 0 and score >= scene_threshold
+                else:
+                    changed = last_anchor_thumb is not None and gap >= min_interval and scene_threshold > 0 and score >= scene_threshold
                 anchor = index == 0 or scheduled or changed
-                reason = "first" if index == 0 else ("scene_change" if changed and not scheduled else "interval")
+                reason = "first" if index == 0 else ("scene_change" if changed else "interval")
                 pending.append((index, frame, anchor, reason if anchor else "sparse_schedule", score))
                 if anchor:
                     pending_anchors.append((index, frame))
@@ -186,6 +214,7 @@ def detect_video(
         if writer is not None:
             writer.release()
 
+    detector_stats = detector.get_stats()
     meta = {
         "video": {
             "path": str(video_path),
@@ -193,9 +222,9 @@ def detect_video(
             "total_frames": int(total_frames),
             "duration": float(duration),
         },
-        "detector_stats": detector.get_stats(),
+        "detector_stats": detector_stats,
         "sampling": {
-            "mode": str(config.get("sampling_mode", "adaptive_sparse")),
+            "mode": sampling_mode,
             "detection_interval": interval,
             "min_detection_interval": min_interval,
             "scene_change_threshold": scene_threshold,
@@ -207,7 +236,7 @@ def detect_video(
     }
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     log_path.write_text(
-        "mode=in_process_rexomni\n"
+        f"mode=in_process_{detector_stats.get('backend', 'unknown')}\n"
         f"video={video_path}\nframes={frame_count}\nanchors={anchor_count}\n"
         f"detection_interval={interval}\nbatch_size={batch_size}\nerrors={len(errors)}\n"
         + "\n".join(errors[:20]),
@@ -220,7 +249,7 @@ def _flush_records(
     records: List[Tuple[int, Any, bool, str, float]],
     anchors: List[Tuple[int, Any]],
     batch_id: int,
-    detector: RexDetector,
+    detector: Any,
     write_row: Callable[[Any, int, Any, List[Dict[str, Any]], Dict[str, Any] | None], None],
     errors: List[str],
     interval: int,
@@ -231,25 +260,38 @@ def _flush_records(
     detected_by_frame: Dict[int, List[Dict[str, Any]]] = {}
     if anchors:
         try:
-            detected = detector.detect_batch(frames)
+            indexed = getattr(detector, "detect_batch_indexed", None)
+            if callable(indexed):
+                detected = indexed(frames, frame_indices=indices)
+            else:
+                detected = detector.detect_batch(frames)
+            detector_backend = str(detector.get_stats().get("backend", "rexomni"))
             detected = annotate_batch_detections(
-                detected, frame_indices=indices, batch_id=batch_id, source="rexomni"
+                detected, frame_indices=indices, batch_id=batch_id, source=detector_backend
             )
         except Exception as exc:
             detected = [[] for _ in frames]
             error = str(exc)
             errors.append(f"batch {batch_id} {indices}: {error}")
         detected_by_frame = {index: _compact(objects) for index, objects in zip(indices, detected)}
+    source_for_frame = getattr(detector, "source_for_frame", None)
     for index, frame, anchor, reason, score in records:
+        objects = detected_by_frame.get(index, [])
+        if anchor and callable(source_for_frame):
+            source = str(source_for_frame(index))
+        elif anchor and objects:
+            source = str(objects[0].get("source", "rexomni"))
+        else:
+            source = "rexomni" if anchor else "sparse_schedule"
         batch = {
             "batch_id": int(batch_id) if anchor else None,
             "frame_indices": indices if anchor else [],
-            "source": "rexomni" if anchor else "sparse_schedule",
+            "source": source,
             "status": "observed" if anchor else "skipped",
             "reason": reason,
             "scene_change_score": round(score, 6),
             "detection_interval": interval,
             "error": error if anchor else "",
         }
-        write_row(handle, index, frame, detected_by_frame.get(index, []), batch)
+        write_row(handle, index, frame, objects, batch)
     return batch_id + 1

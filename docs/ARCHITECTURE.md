@@ -9,7 +9,7 @@ configs/vidvrd_ontology.json     官方 35/132 本体与 base/novel 划分
 src/vidvrd_auto/core/            配置、路径、数据契约、本体访问
 src/vidvrd_auto/pipeline/        单视频和多视频编排
 src/vidvrd_auto/nodes/           阶段接口
-src/vidvrd_auto/detection/       Rex-Omni 与时序检测调度
+src/vidvrd_auto/detection/       Rex-Omni 主检测器、DINO-X 实验组件与时序调度
 src/vidvrd_auto/tracking/        OC-SORT 工程适配、实验跟踪模块与窗口生成
 src/vidvrd_auto/relations/       几何、语义、聚合与复核
 src/vidvrd_auto/evaluation/      Gold 转换、轨迹对齐和关系指标
@@ -20,23 +20,23 @@ src/vidvrd_auto/evaluation/      Gold 转换、轨迹对齐和关系指标
 ## 两条运行路线
 
 - `reference_dense`：逐帧检测，每个视频帧推进一次 OC-SORT，关闭 Agent 关系调用；只用于算法参照。
-- `main`：默认每 5 帧及场景变化时调用 Rex；只在这些检测锚点推进同一 OC-SORT 核心，并在相邻真实观测间补齐短缺口；随后调用 Agent 判断语义关系。这是项目正式路线。
+- `main`：每 3 帧固定调用 Rex-Omni；只在这些检测锚点推进同一 OC-SORT 核心，并在相邻真实观测间补齐短缺口；随后调用 Agent 判断语义关系。
 
-稀疏检测、词表发现和强模型复核都是 `main` 的配置，不再单独定义运行模式。旧版配置只保存在 `configs/archive/`，不属于可运行路线。
+稀疏检测和强模型复核都是 `main` 的配置，不再单独定义运行模式。正式路线固定使用 VidVRD 35 类对象与 132 个谓词；旧版配置只保存在 `configs/archive/`，不属于可运行路线。
 
 `configs/base.json` 是 loader 的内部合并基座，不直接代表运行路线；CLI 默认使用 `configs/main.json`。`configs/config.json` 保留为与 main 合并结果相同的兼容入口，避免同一 `run_mode` 出现两套实际默认。
 
 ## 开放词汇检测
 
-固定模式直接把官方 35 类交给 Rex-Omni。开放模式先从均匀采样帧生成视频级拼图，云模型只返回简短对象名；本体归一化后与官方 35 类及显式扩展类取并集。检测同时保留 `raw_class_name` 和标准化 `class_name`，因此本体内类别可直接评测，本体外类别仍可继续跟踪和关系推理。
+正式模式把官方 35 类交给 Rex-Omni。DINO-X 只在独立实验配置中处理同一份 35 类词表。实验性的开放发现代码仍可从均匀采样帧生成视频级拼图并追加对象名，但当前 `main` 不启用它，避免无关背景类别污染轨迹和官方评测。
 
 开放发现是检测之前的词表构建，不是视频前筛：它不拒绝视频，也不决定某帧是否检测。
 
 ## 稀疏检测与连续轨迹
 
-视频逐帧解码，Rex-Omni 默认处理第 0、5、10…帧；若与上一锚点的缩略图差异超过阈值且满足最小间隔，则提前检测。未检测帧仍写入 JSONL 并明确标记 `skipped`。
+视频逐帧解码，正式路线每 3 帧产生一个 Rex-Omni 检测锚点。未检测帧仍写入 JSONL 并明确标记 `skipped`。混合实验配置才会在第 0、15、30…帧用 DINO-X 替换 Rex，并在 DINO-X 单帧失败时回退 Rex。
 
-两条路线使用同一固定提交、未修改的 OC-SORT 核心。`reference_dense` 每个视频帧调用一次；`main` 只在 Rex 检测锚点调用一次，避免稀疏检测之间的空帧重置 OC-SORT 的确认连续性。项目适配器负责把 Rex 框转换为 `update_public()` 输入，并把确认输出映射回真实视频帧号；随后只在两个真实观测之间做不超过 8 帧的线性补全。主路线不使用外观关联或离线 tracklet 拼接。
+两条路线使用同一固定提交、未修改的 OC-SORT 核心。`reference_dense` 每个视频帧调用一次；`main` 只在 Rex 检测锚点调用一次，避免稀疏检测之间的空帧重置 OC-SORT 的确认连续性。正式闭集路线按官方对象类别隔离关联，防止人和自行车等高度重叠但类别不同的目标合并；镜头切换时清空活动运动状态，但全局 ID 不复用。项目适配器负责格式转换、类别记录和帧号映射，随后只在两个真实观测之间做不超过 6 帧的线性补全。主路线不使用外观关联或离线 tracklet 拼接。
 
 MASA 外观、hybrid 关联和离线 stitching 源码保留在 `tracking/appearance/`、`tracking/hybrid/` 与 `tracking/stitching.py`，但没有配置入口，也不会被生产流水线导入。
 

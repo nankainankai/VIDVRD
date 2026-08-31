@@ -28,7 +28,7 @@
 `detect/detections.jsonl` 每帧一行：
 
 ```json
-{"frame": 1, "timestamp": 0.04, "objects": [], "detection_batch": {"status": "skipped", "source": "sparse_schedule", "detection_interval": 5}}
+{"frame": 1, "timestamp": 0.04, "objects": [], "detection_batch": {"status": "skipped", "source": "sparse_schedule", "detection_interval": 3}}
 ```
 
 检测对象包含 `bbox`、`raw_class_name`、标准化 `class_name`、分数和批次来源。规范化 schema 同时读取旧 `confidence` 和新 `score` 字段；`score_kind` 标明其标度。没有原生检测分数时写 `null`/`unavailable`。旧 Rex 产物中的常量 `confidence=1.0` 只存在于归档结果中。

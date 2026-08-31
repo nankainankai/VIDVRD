@@ -9,20 +9,21 @@
   "video_ingest": {"download_timeout_sec": 120, "overwrite_download": false},
   "vocabulary": {"discovery_enabled": false, "discovery_model": "qwen-vl-max", "sample_frames": 8, "max_discovered_categories": 24, "extra_categories": [], "retries": 2, "backoff_sec": 1.5, "dry_run": false},
   "detector": {
+    "detector_backend": "rexomni",
     "rex_model_path": "models/Rex-Omni-AWQ", "rex_backend": "transformers",
-    "sampling_mode": "adaptive_sparse",
-    "detection_interval": 5, "min_detection_interval": 2, "scene_change_threshold": 0.2,
+    "sampling_mode": "fixed_sparse",
+    "detection_interval": 3, "min_detection_interval": 3, "scene_change_threshold": 0.2,
     "rex_min_box_area": 500.0, "rex_max_detections_per_frame": 60,
     "rex_max_tokens": 512, "rex_max_pixels": 409600,
     "temperature": 0.0, "top_p": 0.05, "top_k": 1,
     "batch_size": 5, "save_box_video": false
   },
   "tracking": {
-    "window_size": 30, "stride": 15, "iou_threshold": 0.3, "max_age": 6, "min_hits": 2,
+    "window_size": 30, "stride": 15, "iou_threshold": 0.3, "max_age": 10, "min_hits": 2,
     "algorithm": "sparse_ocsort",
     "class_aware": true, "min_new_track_conf": 0.0,
     "delta_t": 3, "inertia": 0.2, "class_vote_window": 12,
-    "max_interpolation_gap": 8
+    "max_interpolation_gap": 6
   },
   "track_qc": {"min_track_frames": 2, "max_class_changes": 1, "max_center_jump_ratio": 0.45},
   "relation_rule": {

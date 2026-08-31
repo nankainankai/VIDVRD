@@ -81,9 +81,11 @@ def build_run_provenance(*, root: Path, config: Dict[str, Any], config_path: Pat
         "config_file_hash": sha256_file(config_path) if config_path.exists() else "",
         "algorithms": {
             "detector": {
-                "name": "rex_omni",
+                "name": str(detector.get("detector_backend", "rexomni")),
                 "backend": str(detector.get("rex_backend", "transformers")),
                 "model": str(detector.get("rex_model_path", "")),
+                "dinox_model": str(detector.get("dinox_model", "")),
+                "dinox_interval": int(detector.get("dinox_interval", 0) or 0),
                 "sampling": str(detector.get("sampling_mode", "adaptive_sparse")),
             },
             "tracker": {

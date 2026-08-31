@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 from vidvrd_auto.config.loader import load_app_config
 from vidvrd_auto.core import Secrets, VideoPaths
 from vidvrd_auto.evaluation.vidvrd import run_evaluation_suite
-from vidvrd_auto.nodes.export import merge_relation_files, merge_trajectory_files
+from vidvrd_auto.nodes.export import merge_relation_files, merge_trajectory_files, tracks_to_trajectories
 from vidvrd_auto.nodes.ingest import video_id_for_source
 from vidvrd_auto.pipeline.constants import NODE_ORDER
 from vidvrd_auto.pipeline.files import Artifacts
@@ -53,6 +53,8 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
     used_ids: set[str] = set()
     resolved_config_path = (config_path or root / "configs/base.json").resolve()
     effective_config = config.to_dict()
+    tracking_only = bool(getattr(args, "tracking_only", False))
+    active_nodes = NODE_ORDER[:5] if tracking_only else NODE_ORDER
 
     manifest: Dict[str, Any] = {
         "run_dir": safe_rel(run_dir),
@@ -60,11 +62,12 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
         "config": safe_rel(resolved_config_path),
         "config_hash": stable_hash(effective_config),
         "provenance": build_run_provenance(root=root, config=effective_config, config_path=resolved_config_path),
-        "nodes": NODE_ORDER,
+        "nodes": active_nodes,
         "options": {
             "resume": bool(args.resume),
             "force": bool(args.force),
             "dry_run": bool(args.dry_run_relations),
+            "tracking_only": tracking_only,
             "api_key_present": bool(api_key),
         },
         "videos": items,
@@ -94,28 +97,37 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
                 "video_hash": video_hash,
                 "hash_algorithm": "sha256_full_file",
             }
-            run_relations(
-                video_id=video_id,
-                config=config,
-                api_key=api_key,
-                paths=paths,
-                files=files,
-                stages=stages,
-            )
-            if files.relations.exists() and files.trajectories.exists():
+            if tracking_only:
+                files.trajectories.parent.mkdir(parents=True, exist_ok=True)
+                tracks_to_trajectories(files.tracks, video_id, files.trajectories)
+                trajectory_exports.append((video_id, files.trajectories))
+                item.update(
+                    state="succeeded",
+                    outputs={"trajectories": safe_rel(files.trajectories), "track_qc": safe_rel(files.track_report)},
+                )
+            else:
+                run_relations(
+                    video_id=video_id,
+                    config=config,
+                    api_key=api_key,
+                    paths=paths,
+                    files=files,
+                    stages=stages,
+                )
+            if not tracking_only and files.relations.exists() and files.trajectories.exists():
                 exports.append((video_id, files.relations))
                 trajectory_exports.append((video_id, files.trajectories))
                 item.update(
                     state="succeeded",
                     outputs={"relations": safe_rel(files.relations), "trajectories": safe_rel(files.trajectories)},
                 )
-            else:
+            elif not tracking_only:
                 item.update(state="partial", reason="export not selected")
         except Exception as exc:
             item.update(state="failed", error=str(exc))
             print(f"ERROR {video_id}: {exc}")
         finally:
-            item["nodes"] = collect_node_statuses(paths.video_dir, NODE_ORDER)
+            item["nodes"] = collect_node_statuses(paths.video_dir, active_nodes)
 
     all_relations = run_dir / "pred" / "relations.json"
     all_trajectories = run_dir / "pred" / "trajectories.json"
@@ -124,7 +136,7 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
     merge_trajectory_files(trajectory_exports, all_trajectories, requested_video_ids)
     evaluation = _evaluate(
         config=config.section("evaluate").to_dict(),
-        disabled=bool(args.skip_eval),
+        disabled=bool(args.skip_eval) or tracking_only,
         requested_video_ids=requested_video_ids,
         relations=all_relations,
         trajectories=all_trajectories,
@@ -145,7 +157,9 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
     )
     write_json(run_dir / "run_manifest.json", manifest)
     print(f"DONE run={run_dir}")
-    print(f"relations={all_relations}")
+    print(f"trajectories={all_trajectories}")
+    if not tracking_only:
+        print(f"relations={all_relations}")
 
 
 def _evaluate(

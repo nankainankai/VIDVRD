@@ -202,6 +202,7 @@ def track_video(
     tracks_path = out_dir / "tracks.jsonl"
     frame_outputs: Dict[int, Dict[int, Dict[str, Any]]] = {}
     frame_count = 0
+    current_scene: int | None = None
     errors: List[str] = []
     try:
         while True:
@@ -211,11 +212,16 @@ def track_video(
             should_update = algorithm == "ocsort_reference" or frame_count in anchor_frames
             if should_update:
                 try:
+                    scene_id = int(scene_by_frame.get(frame_count, current_scene or 0))
+                    if current_scene is not None and scene_id != current_scene:
+                        tracker.start_new_scene()
+                    current_scene = scene_id
                     tracks = _compact(tracker.track(frame, detector_rows.get(frame_count, []), frame_num=frame_count))
                 except Exception as exc:
                     tracks = []
                     errors.append(f"frame {frame_count}: {exc}")
                 for track in tracks:
+                    track["scene_id"] = current_scene or 0
                     target_frame = int(track.pop("frame", frame_count))
                     frame_outputs.setdefault(target_frame, {})[int(track["track_id"])] = track
             frame_count += 1

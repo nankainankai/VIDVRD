@@ -8,7 +8,7 @@
 | `run_mode` | 定位 | 当前状态 |
 |---|---|---|
 | `reference_dense` | 逐帧检测与 OC-SORT 参照 | 每个视频帧调用 `update_public()`；关闭 Agent 语义调用 |
-| `main` | 项目正式路线 | 稀疏 Rex 检测、锚点帧 OC-SORT、短缺口补全、批量 Agent 关系判断 |
+| `main` | 项目正式路线 | 每 3 帧 Rex-Omni 检测、锚点帧 OC-SORT、短缺口补全、批量 Agent 关系判断 |
 
 旧版配置保存在 `configs/archive/legacy_agent_v1.json`，只用于追溯，不是第三种模式。
 
@@ -20,8 +20,15 @@
 - 项目入口：`src/vidvrd_auto/detection/rex.py`
 - 视频调度：`src/vidvrd_auto/detection/video.py`
 - 当前模型配置：`models/Rex-Omni-AWQ`，Transformers backend
-- 当前项目修改：开放类别输入、批量锚点帧、最小框面积过滤、类别归一、每 5 帧检测及场景变化触发。
+- 当前项目修改：开放类别输入、批量锚点帧、最小框面积过滤、类别归一、固定每 3 帧检测；镜头变化只记录边界，不额外触发 Rex。
 - 当前适配：使用 `temperature=0`、`top_p=0.05`、`top_k=1`；Rex 未提供原生分数时输出 `score=null`，不再伪造概率。
+
+## DINO-X 混合检测实验组件
+
+- API：`/v2/task/dinox/detection`，模型 `DINO-X-1.0`。
+- 项目入口：`src/vidvrd_auto/detection/dinox.py`；固定路由位于 `detection/hybrid.py`。
+- 不接入 `main`；仅当显式使用 `configs/experimental_hybrid_dinox.json` 时，在第 0、15、30…帧用 DINO-X 替换 Rex 检测，其余每 3 帧锚点继续使用 Rex；单帧 API 失败时回退 Rex。
+- DINO-X原生分数用于检测记录与类别投票；送入 OC-SORT 的 `association_weight` 与无原生分数的 Rex 一样统一为 `1.0`，避免两种分数标度直接混用。
 
 ## OC-SORT 跟踪
 
@@ -31,7 +38,7 @@
 - 冻结源码：`src/vidvrd_auto/tracking/third_party/oc_sort/`
 - 来源和文件哈希：`src/vidvrd_auto/tracking/third_party/oc_sort/SOURCE.md`
 - 项目适配器：`src/vidvrd_auto/tracking/ocsort/adapter.py`
-- 工程适配：检测框裁剪与格式转换、输出 ID 映射、类别投票和轨迹元数据；不修改 `third_party` 中的 OC-SORT 算法源码。
+- 工程适配：检测框裁剪与格式转换、按官方对象类别隔离关联、输出 ID 映射、类别记录、镜头边界状态清理和轨迹元数据；不修改 `third_party` 中的 OC-SORT 算法源码。
 - `ocsort_reference`：`reference_dense` 在每个视频帧调用上游 `update_public()`，只用于逐帧检测参照。
 - `sparse_ocsort`：当前 `main`。只在 Rex 检测锚点调用同一上游核心，OC-SORT 时间步为检测锚点；确认输出映射回真实帧号，短缺口补全发生在跟踪器之外。
 - Rex 没有分数时，OC-SORT 内部关联统一使用常量权重；该值不写成检测或轨迹置信度。

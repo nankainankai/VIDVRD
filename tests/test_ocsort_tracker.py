@@ -100,6 +100,19 @@ class OfficialOCSortAdapterTests(unittest.TestCase):
         self.assertEqual(second["track_id"], first["track_id"])
         self.assertEqual(second["class_name"], "person")
 
+    def test_category_agnostic_backend_keeps_id_when_rex_label_flickers(self) -> None:
+        tracker = self.make_tracker(class_aware=False)
+        person = tracker.track(self.frame, [detection(10.0, "person")], 0)[0]
+        mislabeled = tracker.track(self.frame, [detection(12.0, "car")], 1)[0]
+        self.assertEqual(mislabeled["track_id"], person["track_id"])
+
+    def test_scene_boundary_clears_motion_state_without_reusing_id(self) -> None:
+        tracker = self.make_tracker(class_aware=False)
+        before = tracker.track(self.frame, [detection(10.0)], 0)[0]
+        tracker.start_new_scene()
+        after = tracker.track(self.frame, [detection(10.0)], 1)[0]
+        self.assertNotEqual(after["track_id"], before["track_id"])
+
     def test_low_iou_core_match_also_updates_adapter_metadata(self) -> None:
         tracker = self.make_tracker(iou_threshold=0.1)
         first = tracker.track(self.frame, [detection(10.0)], 0)[0]
@@ -109,6 +122,24 @@ class OfficialOCSortAdapterTests(unittest.TestCase):
         self.assertEqual(moved["track_id"], first["track_id"])
         self.assertEqual(moved["hits"], 2)
         self.assertEqual(moved["bbox_observed"], detection(24.0)["bbox"])
+
+    def test_adapter_metadata_binding_is_one_to_one(self) -> None:
+        entries = [
+            (detection(10.0, "person"), np.asarray(detection(10.0)["bbox"], dtype=float), 0.9),
+            (detection(24.0, "person"), np.asarray(detection(24.0)["bbox"], dtype=float), 0.8),
+        ]
+        boxes = [
+            np.asarray([10.0, 20.0, 30.0, 50.0]),
+            np.asarray([12.0, 20.0, 32.0, 50.0]),
+        ]
+        matches = ObjectTracker._matching_entries(boxes, entries)
+        self.assertEqual(len(matches), 2)
+        self.assertIsNotNone(matches[0])
+        self.assertIsNotNone(matches[1])
+        self.assertEqual(
+            {tuple(match[1]) for match in matches if match is not None},
+            {tuple(entry[1]) for entry in entries},
+        )
 
     def test_compaction_preserves_null_observation(self) -> None:
         rows = _compact(

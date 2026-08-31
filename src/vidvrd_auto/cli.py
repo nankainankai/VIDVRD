@@ -17,6 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--force", action="store_true", help="Re-run selected nodes even when cache is valid")
     ap.add_argument("--dry-run", dest="dry_run_relations", action="store_true", help="Generate semantic storyboards without cloud calls")
     ap.add_argument("--skip-eval", dest="skip_eval", action="store_true", help="Skip VidVRD evaluation")
+    ap.add_argument("--tracking-only", action="store_true", help="Stop after Rex-Omni, OC-SORT, and track QC")
     return ap
 
 

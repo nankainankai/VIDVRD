@@ -1,6 +1,6 @@
 # VIDVRD Auto
 
-端到端视频关系检测流水线：动态开放词汇 → Rex-Omni 稀疏检测 → OC-SORT 轨迹关联 → 批量窗口关系识别 → 官方兼容评测 + 轨迹对齐诊断。
+端到端视频关系检测流水线：VidVRD 35 类对象 → Rex-Omni 稀疏检测 → OC-SORT 轨迹关联 → 132 类窗口关系识别 → 官方兼容评测 + 轨迹对齐诊断。
 
 项目内置完整 ImageNet-VidVRD 本体：35 个对象类别、132 个谓词及 base/novel 划分。`stand_left`、`walk_behind` 等组合谓词保留为官方原子标签，同时记录 action/spatial/comparative 组成，便于分析但不改变官方标签。
 
@@ -11,19 +11,20 @@ ingest -> vocabulary -> detect -> track -> track_qc
        -> rule + semantic -> merge -> global -> verify -> export -> evaluate
 ```
 
-- `vocabulary`：固定模式使用完整 35 类；开放模式由云视觉模型发现视频特有对象，并与 35 类取并集。
-- `detect`：Rex-Omni 默认每 5 帧检测一次，场景突变可提前触发。
+- `vocabulary`：正式路线固定使用完整 35 类；开放对象发现代码保留，但默认不启用。
+- `detect`：正式路线固定每 3 帧调用一次 Rex-Omni。DINO-X + Rex 混合检测作为独立实验组件保留，不在主链路自动启用。
 - `track`：主路线和参照路线都使用仓库内冻结的 OC-SORT 核心。主路线只在 Rex 检测锚点调用 OC-SORT，并在相邻真实观测之间补齐短缺口；项目代码只负责调度、字段转换、类别记录和产物导出。
 - `semantic`：先用轨迹证据把 132 个官方谓词路由为每方向最多 14 个对比候选，再围绕接近、重叠等事件帧生成“全景 + 对象对近景”的连续帧证据。同一对象对的最多 6 个连续窗口合并为一次千问请求，但每个窗口仍独立输出和校验；Agent 最多触发一次补帧或邻接谓词族扩展。
 - `verify`：仅对低排序分、互斥冲突或风险轨迹关系做带图复核；动作经过关系 ID、谓词、证据和区间校验后才应用。
 - `evaluate`：官方兼容层直接按类别三元组与关系 tube vIoU 计算逐视频 mAP、Recall@50/100 和 tagging P@1/5/10；原有全轨迹匈牙利对齐只保留为单独的内部诊断。
 
-没有视频级前筛，也没有音频先验。5 帧检测是检测调度，和前筛不是同一层逻辑。
+没有视频级前筛，也没有音频先验。稀疏检测调度和前筛不是同一层逻辑。
 
 ## 两条路线
 
 - `configs/reference_dense.json`：逐帧检测、每帧推进 OC-SORT、关闭 Agent 语义调用，只用于算法参照。
-- `configs/main.json`：稀疏检测、锚点帧推进同一 OC-SORT 核心、短缺口插值，并启用批量 Agent 关系判断，是正式路线。
+- `configs/main.json`：每 3 帧使用 Rex-Omni 检测，随后推进同一 OC-SORT 核心并做短缺口插值；这是正式路线。调轨阶段可加 `--tracking-only` 在轨迹质检后停止。
+- `configs/experimental_hybrid_dinox.json`：每 15 帧用 DINO-X 替换当帧 Rex，其余锚点仍用 Rex；仅用于对照实验。
 
 命令行默认直接使用 `configs/main.json`。`configs/base.json` 仅供配置合并，不是第三条可运行路线；`configs/config.json` 是与正式 main 等价的兼容入口。
 
@@ -44,12 +45,14 @@ pip install -e .
 vidvrd-auto --video path/to/video.mp4 --run-dir runs/smoke --config configs/dry_run.json --dry-run --skip-eval
 ```
 
-开放词汇生产运行：
+正式闭集运行：
 
 ```powershell
 $env:DASHSCOPE_API_KEY = "your-key"
 vidvrd-auto --video path/to/video.mp4 --run-dir runs/exp001 --config configs/main.json
 ```
+
+主链路不需要 DINO-X Token。若运行混合检测对照，使用 `configs/experimental_hybrid_dinox.json`，并在项目根目录 `.env` 中配置 `DDS_API_TOKEN`。密钥不会写入运行产物。
 
 固定官方词表并在 Gold 上评测：
 

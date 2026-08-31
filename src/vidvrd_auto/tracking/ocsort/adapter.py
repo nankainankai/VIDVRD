@@ -9,7 +9,7 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-from ..third_party.oc_sort.association import iou_batch
+from ..third_party.oc_sort.association import iou_batch, linear_assignment
 from ..third_party.oc_sort.ocsort import OCSort
 
 
@@ -35,6 +35,19 @@ def _native_score(detection: Mapping[str, Any]) -> float | None:
     except (TypeError, ValueError):
         return None
     return score if math.isfinite(score) else None
+
+
+def _association_weight(detection: Mapping[str, Any]) -> float:
+    value = detection.get("association_weight")
+    if value is not None:
+        try:
+            weight = float(value)
+            if math.isfinite(weight):
+                return weight
+        except (TypeError, ValueError):
+            pass
+    score = _native_score(detection)
+    return score if score is not None else 1.0
 
 
 @dataclass
@@ -123,15 +136,31 @@ class ObjectTracker:
         self._metadata.clear()
         self._next_id = 1
 
+    def start_new_scene(self) -> None:
+        """Drop active motion state at a shot boundary without reusing IDs."""
+
+        self._backends.clear()
+        self._steps.clear()
+        self._global_ids.clear()
+        self._metadata.clear()
+
     @staticmethod
-    def _matching_entry(
-        box: np.ndarray, entries: list[tuple[dict[str, Any], np.ndarray, float]]
-    ) -> tuple[dict[str, Any], np.ndarray] | None:
-        if not entries:
-            return None
-        overlaps = iou_batch(box.reshape(1, 4), np.asarray([entry[1] for entry in entries], dtype=float))[0]
-        detection, observed_box, _ = entries[int(np.argmax(overlaps))]
-        return detection, observed_box
+    def _matching_entries(
+        boxes: list[np.ndarray], entries: list[tuple[dict[str, Any], np.ndarray, float]]
+    ) -> list[tuple[dict[str, Any], np.ndarray] | None]:
+        """Bind confirmed rows to detections once each for adapter metadata."""
+
+        matches: list[tuple[dict[str, Any], np.ndarray] | None] = [None] * len(boxes)
+        if not boxes or not entries:
+            return matches
+        overlaps = iou_batch(
+            np.asarray(boxes, dtype=float),
+            np.asarray([entry[1] for entry in entries], dtype=float),
+        )
+        for row_index, entry_index in linear_assignment(-overlaps):
+            detection, observed_box, _ = entries[int(entry_index)]
+            matches[int(row_index)] = (detection, observed_box)
+        return matches
 
     def _observe(self, track_id: int, detection: Mapping[str, Any], box: np.ndarray, frame_num: int) -> _Metadata:
         meta = self._metadata.setdefault(track_id, _Metadata(frame_num, frame_num))
@@ -167,9 +196,8 @@ class ObjectTracker:
             raw_box = detection.get("bbox")
             if not isinstance(raw_box, (list, tuple)) or len(raw_box) != 4:
                 continue
-            score = _native_score(detection)
             grouped[self._group(_name(detection.get("class_name")))].append(
-                (detection, _clip(raw_box, width, height), score if score is not None else 1.0)
+                (detection, _clip(raw_box, width, height), _association_weight(detection))
             )
 
         for group in grouped:
@@ -183,12 +211,38 @@ class ObjectTracker:
             scores = np.asarray([entry[2] for entry in entries], dtype=float)
             confirmed = backend.update_public(boxes, np.zeros(len(entries), dtype=int), scores)
 
+            confirmed_items: list[dict[str, Any]] = []
             for row in sorted(confirmed.tolist(), key=lambda item: int(item[6])):
                 step_index = len(self._steps[group]) - 1 + int(row[6])
                 target_frame, target_entries = self._steps[group][step_index]
                 box = _clip(row[:4], width, height)
-                matched = self._matching_entry(box, target_entries)
-                detection, box = matched if matched is not None else ({}, box)
+                confirmed_items.append(
+                    {
+                        "row": row,
+                        "step_index": step_index,
+                        "target_frame": target_frame,
+                        "target_entries": target_entries,
+                        "box": box,
+                        "match": None,
+                    }
+                )
+
+            item_indices_by_step: dict[int, list[int]] = defaultdict(list)
+            for item_index, item in enumerate(confirmed_items):
+                item_indices_by_step[int(item["step_index"])].append(item_index)
+            for item_indices in item_indices_by_step.values():
+                boxes_for_step = [confirmed_items[index]["box"] for index in item_indices]
+                entries_for_step = confirmed_items[item_indices[0]]["target_entries"]
+                matches = self._matching_entries(boxes_for_step, entries_for_step)
+                for item_index, matched in zip(item_indices, matches):
+                    confirmed_items[item_index]["match"] = matched
+
+            for item in confirmed_items:
+                row = item["row"]
+                target_frame = int(item["target_frame"])
+                box = item["box"]
+                matched = item["match"]
+                detection, box = matched if matched is not None else ({"class_name": group}, box)
                 track_id = self._id(group, int(row[4]))
                 meta = self._observe(track_id, detection, box, target_frame)
                 total_distance = sum(

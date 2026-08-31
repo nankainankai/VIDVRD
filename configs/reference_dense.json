@@ -8,6 +8,7 @@
   },
   "vocabulary": {"discovery_enabled": false},
   "detector": {
+    "detector_backend": "rexomni",
     "sampling_mode": "dense",
     "detection_interval": 1,
     "min_detection_interval": 1,
@@ -21,7 +22,9 @@
     "algorithm": "ocsort_reference",
     "max_age": 30,
     "min_hits": 3,
-    "min_new_track_conf": 0.0
+    "min_new_track_conf": 0.0,
+    "class_aware": true,
+    "max_interpolation_gap": 8
   },
   "relations": {"dry_run": true},
   "relation_rule": {"enabled": true},
