@@ -1,0 +1,47 @@
+{
+  "project": {
+    "run_mode": "main",
+    "prompt_version": "main-v8-calibrated-composite-routing"
+  },
+  "vocabulary": {
+    "discovery_enabled": false
+  },
+  "detector": {
+    "detector_backend": "hybrid_rex_dinox",
+    "detection_interval": 3,
+    "dinox_interval": 15,
+    "dinox_model": "DINO-X-1.0",
+    "dinox_api_key_env": "DDS_API_TOKEN",
+    "dinox_bbox_threshold": 0.25,
+    "dinox_iou_threshold": 0.8
+  },
+  "tracking": {
+    "algorithm": "sparse_ocsort",
+    "min_hits": 2,
+    "max_interpolation_gap": 6
+  },
+  "relations": {
+    "api_model": "kimi-k2.6",
+    "dry_run": false,
+    "batch_windows_per_call": 1,
+    "allow_request_more_frames": true
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": true,
+    "strong_model": "kimi-k2.6",
+    "apply_actions": true
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_relations": "gold/vidvrd_50_relations.json",
+    "gold_trajectories": "gold/vidvrd_50_trajectories.json",
+    "gold_manifest": "gold/vidvrd_50_manifest.json",
+    "dataset_split": "test",
+    "scope": "gold_split",
+    "expected_official_video_count": 200,
+    "official_viou_threshold": 0.5,
+    "diagnostic_track_viou_threshold": 0.3,
+    "diagnostic_relation_tiou_threshold": 0.5,
+    "diagnostic_mot_iou_threshold": 0.5
+  }
+}

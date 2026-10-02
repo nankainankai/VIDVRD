@@ -134,15 +134,25 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
     requested_video_ids = [str(item["video_id"]) for item in items]
     merged = merge_relation_files(exports, all_relations, requested_video_ids)
     merge_trajectory_files(trajectory_exports, all_trajectories, requested_video_ids)
-    evaluation = _evaluate(
-        config=config.section("evaluate").to_dict(),
-        disabled=bool(args.skip_eval) or tracking_only,
-        requested_video_ids=requested_video_ids,
-        relations=all_relations,
-        trajectories=all_trajectories,
-        run_dir=run_dir,
-        root=root,
-    )
+    completed_video_ids = [str(item["video_id"]) for item in items if item["state"] == "succeeded"]
+    if len(completed_video_ids) != len(requested_video_ids):
+        evaluation = {
+            "enabled": False,
+            "state": "skipped",
+            "reason": "Aggregate evaluation requires every requested video to succeed",
+            "completed_video_count": len(completed_video_ids),
+            "requested_video_count": len(requested_video_ids),
+        }
+    else:
+        evaluation = _evaluate(
+            config=config.section("evaluate").to_dict(),
+            disabled=bool(args.skip_eval) or tracking_only,
+            requested_video_ids=requested_video_ids,
+            relations=all_relations,
+            trajectories=all_trajectories,
+            run_dir=run_dir,
+            root=root,
+        )
     states: Dict[str, int] = {}
     for item in items:
         states[item["state"]] = states.get(item["state"], 0) + 1
@@ -156,10 +166,13 @@ def run_pipeline(*, args: Namespace, config_path: Path | None) -> None:
         evaluation=evaluation,
     )
     write_json(run_dir / "run_manifest.json", manifest)
-    print(f"DONE run={run_dir}")
+    failed = states.get("failed", 0) > 0 or evaluation.get("state") == "failed"
+    print(f"{'FAILED' if failed else 'DONE'} run={run_dir}")
     print(f"trajectories={all_trajectories}")
     if not tracking_only:
         print(f"relations={all_relations}")
+    if failed:
+        raise SystemExit(1)
 
 
 def _evaluate(
@@ -210,6 +223,8 @@ def _evaluate(
         official_viou_threshold=float(config.get("official_viou_threshold", 0.5) or 0.5),
         diagnostic_track_viou_threshold=float(config.get("diagnostic_track_viou_threshold", 0.3) or 0.3),
         diagnostic_relation_tiou_threshold=float(config.get("diagnostic_relation_tiou_threshold", 0.5) or 0.5),
+        diagnostic_mot_iou_threshold=float(config.get("diagnostic_mot_iou_threshold", 0.5) or 0.5),
+        evidence_packets_root=run_dir / "videos",
     )
     result.update(
         state="succeeded",
@@ -219,6 +234,14 @@ def _evaluate(
             "relation_detection": metrics["official"]["relation_detection"],
             "relation_tagging": metrics["official"]["relation_tagging"],
         },
-        diagnostic={"report": safe_rel(diagnostic_report), "metrics": safe_rel(diagnostic_metrics)},
+        diagnostic={
+            "report": safe_rel(diagnostic_report),
+            "metrics": safe_rel(diagnostic_metrics),
+            "gold_frame_mot": {
+                key: value for key, value in metrics["diagnostic"].get("diagnostic_mot", {}).items()
+                if key != "per_video"
+            },
+            "relation_summary": metrics["diagnostic"].get("diagnostic_relation_summary", {}),
+        },
     )
     return result

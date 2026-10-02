@@ -25,7 +25,16 @@ def image_to_data_uri(path: Path) -> str:
 def _response_text(response: Any) -> str:
     """Extract text from both known DashScope message content shapes."""
 
-    content = response.output.choices[0].message.content
+    output = getattr(response, "output", None)
+    choices = getattr(output, "choices", None)
+    if not choices:
+        raise RuntimeError(
+            "DashScope returned no choices: "
+            f"status={getattr(response, 'status_code', None)} "
+            f"code={getattr(response, 'code', None)} "
+            f"message={getattr(response, 'message', None)}"
+        )
+    content = choices[0].message.content
     if isinstance(content, str):
         return content.strip()
     if isinstance(content, list):
@@ -36,19 +45,21 @@ def _response_text(response: Any) -> str:
 
 
 class DashScopeProvider:
-    """Qwen-VL client with retries, dry-run support, and local call stats."""
+    """DashScope multimodal client with retries, dry-run support, and local call stats."""
 
     def __init__(self, config: Dict[str, Any] | None = None, *, api_key: str = "") -> None:
         cfg = config or {}
-        self.model = str(cfg.get("model", cfg.get("api_model", "qwen-vl-max")) or "qwen-vl-max")
+        self.model = str(cfg.get("model", cfg.get("api_model", "kimi-k2.6")) or "kimi-k2.6")
         self.api_key_env = str(cfg.get("api_key_env", "DASHSCOPE_API_KEY") or "DASHSCOPE_API_KEY")
         self.api_key = (api_key or os.getenv(self.api_key_env, "") or "").strip()
         retries = cfg.get("retries", 2)
         backoff_sec = cfg.get("backoff_sec", 1.5)
         sleep_sec = cfg.get("sleep_sec", 0.0)
+        request_timeout_sec = cfg.get("request_timeout_sec", 180)
         self.retries = max(0, int(2 if retries is None else retries))
         self.backoff_sec = max(0.0, float(1.5 if backoff_sec is None else backoff_sec))
         self.sleep_sec = max(0.0, float(0.0 if sleep_sec is None else sleep_sec))
+        self.request_timeout_sec = max(1, int(180 if request_timeout_sec is None else request_timeout_sec))
         self.dry_run = bool(cfg.get("dry_run", False))
         self.stats = VLStats()
 
@@ -103,12 +114,16 @@ class DashScopeProvider:
             try:
                 if self.sleep_sec > 0:
                     time.sleep(self.sleep_sec)
-                response = MultiModalConversation.call(model=self.model, messages=messages)
+                response = MultiModalConversation.call(
+                    model=self.model, messages=messages, request_timeout=self.request_timeout_sec
+                )
                 text = _response_text(response)
                 self.stats.succeeded += 1
                 return VLResult(ok=True, text=text, model=self.model, attempts=attempt)
             except Exception as exc:
                 last_error = str(exc)
+                if "DataInspectionFailed" in last_error:
+                    return self._failure(last_error, attempts=attempt)
                 if attempt < max_attempts and self.backoff_sec > 0:
                     time.sleep(self.backoff_sec * attempt)
 

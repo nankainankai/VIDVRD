@@ -78,6 +78,29 @@ class OfficialOCSortAdapterTests(unittest.TestCase):
         self.assertEqual(person["track_id"], first["track_id"])
         self.assertNotEqual(car["track_id"], first["track_id"])
 
+    def test_new_class_backend_cannot_collapse_later_same_class_track(self) -> None:
+        tracker = self.make_tracker()
+        first = tracker.track(self.frame, [detection(10.0, "person")], 0)[0]
+        tracker.track(self.frame, [detection(80.0, "car")], 1)
+
+        # The second person is born after the car backend. Historically that
+        # backend reset OC-SORT's shared counter, causing both person trackers
+        # to receive local ID 0 and one output to overwrite the other.
+        tracker.track(
+            self.frame,
+            [detection(12.0, "person"), detection(100.0, "person")],
+            2,
+        )
+        tracks = tracker.track(
+            self.frame,
+            [detection(14.0, "person"), detection(102.0, "person")],
+            3,
+        )
+        people = [track for track in tracks if track["class_name"] == "person"]
+        self.assertEqual(len(people), 2)
+        self.assertEqual(len({track["track_id"] for track in people}), 2)
+        self.assertIn(first["track_id"], {track["track_id"] for track in people})
+
     def test_unconfirmed_internal_tracker_is_not_emitted(self) -> None:
         tracker = self.make_tracker(min_hits=2)
         for frame_num, x in enumerate((10.0, 11.0, 12.0)):

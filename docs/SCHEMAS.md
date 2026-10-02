@@ -85,6 +85,8 @@
 
 `rule_support` 是几何规则在证据片段内的加权支持率，`agent_score` 是模型给出的排序分，两者不共享概率语义。`ranking_score` 仅供统一排序。以上是 Python 规范化 schema 示例；实际 `pred/relations.json` 会写成等价的闭区间，例如 `end_frame=44`，并显式标记 `span_convention=inclusive`。官方和诊断评测均按该字段读取，未标记旧产物仍按 inclusive 处理。
 
+当前统一排序另外保存 `evidence_score`、`temporal_quality`、`track_pair_quality`、`source_calibration` 和 `risk_track_involved`，`score_kind=calibrated_relation_v1`。关系跨越轨迹 QC 检出的跳变点时会按证据帧切段并标记 `split_on_track_jump=true`；极短轨迹在规则和语义候选生成前被跳过。
+
 ## Gold
 
 - `gold/vidvrd_50_relations.json`：官方关系转成项目 v1 闭区间；规范化读取时转换回半开区间。
@@ -98,16 +100,18 @@
 - `evaluator=imagenet_vidvrd_official_2017_compatible_v1` 和 tube vIoU 阈值；
 - `relation_detection.mean_ap`、`recall_at.50/100`；
 - `relation_tagging.precision_at.1/5/10`；
-- `dataset_scope`：split、预期视频数、缺失/额外/显式空预测视频及是否完整覆盖官方测试集；
+- `dataset_scope`：split、预期视频数、缺失/额外/显式空预测视频；`complete_test_annotations` 只表示 Gold 测试标注数量完整，`complete_official_test` 还要求本次请求与提交覆盖全部测试视频；
 - `gold_adapter`、`prediction_adapter`：项目轨迹转连续 tube 时的数量记录。
+- `partial_run_diagnostic`：只在本次请求的 Gold 视频上计算辅助 mAP 与覆盖率，用于区分“视频没跑全”与“预测本身不匹配”；不是官方 benchmark 分数。适配统计还包含 `per_video`，可定位缺失轨迹、空 tube 与断裂 tube。
+- `error_diagnostics`：逐条 GT 给出同三元组候选数、最佳 vIoU、最佳候选排名、真阳性排名、其前方误报数及 `candidate_missing/localization_failure/ranking_failure` 分类，并汇总原子/复合谓词候选召回率。
 
-`reports/diagnostic_track_aligned.json` 保留旧版全轨迹匈牙利对齐分析，所有指标使用 `diagnostic_` 前缀，不得作为官方 VidVRD mAP 报告。
+`reports/diagnostic_track_aligned.json` 保留全轨迹匈牙利对齐分析，并增加 `diagnostic_mot`：只在 Gold 有框的标注帧上按类别和逐帧 IoU 匹配，报告 MOTA、MOTP、FN、FP 和 ID Switch。它用于跟踪问题定位，不等同于完整视频上的官方 MOTChallenge 指标。所有指标使用 `diagnostic_` 前缀，不得作为官方 VidVRD mAP 报告。
 
 `run_manifest.json` 汇总配置哈希、完整输入文件 SHA-256、运行模式、schema 版本、时间区间约定、模型与 prompt 版本、Git revision、当前源码树 fingerprint、每个阶段状态和最终产物路径。
 
 ## Agent-lite 证据与动作
 
-`semantic/evidence_packets.json` 保存语义 Agent 实际看到的证据边界。每个 `EvidencePacket` 至少包含：视频与窗口标识、闭区间帧范围、已展示帧、当前轨迹对共同可见帧、两个轨迹的 ID 与类别、允许判断的有向候选谓词及谓词族、轨迹特征、框来源统计、`candidate_policy`、`evidence_mode`，以及允许补看的最大帧数。初始 packet 使用 `hierarchical_predicate_v1` 和 `event_burst_dual_view`。同一对象对的连续 packet 最多 6 个组成一次请求，模型以 `packet_results[].packet_id` 分别返回动作；若 Agent 申请补帧或扩候选，补充调用使用独立的 `:supplemental` packet 并一并落盘。
+`semantic/evidence_packets.json` 保存语义 Agent 实际看到的证据边界。每个 `EvidencePacket` 至少包含：视频与窗口标识、闭区间帧范围、已展示帧、当前轨迹对共同可见帧、两个轨迹的 ID 与类别、允许判断的有向候选谓词及谓词族、轨迹特征、框来源统计、`candidate_policy`、`evidence_mode`，以及允许补看的最大帧数。初始 packet 使用 `quota_composite_predicate_v2` 和 `event_burst_dual_view`，14 个候选按原子、复合、易混淆和补充候选分配配额。同一对象对的连续 packet 最多 6 个组成一次请求，模型以 `packet_results[].packet_id` 分别返回动作；若 Agent 申请补帧或扩候选，补充调用使用独立的 `:supplemental` packet 并一并落盘。
 
 语义阶段只接受以下动作：
 

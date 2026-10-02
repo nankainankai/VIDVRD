@@ -1,0 +1,7 @@
+{
+  "project": {"run_mode": "main", "prompt_version": "rex-768-tracking-pilot"},
+  "vocabulary": {"discovery_enabled": false},
+  "detector": {"rex_max_pixels": 589824},
+  "tracking": {"preserve_unique_local_ids": false},
+  "evaluate": {"enabled": false}
+}

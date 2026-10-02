@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 import json
 import tempfile
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 import cv2
@@ -19,6 +21,7 @@ class FakeDetector:
     def __init__(self, **kwargs) -> None:
         self.kwargs = kwargs
         self.batch_sizes = []
+        self.closed = False
 
     def load_model(self) -> None:
         return None
@@ -35,6 +38,9 @@ class FakeDetector:
 
     def get_stats(self):
         return {"backend": "rexomni", "batch_sizes": self.batch_sizes}
+
+    def close(self) -> None:
+        self.closed = True
 
 
 class SourceDetector:
@@ -69,6 +75,22 @@ class SourceDetector:
 
 
 class DetectionBatchTests(unittest.TestCase):
+    def test_rex_maps_discovered_visual_alias_to_vidvrd_category(self) -> None:
+        detector = RexDetector(
+            model_path="unused", categories=["lion", "cougar"],
+            category_aliases={"cougar": "lion"}, min_box_area=1,
+        )
+        objects = detector._parse({"extracted_predictions": {
+            "cougar": [{"type": "box", "coords": [10, 20, 110, 120]}],
+            "lion": [
+                {"type": "box", "coords": [10, 20, 110, 120]},
+                {"type": "box", "coords": [200, 20, 300, 120]},
+            ],
+        }})
+        self.assertEqual(len(objects), 2)
+        self.assertEqual(objects[0]["class_name"], "lion")
+        self.assertEqual(objects[0]["raw_class_name"], "cougar")
+
     def test_dinox_parses_native_scores_and_canonical_labels(self) -> None:
         detector = DinoXDetector(
             categories=["person", "bicycle"],
@@ -148,13 +170,19 @@ class DetectionBatchTests(unittest.TestCase):
             writer.release()
 
             out_dir = root / "detect"
+            instances = []
+            def factory(**kwargs):
+                detector = FakeDetector(**kwargs)
+                instances.append(detector)
+                return detector
             detect_video(
                 video_path=video,
                 out_dir=out_dir,
                 config={"batch_size": 5, "rex_model_path": "fake"},
                 log_path=out_dir / "run.log",
-                detector_factory=FakeDetector,
+                detector_factory=factory,
             )
+            self.assertTrue(instances[0].closed)
 
             rows = [json.loads(line) for line in (out_dir / "detections.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual([row["frame"] for row in rows], list(range(7)))
@@ -177,25 +205,28 @@ class DetectionBatchTests(unittest.TestCase):
             writer.release()
 
             out_dir = root / "detect"
-            detect_video(
-                video_path=video,
-                out_dir=out_dir,
-                config={
-                    "sampling_mode": "fixed_sparse",
-                    "detection_interval": 3,
-                    "min_detection_interval": 3,
-                    "scene_change_threshold": 0.01,
-                    "batch_size": 5,
-                    "rex_model_path": "fake",
-                },
-                log_path=out_dir / "run.log",
-                detector_factory=FakeDetector,
-            )
+            output = StringIO()
+            with redirect_stdout(output):
+                detect_video(
+                    video_path=video,
+                    out_dir=out_dir,
+                    config={
+                        "sampling_mode": "fixed_sparse",
+                        "detection_interval": 3,
+                        "min_detection_interval": 3,
+                        "scene_change_threshold": 0.01,
+                        "batch_size": 5,
+                        "rex_model_path": "fake",
+                    },
+                    log_path=out_dir / "run.log",
+                    detector_factory=FakeDetector,
+                )
 
             rows = [json.loads(line) for line in (out_dir / "detections.jsonl").read_text(encoding="utf-8").splitlines()]
             anchors = [row["frame"] for row in rows if row["detection_batch"]["status"] == "observed"]
             self.assertEqual(anchors, [0, 3, 6])
             self.assertEqual(json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))["sampling"]["mode"], "fixed_sparse")
+            self.assertIn("DETECT progress anchors=3/3 frames=7/7 batches=1", output.getvalue())
 
 
 

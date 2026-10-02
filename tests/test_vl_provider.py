@@ -60,6 +60,7 @@ class VLProviderTests(unittest.TestCase):
         content = conversation.call.call_args.kwargs["messages"][0]["content"]
         self.assertTrue(content[0]["image"].startswith("data:image/png;base64,"))
         self.assertEqual(content[-1], {"text": "inspect"})
+        self.assertEqual(conversation.call.call_args.kwargs["request_timeout"], 180)
         self.assertEqual(client.stats.succeeded, 1)
         self.assertEqual(client.stats.attempts, 1)
 
@@ -78,6 +79,37 @@ class VLProviderTests(unittest.TestCase):
         self.assertEqual(client.stats.attempts, 2)
         self.assertEqual(client.stats.retries, 1)
         self.assertEqual(client.stats.failed, 0)
+
+    def test_api_error_exposes_status_without_losing_provider_failure(self) -> None:
+        fake = ModuleType("dashscope")
+        fake.api_key = ""
+        response = SimpleNamespace(
+            status_code=403, code="AllocationQuota.FreeTierOnly",
+            message="quota exhausted", output=None,
+        )
+        fake.MultiModalConversation = SimpleNamespace(call=unittest.mock.Mock(return_value=response))
+        with patch.dict(sys.modules, {"dashscope": fake}):
+            client = DashScopeProvider({"retries": 0}, api_key="secret")
+            result = client.call(prompt="inspect")
+        self.assertFalse(result.ok)
+        self.assertIn("status=403", result.error)
+        self.assertIn("AllocationQuota.FreeTierOnly", result.error)
+
+    def test_content_inspection_failure_is_not_retried(self) -> None:
+        fake = ModuleType("dashscope")
+        fake.api_key = ""
+        response = SimpleNamespace(
+            status_code=400, code="DataInspectionFailed",
+            message="Input image data may contain inappropriate content", output=None,
+        )
+        conversation = unittest.mock.Mock(return_value=response)
+        fake.MultiModalConversation = SimpleNamespace(call=conversation)
+        with patch.dict(sys.modules, {"dashscope": fake}):
+            client = DashScopeProvider({"retries": 3}, api_key="secret")
+            result = client.call(prompt="inspect")
+        self.assertFalse(result.ok)
+        self.assertEqual(result.attempts, 1)
+        self.assertEqual(conversation.call_count, 1)
 
     def test_missing_key_returns_structured_failure(self) -> None:
         with patch.dict("os.environ", {}, clear=True):

@@ -1,0 +1,19 @@
+{
+  "project": {"run_mode": "main", "prompt_version": "main-v10-sliding-proposals-wide-routing"},
+  "tracking": {"preserve_unique_local_ids": false},
+  "vocabulary": {"discovery_enabled": false},
+  "relations": {"dry_run": false, "max_windows": 0, "candidate_prior_path": "experiments/predicate_priors_train30.json"},
+  "evaluate": {
+    "enabled": true,
+    "gold_relations": "gold/vidvrd_50_relations.json",
+    "gold_trajectories": "gold/vidvrd_50_trajectories.json",
+    "gold_manifest": "gold/vidvrd_50_manifest.json",
+    "dataset_split": "train",
+    "scope": "requested",
+    "expected_official_video_count": 200,
+    "official_viou_threshold": 0.5,
+    "diagnostic_track_viou_threshold": 0.3,
+    "diagnostic_relation_tiou_threshold": 0.5,
+    "diagnostic_mot_iou_threshold": 0.5
+  }
+}

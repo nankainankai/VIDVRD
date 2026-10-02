@@ -1,0 +1,7 @@
+{
+  "project": {"run_mode": "main", "prompt_version": "main-v10-sliding-proposals-wide-routing"},
+  "vocabulary": {"discovery_enabled": true, "ontology_only_discovery": true, "discovery_aliases": {"cougar": "lion", "puma": "lion", "mountain lion": "lion", "bunny": "rabbit"}},
+  "tracking": {"preserve_unique_local_ids": false},
+  "relations": {"max_failed_packets": 10},
+  "evaluate": {"enabled": false}
+}

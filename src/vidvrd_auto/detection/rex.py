@@ -3,6 +3,7 @@ from __future__ import annotations
 """Rex-Omni model adapter with frame-wise, auditable outputs."""
 
 import importlib
+import gc
 import math
 import sys
 from pathlib import Path
@@ -30,6 +31,14 @@ def _box_area(box: Sequence[float]) -> float:
     if len(box) != 4:
         return 0.0
     return max(0.0, float(box[2]) - float(box[0])) * max(0.0, float(box[3]) - float(box[1]))
+
+
+def _box_iou(left: Sequence[float], right: Sequence[float]) -> float:
+    x1, y1 = max(left[0], right[0]), max(left[1], right[1])
+    x2, y2 = min(left[2], right[2]), min(left[3], right[3])
+    intersection = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    union = _box_area(left) + _box_area(right) - intersection
+    return intersection / union if union > 0 else 0.0
 
 
 def _attention(requested: Optional[str] = None) -> str:
@@ -120,6 +129,21 @@ class RexDetector:
             f"dtype={torch_dtype}, categories={self.categories})"
         )
 
+    def close(self) -> None:
+        """Release the AWQ model before loading the next video in this process."""
+
+        model = self._model
+        self._model = None
+        del model
+        gc.collect()
+        try:
+            import torch
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except ImportError:
+            pass
+
     def _class_id(self, name: str) -> int:
         key = (name or "unknown").strip().lower()
         if key not in self._class_ids:
@@ -171,7 +195,23 @@ class RexDetector:
                         "source": "rexomni",
                     }
                 )
-        return output[: self.max_detections_per_frame]
+        # Synonymous prompts can return the same box under several raw names.
+        # Suppress only near-identical canonical duplicates; neighboring
+        # instances must remain separate for the tracker.
+        unique: List[Dict[str, Any]] = []
+        for item in output:
+            if any(
+                previous["class_name"] == item["class_name"]
+                and (
+                    previous["raw_class_name"].lower().replace(" ", "_") != previous["class_name"]
+                    or item["raw_class_name"].lower().replace(" ", "_") != item["class_name"]
+                )
+                and _box_iou(previous["bbox"], item["bbox"]) >= 0.95
+                for previous in unique
+            ):
+                continue
+            unique.append(item)
+        return unique[: self.max_detections_per_frame]
 
     def detect_batch(self, frames_bgr: Sequence[np.ndarray]) -> List[List[Dict[str, Any]]]:
         frames = list(frames_bgr)

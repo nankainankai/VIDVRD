@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple
 import numpy as np
 
 from vidvrd_auto.core.schema import relation_span
+from vidvrd_auto.core.ontology import predicate_components
 
 
 def _score(item: Dict[str, Any]) -> float:
@@ -83,6 +84,96 @@ def _detection_scores(
     return precision, recall, hit_scores
 
 
+def diagnose_official_predictions(
+    groundtruth: Dict[str, List[Dict[str, Any]]],
+    predictions: Dict[str, List[Dict[str, Any]]],
+    threshold: float,
+) -> Dict[str, Any]:
+    rows: List[Dict[str, Any]] = []
+    failures: Dict[str, int] = defaultdict(int)
+    type_counts: Dict[str, Dict[str, int]] = {
+        "atomic": {"gold": 0, "with_same_triplet_candidate": 0},
+        "composite": {"gold": 0, "with_same_triplet_candidate": 0},
+    }
+    for video_id, targets in groundtruth.items():
+        ordered = sorted(predictions.get(video_id, []), key=lambda item: float(item["score"]), reverse=True)
+        matched_targets: set[int] = set()
+        target_match_rank: Dict[int, int] = {}
+        false_positives_before: Dict[int, int] = {}
+        fp_count = 0
+        for rank, prediction in enumerate(ordered, 1):
+            best_overlap, best_index = -1.0, -1
+            for target_index, target in enumerate(targets):
+                if target_index in matched_targets or tuple(prediction["triplet"]) != tuple(target["triplet"]):
+                    continue
+                overlap = min(
+                    trajectory_viou(prediction["sub_traj"], prediction["duration"], target["sub_traj"], target["duration"]),
+                    trajectory_viou(prediction["obj_traj"], prediction["duration"], target["obj_traj"], target["duration"]),
+                )
+                if overlap >= threshold and overlap > best_overlap:
+                    best_overlap, best_index = overlap, target_index
+            if best_index >= 0:
+                matched_targets.add(best_index)
+                target_match_rank[best_index] = rank
+                false_positives_before[best_index] = fp_count
+            else:
+                fp_count += 1
+
+        for target_index, target in enumerate(targets):
+            same_triplet: List[Tuple[int, float]] = []
+            for rank, prediction in enumerate(ordered, 1):
+                if tuple(prediction["triplet"]) != tuple(target["triplet"]):
+                    continue
+                overlap = min(
+                    trajectory_viou(prediction["sub_traj"], prediction["duration"], target["sub_traj"], target["duration"]),
+                    trajectory_viou(prediction["obj_traj"], prediction["duration"], target["obj_traj"], target["duration"]),
+                )
+                same_triplet.append((rank, overlap))
+            predicate = str(target["triplet"][1])
+            components = predicate_components(predicate)
+            predicate_type = "composite" if sum(bool(components.get(key)) for key in ("action", "spatial", "comparative")) >= 2 else "atomic"
+            type_counts[predicate_type]["gold"] += 1
+            if same_triplet:
+                type_counts[predicate_type]["with_same_triplet_candidate"] += 1
+            best_rank, best_viou = max(same_triplet, key=lambda item: item[1]) if same_triplet else (None, 0.0)
+            matched_rank = target_match_rank.get(target_index)
+            fp_before = false_positives_before.get(target_index)
+            if not same_triplet:
+                failure = "candidate_missing"
+            elif best_viou < threshold:
+                failure = "localization_failure"
+            elif matched_rank is None:
+                failure = "duplicate_assignment_conflict"
+            elif fp_before:
+                failure = "ranking_failure"
+            else:
+                failure = "matched"
+            failures[failure] += 1
+            rows.append({
+                "video_id": video_id,
+                "groundtruth_index": target_index,
+                "triplet": list(target["triplet"]),
+                "duration": list(target["duration"]),
+                "predicate_type": predicate_type,
+                "same_triplet_candidate_count": len(same_triplet),
+                "best_viou": round(float(best_viou), 6),
+                "best_viou_candidate_rank": best_rank,
+                "true_positive_rank": matched_rank,
+                "false_positives_before_true_positive": fp_before,
+                "failure_type": failure,
+            })
+    recalls = {
+        name: values["with_same_triplet_candidate"] / values["gold"] if values["gold"] else 0.0
+        for name, values in type_counts.items()
+    }
+    return {
+        "failure_counts": dict(sorted(failures.items())),
+        "candidate_recall": recalls,
+        "predicate_type_counts": type_counts,
+        "groundtruth": rows,
+    }
+
+
 def _tagging_precision(groundtruth: Sequence[Dict[str, Any]], predictions: Sequence[Dict[str, Any]]) -> np.ndarray:
     target_triplets = {tuple(item["triplet"]) for item in groundtruth}
     predicted_triplets: List[Tuple[str, str, str]] = []
@@ -152,6 +243,7 @@ def evaluate_official_vidvrd(
             "per_video_ap": video_ap,
         },
         "relation_tagging": {"precision_at": tagging_precision},
+        "error_diagnostics": diagnose_official_predictions(groundtruth, predictions, viou_threshold),
     }
 
 
@@ -178,7 +270,16 @@ def project_artifacts_to_official(
     skipped_missing_tracks = 0
     skipped_empty_tubes = 0
     split_on_track_gaps = 0
+    per_video: Dict[str, Dict[str, int]] = {}
     for video_id in video_ids:
+        video_stats = {
+            "source_relation_count": 0,
+            "adapted_relation_count": 0,
+            "skipped_missing_tracks": 0,
+            "skipped_empty_tubes": 0,
+            "split_on_track_gaps": 0,
+        }
+        per_video[video_id] = video_stats
         track_map = {
             int(item["track_id"]): item
             for item in trajectories.get(video_id, [])
@@ -187,10 +288,12 @@ def project_artifacts_to_official(
         for relation in relations.get(video_id, []):
             if not isinstance(relation, dict):
                 continue
+            video_stats["source_relation_count"] += 1
             subject = track_map.get(int(relation.get("subject_track_id", relation.get("subject_id", -1))))
             obj = track_map.get(int(relation.get("object_track_id", relation.get("object_id", -1))))
             if subject is None or obj is None:
                 skipped_missing_tracks += 1
+                video_stats["skipped_missing_tracks"] += 1
                 continue
             span = relation_span(relation)
             start, end = span.start_frame, span.end_frame
@@ -203,9 +306,11 @@ def project_artifacts_to_official(
             runs = _continuous_runs(common_frames)
             if not runs:
                 skipped_empty_tubes += 1
+                video_stats["skipped_empty_tubes"] += 1
                 continue
             if len(runs) > 1:
                 split_on_track_gaps += len(runs) - 1
+                video_stats["split_on_track_gaps"] += len(runs) - 1
             for run in runs:
                 output[video_id].append(
                     {
@@ -216,9 +321,11 @@ def project_artifacts_to_official(
                         "score": _score(relation) if prediction else 1.0,
                     }
                 )
+                video_stats["adapted_relation_count"] += 1
     return output, {
         "skipped_missing_tracks": skipped_missing_tracks,
         "skipped_empty_tubes": skipped_empty_tubes,
         "split_on_track_gaps": split_on_track_gaps,
         "relation_count": sum(len(items) for items in output.values()),
+        "per_video": per_video,
     }

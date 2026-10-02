@@ -1,0 +1,688 @@
+{
+  "source": "training_annotations_only",
+  "training_video_count": 30,
+  "global": {
+    "above": 1,
+    "away": 2,
+    "behind": 2,
+    "beneath": 2,
+    "bite": 1,
+    "chase": 1,
+    "creep_behind": 1,
+    "creep_left": 1,
+    "fight": 2,
+    "fly_above": 2,
+    "fly_behind": 1,
+    "follow": 3,
+    "front": 4,
+    "hold": 1,
+    "jump_beneath": 2,
+    "jump_left": 1,
+    "larger": 17,
+    "left": 7,
+    "lie_behind": 1,
+    "lie_front": 5,
+    "lie_left": 3,
+    "lie_next_to": 2,
+    "lie_right": 3,
+    "lie_with": 2,
+    "move_away": 1,
+    "move_behind": 4,
+    "move_beneath": 2,
+    "move_front": 5,
+    "move_next_to": 3,
+    "move_past": 5,
+    "move_right": 6,
+    "move_toward": 4,
+    "next_to": 6,
+    "past": 3,
+    "play": 6,
+    "ride": 4,
+    "right": 11,
+    "run_away": 1,
+    "run_behind": 1,
+    "run_front": 2,
+    "run_left": 3,
+    "run_right": 3,
+    "run_toward": 2,
+    "run_with": 2,
+    "sit_above": 3,
+    "sit_behind": 1,
+    "sit_left": 1,
+    "sit_right": 3,
+    "stand_above": 1,
+    "stand_behind": 12,
+    "stand_front": 10,
+    "stand_left": 12,
+    "stand_next_to": 6,
+    "stand_right": 10,
+    "stand_with": 4,
+    "stop_behind": 13,
+    "stop_front": 6,
+    "stop_left": 14,
+    "stop_next_to": 6,
+    "stop_right": 3,
+    "taller": 13,
+    "touch": 2,
+    "walk_away": 5,
+    "walk_behind": 9,
+    "walk_beneath": 1,
+    "walk_front": 14,
+    "walk_left": 14,
+    "walk_next_to": 5,
+    "walk_past": 4,
+    "walk_right": 15,
+    "walk_toward": 2,
+    "walk_with": 4,
+    "watch": 8
+  },
+  "subject": {
+    "antelope": {
+      "run_left": 1,
+      "run_right": 1,
+      "run_with": 1,
+      "stand_behind": 1,
+      "stand_right": 1,
+      "walk_away": 1,
+      "walk_front": 1,
+      "walk_left": 1
+    },
+    "ball": {
+      "front": 1,
+      "left": 3,
+      "next_to": 4,
+      "right": 3
+    },
+    "bear": {
+      "larger": 2,
+      "stand_front": 1,
+      "stand_with": 1,
+      "walk_next_to": 1,
+      "walk_right": 3,
+      "walk_with": 1
+    },
+    "bicycle": {
+      "jump_beneath": 2,
+      "larger": 1,
+      "move_away": 1,
+      "move_behind": 2,
+      "move_beneath": 1,
+      "move_front": 3,
+      "move_next_to": 2,
+      "move_past": 3,
+      "move_right": 4,
+      "move_toward": 2,
+      "stop_behind": 1,
+      "stop_left": 1,
+      "taller": 1
+    },
+    "bird": {
+      "fly_above": 2,
+      "fly_behind": 1,
+      "jump_left": 1,
+      "run_front": 1,
+      "run_toward": 1,
+      "stand_front": 1,
+      "stand_right": 1,
+      "walk_right": 1,
+      "watch": 1
+    },
+    "bus": {
+      "move_past": 1,
+      "move_right": 1,
+      "stop_left": 1
+    },
+    "car": {
+      "follow": 1,
+      "larger": 4,
+      "move_behind": 2,
+      "move_front": 2,
+      "move_next_to": 1,
+      "move_past": 1,
+      "move_right": 1,
+      "move_toward": 2,
+      "stop_behind": 12,
+      "stop_front": 6,
+      "stop_left": 12,
+      "stop_next_to": 6,
+      "stop_right": 3,
+      "taller": 4
+    },
+    "dog": {
+      "bite": 1,
+      "chase": 1,
+      "larger": 1,
+      "lie_front": 1,
+      "lie_right": 1,
+      "play": 1,
+      "right": 1,
+      "run_left": 1,
+      "run_right": 1,
+      "run_with": 1,
+      "stand_behind": 1,
+      "taller": 1,
+      "walk_behind": 1,
+      "watch": 2
+    },
+    "domestic_cat": {
+      "beneath": 1,
+      "left": 1,
+      "sit_left": 1
+    },
+    "elephant": {
+      "fight": 2,
+      "larger": 3,
+      "stand_behind": 2,
+      "stand_front": 2,
+      "stand_left": 4,
+      "stand_next_to": 2,
+      "stand_right": 2,
+      "stand_with": 2,
+      "taller": 3,
+      "walk_away": 2,
+      "walk_behind": 3,
+      "walk_front": 3,
+      "walk_left": 3,
+      "walk_next_to": 2,
+      "walk_right": 5,
+      "walk_with": 2,
+      "watch": 1
+    },
+    "fox": {
+      "left": 1,
+      "play": 2,
+      "right": 1,
+      "run_away": 1,
+      "run_behind": 1,
+      "run_front": 1,
+      "run_left": 1,
+      "run_right": 1,
+      "run_toward": 1,
+      "stand_behind": 2,
+      "stand_left": 2,
+      "walk_behind": 1,
+      "walk_front": 1,
+      "walk_left": 3,
+      "walk_past": 3,
+      "walk_right": 3,
+      "walk_toward": 1
+    },
+    "giant_panda": {
+      "creep_behind": 1,
+      "larger": 2,
+      "lie_front": 1,
+      "lie_left": 1,
+      "play": 2,
+      "sit_behind": 1,
+      "sit_right": 1,
+      "taller": 1,
+      "walk_away": 1,
+      "walk_front": 1
+    },
+    "horse": {
+      "walk_beneath": 1
+    },
+    "monkey": {
+      "above": 1,
+      "hold": 1,
+      "larger": 2,
+      "left": 2,
+      "play": 1,
+      "right": 2,
+      "sit_right": 2,
+      "taller": 2,
+      "touch": 1
+    },
+    "motorcycle": {
+      "move_beneath": 1
+    },
+    "person": {
+      "away": 2,
+      "behind": 2,
+      "beneath": 1,
+      "follow": 1,
+      "front": 3,
+      "larger": 2,
+      "next_to": 2,
+      "past": 3,
+      "ride": 4,
+      "right": 4,
+      "sit_above": 3,
+      "stand_above": 1,
+      "stand_behind": 1,
+      "stand_front": 2,
+      "stand_left": 2,
+      "stand_next_to": 3,
+      "stand_right": 1,
+      "stand_with": 1,
+      "taller": 1,
+      "touch": 1,
+      "walk_away": 1,
+      "walk_front": 4,
+      "walk_left": 4,
+      "walk_next_to": 2,
+      "walk_right": 1,
+      "walk_with": 1,
+      "watch": 3
+    },
+    "red_panda": {
+      "lie_behind": 1,
+      "lie_front": 1,
+      "walk_front": 1,
+      "walk_toward": 1
+    },
+    "sheep": {
+      "stand_behind": 3,
+      "stand_front": 3,
+      "stand_left": 2,
+      "stand_right": 3,
+      "walk_behind": 2,
+      "walk_front": 1,
+      "walk_left": 3,
+      "walk_past": 1,
+      "watch": 1
+    },
+    "squirrel": {
+      "lie_front": 1,
+      "lie_right": 1,
+      "walk_front": 1,
+      "walk_right": 1
+    },
+    "turtle": {
+      "creep_left": 1
+    },
+    "zebra": {
+      "follow": 1,
+      "lie_front": 1,
+      "lie_left": 2,
+      "lie_next_to": 2,
+      "lie_right": 1,
+      "lie_with": 2,
+      "stand_behind": 2,
+      "stand_front": 1,
+      "stand_left": 2,
+      "stand_next_to": 1,
+      "stand_right": 2,
+      "walk_behind": 2,
+      "walk_front": 1,
+      "walk_right": 1
+    }
+  },
+  "pair": {
+    "antelope|antelope": {
+      "stand_behind": 1,
+      "stand_right": 1,
+      "walk_away": 1,
+      "walk_front": 1,
+      "walk_left": 1
+    },
+    "antelope|dog": {
+      "run_left": 1,
+      "run_right": 1,
+      "run_with": 1
+    },
+    "ball|ball": {
+      "left": 1,
+      "next_to": 2,
+      "right": 1
+    },
+    "ball|bear": {
+      "left": 2,
+      "next_to": 1
+    },
+    "ball|dog": {
+      "front": 1
+    },
+    "ball|person": {
+      "next_to": 1,
+      "right": 2
+    },
+    "bear|ball": {
+      "larger": 2,
+      "walk_next_to": 1,
+      "walk_right": 2
+    },
+    "bear|person": {
+      "stand_front": 1,
+      "stand_with": 1,
+      "walk_right": 1,
+      "walk_with": 1
+    },
+    "bicycle|bird": {
+      "jump_beneath": 1,
+      "larger": 1,
+      "stop_behind": 1,
+      "stop_left": 1,
+      "taller": 1
+    },
+    "bicycle|car": {
+      "move_behind": 1,
+      "move_front": 3,
+      "move_next_to": 1,
+      "move_past": 2,
+      "move_right": 3,
+      "move_toward": 2
+    },
+    "bicycle|person": {
+      "jump_beneath": 1,
+      "move_away": 1,
+      "move_behind": 1,
+      "move_beneath": 1,
+      "move_next_to": 1,
+      "move_past": 1,
+      "move_right": 1
+    },
+    "bird|bicycle": {
+      "fly_above": 1,
+      "run_front": 1,
+      "run_toward": 1,
+      "walk_right": 1
+    },
+    "bird|bird": {
+      "fly_behind": 1,
+      "jump_left": 1,
+      "stand_front": 1,
+      "stand_right": 1,
+      "watch": 1
+    },
+    "bird|person": {
+      "fly_above": 1
+    },
+    "bus|bus": {
+      "move_past": 1,
+      "move_right": 1,
+      "stop_left": 1
+    },
+    "car|bicycle": {
+      "stop_behind": 3,
+      "stop_front": 1,
+      "stop_left": 3,
+      "stop_next_to": 1
+    },
+    "car|car": {
+      "follow": 1,
+      "move_behind": 2,
+      "move_front": 2,
+      "move_next_to": 1,
+      "move_past": 1,
+      "move_right": 1,
+      "move_toward": 2,
+      "stop_behind": 3,
+      "stop_front": 3,
+      "stop_left": 2,
+      "stop_next_to": 3,
+      "stop_right": 1
+    },
+    "car|fox": {
+      "larger": 4,
+      "stop_front": 1,
+      "stop_left": 2,
+      "stop_right": 2,
+      "taller": 4
+    },
+    "car|person": {
+      "stop_behind": 5,
+      "stop_front": 1,
+      "stop_left": 4,
+      "stop_next_to": 2
+    },
+    "car|squirrel": {
+      "stop_behind": 1,
+      "stop_left": 1
+    },
+    "dog|antelope": {
+      "chase": 1,
+      "run_left": 1,
+      "run_right": 1,
+      "run_with": 1
+    },
+    "dog|ball": {
+      "bite": 1,
+      "larger": 1,
+      "play": 1,
+      "stand_behind": 1,
+      "taller": 1,
+      "walk_behind": 1,
+      "watch": 1
+    },
+    "dog|fox": {
+      "lie_front": 1,
+      "lie_right": 1
+    },
+    "dog|turtle": {
+      "right": 1,
+      "watch": 1
+    },
+    "domestic_cat|monkey": {
+      "beneath": 1,
+      "left": 1,
+      "sit_left": 1
+    },
+    "elephant|elephant": {
+      "fight": 2,
+      "larger": 3,
+      "stand_behind": 2,
+      "stand_front": 2,
+      "stand_left": 4,
+      "stand_next_to": 2,
+      "stand_right": 2,
+      "stand_with": 2,
+      "taller": 3,
+      "walk_away": 2,
+      "walk_behind": 3,
+      "walk_front": 3,
+      "walk_left": 3,
+      "walk_next_to": 2,
+      "walk_right": 5,
+      "walk_with": 2,
+      "watch": 1
+    },
+    "fox|car": {
+      "walk_behind": 1,
+      "walk_left": 2,
+      "walk_past": 3,
+      "walk_right": 2,
+      "walk_toward": 1
+    },
+    "fox|dog": {
+      "stand_behind": 1,
+      "stand_left": 1
+    },
+    "fox|fox": {
+      "left": 1,
+      "play": 2,
+      "right": 1,
+      "run_away": 1,
+      "run_behind": 1,
+      "run_front": 1,
+      "run_left": 1,
+      "run_right": 1,
+      "run_toward": 1,
+      "stand_behind": 1,
+      "stand_left": 1,
+      "walk_front": 1,
+      "walk_left": 1,
+      "walk_right": 1
+    },
+    "giant_panda|giant_panda": {
+      "creep_behind": 1,
+      "larger": 2,
+      "lie_front": 1,
+      "lie_left": 1,
+      "play": 2,
+      "sit_behind": 1,
+      "sit_right": 1,
+      "taller": 1,
+      "walk_away": 1,
+      "walk_front": 1
+    },
+    "horse|person": {
+      "walk_beneath": 1
+    },
+    "monkey|domestic_cat": {
+      "above": 1,
+      "play": 1,
+      "right": 1,
+      "sit_right": 1,
+      "touch": 1
+    },
+    "monkey|monkey": {
+      "hold": 1,
+      "larger": 2,
+      "left": 2,
+      "right": 1,
+      "sit_right": 1,
+      "taller": 2
+    },
+    "motorcycle|person": {
+      "move_beneath": 1
+    },
+    "person|ball": {
+      "larger": 2,
+      "walk_left": 2,
+      "walk_next_to": 1
+    },
+    "person|bear": {
+      "follow": 1,
+      "stand_behind": 1,
+      "stand_with": 1,
+      "taller": 1,
+      "walk_left": 1,
+      "walk_with": 1
+    },
+    "person|bicycle": {
+      "ride": 2,
+      "sit_above": 1,
+      "stand_above": 1,
+      "stand_left": 1,
+      "stand_next_to": 1,
+      "walk_front": 1,
+      "watch": 1
+    },
+    "person|bird": {
+      "beneath": 1
+    },
+    "person|car": {
+      "away": 1,
+      "behind": 1,
+      "front": 3,
+      "next_to": 1,
+      "past": 2,
+      "right": 3,
+      "stand_front": 2,
+      "stand_next_to": 1,
+      "stand_right": 1,
+      "touch": 1,
+      "walk_away": 1,
+      "walk_front": 2,
+      "walk_next_to": 1,
+      "walk_right": 1
+    },
+    "person|horse": {
+      "ride": 1,
+      "sit_above": 1
+    },
+    "person|motorcycle": {
+      "ride": 1,
+      "sit_above": 1
+    },
+    "person|person": {
+      "away": 1,
+      "behind": 1,
+      "next_to": 1,
+      "past": 1,
+      "right": 1,
+      "stand_left": 1,
+      "stand_next_to": 1,
+      "walk_front": 1,
+      "walk_left": 1,
+      "watch": 2
+    },
+    "red_panda|red_panda": {
+      "lie_behind": 1,
+      "lie_front": 1,
+      "walk_front": 1,
+      "walk_toward": 1
+    },
+    "sheep|sheep": {
+      "stand_behind": 3,
+      "stand_front": 3,
+      "stand_left": 2,
+      "stand_right": 3,
+      "walk_behind": 2,
+      "walk_front": 1,
+      "walk_left": 3,
+      "walk_past": 1,
+      "watch": 1
+    },
+    "squirrel|car": {
+      "lie_front": 1,
+      "lie_right": 1,
+      "walk_front": 1,
+      "walk_right": 1
+    },
+    "turtle|dog": {
+      "creep_left": 1
+    },
+    "zebra|zebra": {
+      "follow": 1,
+      "lie_front": 1,
+      "lie_left": 2,
+      "lie_next_to": 2,
+      "lie_right": 1,
+      "lie_with": 2,
+      "stand_behind": 2,
+      "stand_front": 1,
+      "stand_left": 2,
+      "stand_next_to": 1,
+      "stand_right": 2,
+      "walk_behind": 2,
+      "walk_front": 1,
+      "walk_right": 1
+    }
+  },
+  "training_video_ids": [
+    "ILSVRC2015_train_00135004",
+    "ILSVRC2015_train_00142003",
+    "ILSVRC2015_train_00177003",
+    "ILSVRC2015_train_00201005",
+    "ILSVRC2015_train_00207002",
+    "ILSVRC2015_train_00214001",
+    "ILSVRC2015_train_00228000",
+    "ILSVRC2015_train_00234021",
+    "ILSVRC2015_train_00240002",
+    "ILSVRC2015_train_00265004",
+    "ILSVRC2015_train_00293000",
+    "ILSVRC2015_train_00306002",
+    "ILSVRC2015_train_00354000",
+    "ILSVRC2015_train_00374000",
+    "ILSVRC2015_train_00438003",
+    "ILSVRC2015_train_00588000",
+    "ILSVRC2015_train_00632000",
+    "ILSVRC2015_train_00645001",
+    "ILSVRC2015_train_00651000",
+    "ILSVRC2015_train_00667002",
+    "ILSVRC2015_train_00772005",
+    "ILSVRC2015_train_00796000",
+    "ILSVRC2015_train_00897005",
+    "ILSVRC2015_train_00911000",
+    "ILSVRC2015_train_00925000",
+    "ILSVRC2015_train_01036000",
+    "ILSVRC2015_train_01150000",
+    "ILSVRC2015_val_00046003",
+    "ILSVRC2015_val_00118005",
+    "ILSVRC2015_val_00127004"
+  ],
+  "held_out_development_video_ids": [
+    "ILSVRC2015_train_00005005",
+    "ILSVRC2015_train_00031000",
+    "ILSVRC2015_train_00040018",
+    "ILSVRC2015_train_00045000",
+    "ILSVRC2015_train_00051015",
+    "ILSVRC2015_train_00058003",
+    "ILSVRC2015_train_00074002",
+    "ILSVRC2015_train_00091006",
+    "ILSVRC2015_train_00119033",
+    "ILSVRC2015_train_00119043"
+  ]
+}

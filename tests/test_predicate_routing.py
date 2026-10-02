@@ -63,6 +63,24 @@ class PredicateRoutingTests(unittest.TestCase):
         self.assertLessEqual(len(expanded["candidate_predicates"]), 24)
         self.assertIn(requested_family, expanded["family_descriptions"])
 
+    def test_route_reserves_composite_predicate_quota(self) -> None:
+        evidence = trajectory_evidence(_tracks(), list(range(6)), 1, 2)
+        evidence.update(
+            subject_speed=0.0, median_dx=0.0, median_dy=-0.5,
+            approach_rate=0.0, distance_min=1.0,
+        )
+        route = route_predicates(evidence, limit=14, exclude=GEOMETRY_PREDICATES)
+        self.assertEqual(route["candidate_policy"], "quota_composite_predicate_v3_train_prior")
+        self.assertIn("sit_above", route["candidate_predicates"])
+        self.assertIn("sit_above", route["candidate_buckets"]["composite"])
+
+        evidence.update(
+            subject_speed=0.3, median_dy=0.5,
+            subject_vertical_speed=0.2, subject_vertical_direction_changes=1,
+        )
+        moving_route = route_predicates(evidence, limit=14, exclude=GEOMETRY_PREDICATES)
+        self.assertIn("jump_beneath", moving_route["candidate_predicates"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -126,8 +126,8 @@ class ProvenanceAndHashTests(unittest.TestCase):
             provenance["algorithms"]["agent_policy"]["name"],
             "bounded_batched_agent_v3",
         )
-        self.assertEqual(provenance["algorithms"]["agent_policy"]["batch_windows_per_call"], 6)
-        self.assertEqual(provenance["algorithms"]["agent_policy"]["candidate_limit"], 14)
+        self.assertEqual(provenance["algorithms"]["agent_policy"]["batch_windows_per_call"], 1)
+        self.assertEqual(provenance["algorithms"]["agent_policy"]["candidate_limit"], 24)
         self.assertEqual(provenance["algorithms"]["agent_policy"]["max_supplemental_calls"], 1)
         self.assertEqual(
             provenance["algorithms"]["official_evaluator"]["name"],

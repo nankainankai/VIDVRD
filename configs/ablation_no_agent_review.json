@@ -1,0 +1,16 @@
+{
+  "project": {
+    "run_mode": "main",
+    "prompt_version": "main-v8-calibrated-composite-routing"
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": false,
+    "apply_actions": false
+  },
+  "evaluate": {
+    "enabled": true,
+    "dataset_split": "test",
+    "scope": "gold_split",
+    "expected_official_video_count": 200
+  }
+}

@@ -4,15 +4,17 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
+from unittest.mock import Mock
 
 import cv2
 import numpy as np
 
 from vidvrd_auto.evaluation.vidvrd import run_track_aligned_diagnostic
 from vidvrd_auto.providers import VLResult
-from vidvrd_auto.relations.semantic import classify_relations
-from vidvrd_auto.tracking.video import _smooth_short_gaps, track_video
+from vidvrd_auto.relations.semantic import _call_with_cache, classify_relations
+from vidvrd_auto.tracking.video import _prune_short_tracks, _smooth_short_gaps, track_video
 
 
 def _video(path: Path, frames: int = 4) -> None:
@@ -25,6 +27,38 @@ def _video(path: Path, frames: int = 4) -> None:
 
 
 class NativeStageTests(unittest.TestCase):
+    def test_semantic_batch_cache_reuses_success_only_for_identical_images(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            image = root / "evidence.jpg"
+            image.write_bytes(b"first")
+            response = VLResult(
+                ok=True, model="mock", text='{"packet_results":[{"packet_id":"p1","actions":[]}]}'
+            )
+            provider = SimpleNamespace(model="mock", call=Mock(return_value=response))
+            args = {
+                "prompt": "inspect",
+                "image_paths": [image],
+                "expected_packet_ids": ["p1"],
+                "cache_dir": root / "cache",
+            }
+            self.assertFalse(_call_with_cache(provider, **args)[1])
+            self.assertTrue(_call_with_cache(provider, **args)[1])
+            self.assertEqual(provider.call.call_count, 1)
+            image.write_bytes(b"changed")
+            self.assertFalse(_call_with_cache(provider, **args)[1])
+            self.assertEqual(provider.call.call_count, 2)
+
+    def test_short_ocsort_startup_track_is_pruned_before_export(self) -> None:
+        outputs = {
+            0: {1: {"bbox_observed": [0, 0, 10, 10]}},
+            1: {1: {"bbox_observed": [1, 0, 11, 10]}},
+            2: {1: {"bbox_observed": [2, 0, 12, 10]}, 2: {"bbox_observed": [40, 0, 50, 10]}},
+        }
+        self.assertEqual(_prune_short_tracks(outputs, 2), 1)
+        self.assertTrue(all(2 not in tracks for tracks in outputs.values()))
+        self.assertTrue(all(1 in tracks for tracks in outputs.values()))
+
     def test_short_predicted_gap_is_interpolated(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "tracks.jsonl"
@@ -168,6 +202,95 @@ class NativeStageTests(unittest.TestCase):
             self.assertEqual(coverage["candidate_pair_count"], 3)
             self.assertEqual(coverage["processed_pair_count"], 3)
             self.assertEqual(coverage["deferred_pairs"], [])
+
+    def test_semantic_packets_split_before_inference_at_qc_jump(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            video = root / "clip.avi"
+            tracks = root / "tracks.jsonl"
+            windows = root / "windows.json"
+            output = root / "semantic" / "relations.json"
+            _video(video, frames=6)
+            tracks.write_text("".join(json.dumps({"frame": frame, "tracks": [
+                {"track_id": 1, "bbox": [2, 2, 22, 32], "class_name": "person"},
+                {"track_id": 2, "bbox": [35, 4, 55, 34], "class_name": "dog"},
+            ]}) + "\n" for frame in range(6)), encoding="utf-8")
+            windows.write_text(json.dumps({"video": {"path": str(video)}, "windows": [
+                {"window_id": 1, "start_frame": 0, "end_frame": 5, "track_ids": [1, 2]},
+            ]}), encoding="utf-8")
+            classify_relations(
+                windows_path=windows, tracks_path=tracks, out_path=output,
+                storyboards_dir=output.parent / "storyboards",
+                config={"model": "mock", "track_jump_frames": {"1": [3]}, "max_frames_per_window": 3},
+                api_key="", dry_run=True, video_id="clip",
+            )
+            packets = json.loads((output.parent / "evidence_packets.json").read_text(encoding="utf-8"))["packets"]
+            self.assertEqual([(item["start_frame"], item["end_frame"]) for item in packets], [(0, 2), (3, 5)])
+            self.assertEqual(len(list((output.parent / "storyboards").glob("*.jpg"))), 2)
+
+    def test_adaptive_interpolation_fills_only_slow_same_scene_gap(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "tracks.jsonl"
+            rows = []
+            for frame in range(11):
+                tracks = []
+                if frame in (0, 10):
+                    box = [frame, 0, frame + 10, 10]
+                    tracks = [{"track_id": 1, "bbox": box, "bbox_observed": box,
+                               "class_name": "dog", "scene_id": 0}]
+                rows.append({"frame": frame, "tracks": tracks})
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+            self.assertEqual(_smooth_short_gaps(path, 2, adaptive_max_gap=12), 9)
+            output = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+            self.assertTrue(output[5]["tracks"][0]["interpolation"]["long_gap"])
+
+    def test_adaptive_interpolation_allows_gradual_perspective_change(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "tracks.jsonl"
+            rows = []
+            for frame in range(25):
+                tracks = []
+                if frame in (0, 24):
+                    box = [0, 0, 20, 20] if frame == 0 else [12, 0, 22, 10]
+                    tracks = [{"track_id": 1, "bbox": box, "bbox_observed": box,
+                               "class_name": "dog", "scene_id": 0}]
+                rows.append({"frame": frame, "tracks": tracks})
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+            self.assertEqual(_smooth_short_gaps(path, 6, adaptive_max_gap=30), 23)
+
+    @patch("vidvrd_auto.relations.semantic.DashScopeProvider")
+    def test_semantic_provider_failure_marks_stage_incomplete(self, provider_type) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            video = root / "clip.avi"
+            tracks = root / "tracks.jsonl"
+            windows = root / "windows.json"
+            output = root / "semantic" / "relations.json"
+            _video(video, frames=3)
+            tracks.write_text(
+                "".join(json.dumps({"frame": frame, "tracks": [
+                    {"track_id": 1, "bbox": [2, 2, 22, 32], "class_name": "person"},
+                    {"track_id": 2, "bbox": [35, 4, 55, 34], "class_name": "dog"},
+                ]}) + "\n" for frame in range(3)),
+                encoding="utf-8",
+            )
+            windows.write_text(json.dumps({
+                "video": {"path": str(video), "fps": 5.0},
+                "windows": [{"window_id": 1, "start_frame": 0, "end_frame": 2, "track_ids": [1, 2]}],
+            }), encoding="utf-8")
+            provider_type.return_value.call.return_value = VLResult(
+                ok=False, text="", model="mock", error="quota exhausted"
+            )
+            provider_type.return_value.stats.to_dict.return_value = {"calls": 1, "failed": 1}
+            with self.assertRaisesRegex(RuntimeError, "semantic relation inference stopped"):
+                classify_relations(
+                    windows_path=windows, tracks_path=tracks, out_path=output,
+                    storyboards_dir=output.parent / "storyboards",
+                    config={"model": "mock", "max_frames_per_window": 3},
+                    api_key="", dry_run=False, video_id="clip",
+                )
+            audit = json.loads((output.parent / "run.log").read_text(encoding="utf-8"))
+            self.assertEqual(audit["errors"][0]["error"], "quota exhausted")
 
     @patch("vidvrd_auto.relations.semantic.DashScopeProvider")
     def test_semantic_agent_uses_one_supplemental_frame_call(self, provider_type) -> None:
