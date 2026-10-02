@@ -1,0 +1,18 @@
+{
+  "policy": "axis_motion_reserve_v4",
+  "candidate_limit": 24,
+  "expanded_candidate_limit": 32,
+  "hypothesis": "screen-space speed under camera following should not exclude locomotion on visually supported spatial axis",
+  "selection": "reserve every locomotion action present in the ontology on the dominant 2-D axis, plus two posture alternatives; no category whitelist",
+  "annotation_input_to_prediction": false,
+  "predicate_priors": false,
+  "live_control": "both arms qwen3.8-flash, enable_thinking false, identical frozen detections and prompts; final review disabled",
+  "baseline_config": "configs\\ablation_no_agent_review.json",
+  "experimental_config": "configs/experimental_axis_motion.json",
+  "development_videos": [
+    "ILSVRC2015_train_00119033",
+    "ILSVRC2015_train_00177003"
+  ],
+  "test_labels_used": false,
+  "status": "fixed_before_live_comparison"
+}

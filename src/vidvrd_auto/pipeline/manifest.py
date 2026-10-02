@@ -68,12 +68,16 @@ def build_run_provenance(*, root: Path, config: Dict[str, Any], config_path: Pat
     verify = config.get("relation_verify", {}) if isinstance(config.get("relation_verify"), dict) else {}
     tracking = config.get("tracking", {}) if isinstance(config.get("tracking"), dict) else {}
     evaluation = config.get("evaluate", {}) if isinstance(config.get("evaluate"), dict) else {}
+    prior_name = str(relations.get("candidate_prior_path", "") or "").strip()
+    prior_file = Path(prior_name) if prior_name else None
+    if prior_file is not None and not prior_file.is_absolute():
+        prior_file = root / prior_file
     return {
         "run_mode": str(project.get("run_mode", "main")),
         "schema_version": str(project.get("schema_version", "1.3")),
         "artifact_span_convention": str(project.get("artifact_span_convention", "inclusive")),
         "canonical_span_convention": str(project.get("canonical_span_convention", "half_open")),
-        "prompt_version": str(project.get("prompt_version", "main-v7-batched-direction-schema")),
+        "prompt_version": str(project.get("prompt_version", "main-v8-calibrated-composite-routing")),
         "code_revision": git_revision(root),
         "code_fingerprint": source_tree_fingerprint(root),
         "effective_config_hash": stable_hash(config),
@@ -101,7 +105,10 @@ def build_run_provenance(*, root: Path, config: Dict[str, Any], config_path: Pat
             "relation_agent": str(relations.get("api_model", "")),
             "agent_policy": {
                 "name": "bounded_batched_agent_v3",
-                "candidate_policy": "hierarchical_predicate_v1",
+                "candidate_policy": "axis_motion_reserve_v4" if bool(relations.get("axis_motion_reserve", False)) else "quota_composite_predicate_v3_train_prior",
+                "compositional_checks": bool(relations.get("compositional_checks", False)),
+                "candidate_prior_path": str(prior_file) if prior_file else "",
+                "candidate_prior_sha256": sha256_file(prior_file) if prior_file and prior_file.is_file() else "",
                 "evidence_mode": "event_burst_dual_view",
                 "candidate_limit": int(relations.get("candidate_limit", 14) or 14),
                 "expanded_candidate_limit": int(relations.get("expanded_candidate_limit", 24) or 24),

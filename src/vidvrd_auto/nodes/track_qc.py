@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from pathlib import Path
+import math
 from typing import Any, Dict, List
 
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
@@ -11,6 +12,16 @@ from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
 
 def _center(bbox: List[float]) -> tuple[float, float]:
     return (float(bbox[0]) + float(bbox[2])) / 2.0, (float(bbox[1]) + float(bbox[3])) / 2.0
+
+
+def _iou(left: List[float], right: List[float]) -> float:
+    width = max(0.0, min(left[2], right[2]) - max(left[0], right[0]))
+    height = max(0.0, min(left[3], right[3]) - max(left[1], right[1]))
+    intersection = width * height
+    left_area = max(0.0, left[2] - left[0]) * max(0.0, left[3] - left[1])
+    right_area = max(0.0, right[2] - right[0]) * max(0.0, right[3] - right[1])
+    union = left_area + right_area - intersection
+    return intersection / union if union > 0 else 0.0
 
 
 def _continuity(frames: List[int], observed: set[int], interpolated: set[int]) -> Dict[str, Any]:
@@ -47,7 +58,8 @@ def run_track_qc(
     frames_by_track: Dict[int, List[int]] = defaultdict(list)
     observed_by_track: Dict[int, set[int]] = defaultdict(set)
     interpolated_by_track: Dict[int, set[int]] = defaultdict(set)
-    last_observed: Dict[int, tuple[float, float]] = {}
+    last_observed: Dict[int, tuple[int, List[float]]] = {}
+    long_interpolated: Counter[int] = Counter()
     jumps: List[Dict[str, Any]] = []
     row_count = 0
 
@@ -67,26 +79,37 @@ def run_track_qc(
             class_votes[track_id][name] += 1
             if not class_sequence[track_id] or class_sequence[track_id][-1] != name:
                 class_sequence[track_id].append(name)
-            bbox = track.get("bbox_observed")
             source = str(
                 track.get("box_source", "observed" if isinstance(track.get("bbox"), list) else "unknown")
             )
+            bbox = track.get("bbox_observed")
+            if (not isinstance(bbox, list) or len(bbox) != 4) and source == "observed":
+                bbox = track.get("bbox")
             if (isinstance(bbox, list) and len(bbox) == 4) or source == "observed":
                 observed_by_track[track_id].add(frame)
             elif source == "interpolated":
                 interpolated_by_track[track_id].add(frame)
+                if bool((track.get("interpolation") or {}).get("long_gap")):
+                    long_interpolated[track_id] += 1
             if not isinstance(bbox, list) or len(bbox) != 4:
                 continue
-            current = _center([float(value) for value in bbox])
+            current_box = [float(value) for value in bbox]
+            current = _center(current_box)
             previous = last_observed.get(track_id)
             if previous is not None:
+                previous_frame, previous_box = previous
+                previous_center = _center(previous_box)
                 width = max(1.0, abs(float(bbox[2]) - float(bbox[0])))
                 height = max(1.0, abs(float(bbox[3]) - float(bbox[1])))
                 diagonal = (width * width + height * height) ** 0.5
-                ratio = (((current[0] - previous[0]) ** 2 + (current[1] - previous[1]) ** 2) ** 0.5) / diagonal
-                if ratio > max_jump_ratio:
+                ratio = (((current[0] - previous_center[0]) ** 2 + (current[1] - previous_center[1]) ** 2) ** 0.5) / diagonal
+                # Ordinary motion can exceed the center-distance threshold while
+                # the boxes still overlap. Only a discontinuous pair is a split.
+                elapsed = max(1, frame - previous_frame)
+                threshold = max_jump_ratio * max(1.0, elapsed / 3.0)
+                if ratio > threshold and _iou(previous_box, current_box) < 0.05:
                     jumps.append({"track_id": track_id, "frame": frame, "jump_ratio": round(ratio, 4)})
-            last_observed[track_id] = current
+            last_observed[track_id] = (frame, current_box)
 
     short_tracks = sorted(track_id for track_id, count in frame_counts.items() if count < min_frames)
     drift = [
@@ -110,6 +133,34 @@ def run_track_qc(
         for track_id, metrics in continuity.items()
         if int(metrics.get("segment_count", 0)) > 1
     ]
+    jumps_by_track: Dict[int, List[int]] = defaultdict(list)
+    for item in jumps:
+        jumps_by_track[int(item["track_id"])].append(int(item["frame"]))
+    drift_by_track = {int(item["track_id"]): int(item["changes"]) for item in drift}
+    track_quality: Dict[str, Dict[str, Any]] = {}
+    for track_id in sorted(frames_by_track):
+        metrics = continuity[str(track_id)]
+        count = max(1, frame_counts[track_id])
+        class_stability = class_votes[track_id].most_common(1)[0][1] / count
+        observation_strength = 0.4 + 0.6 * min(1.0, float(metrics.get("observed_frame_count", 0)) / 6.0)
+        quality = (
+            class_stability
+            * math.sqrt(float(metrics.get("coverage_ratio", 0.0)))
+            * observation_strength
+            * (1.0 - 0.4 * long_interpolated[track_id] / count)
+            * (0.65 ** min(2, len(jumps_by_track.get(track_id, []))))
+            * (0.75 ** drift_by_track.get(track_id, 0))
+        )
+        if track_id in short_tracks:
+            quality = min(quality, 0.1)
+        track_quality[str(track_id)] = {
+            "quality": round(max(0.0, min(1.0, quality)), 6),
+            "class_stability": round(class_stability, 6),
+            "jump_frames": sorted(jumps_by_track.get(track_id, [])),
+            "short_track": track_id in short_tracks,
+            "long_interpolated_frame_count": long_interpolated[track_id],
+            "risk_types": sorted({item["type"] for item in risk_items if int(item["track_id"]) == track_id}),
+        }
     windows = read_json(windows_json).get("windows", []) if windows_json.exists() else []
     result = {
         "track_count": len(frame_counts),
@@ -126,6 +177,8 @@ def run_track_qc(
         "continuity_issues": continuity_issues,
         "risk_items": risk_items,
         "risk_track_ids": risk_ids,
+        "blocked_track_ids": short_tracks,
+        "track_quality": track_quality,
         "needs_strong_review": bool(risk_ids),
         "passed": not risk_ids,
     }

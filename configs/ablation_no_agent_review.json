@@ -1,0 +1,95 @@
+{
+  "project": {
+    "run_mode": "main",
+    "schema_version": "1.3",
+    "artifact_span_convention": "inclusive",
+    "canonical_span_convention": "half_open",
+    "prompt_version": "main-v11-boundary-diverse-calibrated"
+  },
+  "vocabulary": {
+    "discovery_enabled": false,
+    "discovery_model": "qwen3.8-flash"
+  },
+  "detector": {
+    "detector_backend": "rexomni",
+    "sampling_mode": "fixed_sparse",
+    "detection_interval": 3,
+    "min_detection_interval": 3,
+    "scene_change_threshold": 0.2,
+    "batch_size": 5,
+    "temperature": 0.0,
+    "top_p": 0.05,
+    "top_k": 1
+  },
+  "tracking": {
+    "algorithm": "sparse_ocsort",
+    "max_age": 10,
+    "min_hits": 2,
+    "min_new_track_conf": 0.0,
+    "class_aware": true,
+    "max_interpolation_gap": 6,
+    "algorithm_version": "unique_backend_ids_v1",
+    "preserve_unique_local_ids": true,
+    "min_export_observations": 2
+  },
+  "relations": {
+    "api_model": "qwen3.8-flash",
+    "dry_run": false,
+    "max_windows": 0,
+    "max_pairs_per_window": 0,
+    "max_frames_per_window": 8,
+    "event_burst_size": 5,
+    "batch_windows_per_call": 6,
+    "candidate_limit": 24,
+    "expanded_candidate_limit": 32,
+    "allow_request_more_frames": true,
+    "max_additional_frames": 4,
+    "candidate_prior_path": "",
+    "request_timeout_sec": 90,
+    "enable_thinking": false
+  },
+  "relation_verify": {
+    "strong_model_review_enabled": false,
+    "strong_model": "qwen-vl-max",
+    "apply_actions": false,
+    "apply_coupling": false,
+    "category_constraints_enabled": false,
+    "strong_model_request_timeout_sec": 90,
+    "strong_model_retries": 1
+  },
+  "evaluate": {
+    "enabled": true,
+    "gold_relations": "gold/vidvrd_50_relations.json",
+    "gold_trajectories": "gold/vidvrd_50_trajectories.json",
+    "gold_manifest": "gold/vidvrd_50_manifest.json",
+    "dataset_split": "train",
+    "scope": "requested",
+    "expected_official_video_count": 200,
+    "official_viou_threshold": 0.5,
+    "diagnostic_track_viou_threshold": 0.3,
+    "diagnostic_relation_tiou_threshold": 0.5,
+    "diagnostic_mot_iou_threshold": 0.5
+  },
+  "track_qc": {
+    "algorithm_version": "overlap_time_aware_v3",
+    "min_track_frames": 2,
+    "max_class_changes": 1,
+    "max_center_jump_ratio": 0.45
+  },
+  "relation_scoring": {
+    "version": "source_kind_risk_flag_v3",
+    "source_coefficients": {
+      "semantic": 1.0,
+      "mixed": 0.9,
+      "rule": 0.55,
+      "coupling": 0.5
+    }
+  },
+  "relation_export": {
+    "sliding_proposals_enabled": false,
+    "action_spatial_composition_enabled": false
+  },
+  "global_relation": {
+    "max_merged_span_frames": 30
+  }
+}

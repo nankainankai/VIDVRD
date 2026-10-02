@@ -17,6 +17,9 @@ class VLResult:
     dry_run: bool = False
     error: str = ""
     attempts: int = 0
+    elapsed_sec: float = 0.0
+    input_tokens: int | None = None
+    output_tokens: int | None = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -33,8 +36,12 @@ class VLStats:
     attempts: int = 0
     retries: int = 0
     images: int = 0
+    elapsed_sec: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    usage_reported_calls: int = 0
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
 

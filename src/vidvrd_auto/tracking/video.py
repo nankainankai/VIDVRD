@@ -3,6 +3,7 @@ from __future__ import annotations
 """Video-level OC-SORT execution."""
 
 import json
+import math
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -76,8 +77,11 @@ def _compact(tracks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return output
 
 
-def _smooth_short_gaps(path: Path, max_gap: int) -> int:
-    """Interpolate only bounded gaps enclosed by real observations."""
+def _smooth_short_gaps(
+    path: Path, max_gap: int, *, adaptive_max_gap: int = 0,
+    max_normalized_motion_per_frame: float = 0.15,
+) -> int:
+    """Interpolate observed endpoints; extend only slow, same-scene gaps."""
 
     rows = list(iter_jsonl(path))
     by_track: Dict[int, List[tuple[int, Dict[str, Any]]]] = {}
@@ -96,10 +100,26 @@ def _smooth_short_gaps(path: Path, max_gap: int) -> int:
         row_lookup = {int(row.get("frame", 0)): row for row in rows}
         for (start, left), (end, right) in zip(observed, observed[1:]):
             gap = end - start - 1
-            if gap <= 0 or gap > max_gap:
+            if gap <= 0:
                 continue
             left_box = [float(value) for value in left["bbox_observed"]]
             right_box = [float(value) for value in right["bbox_observed"]]
+            long_gap = gap > max_gap
+            if long_gap:
+                if gap > adaptive_max_gap or left.get("scene_id") != right.get("scene_id"):
+                    continue
+                if str(left.get("class_name", "")) != str(right.get("class_name", "")):
+                    continue
+                left_area = max(1.0, (left_box[2] - left_box[0]) * (left_box[3] - left_box[1]))
+                right_area = max(1.0, (right_box[2] - right_box[0]) * (right_box[3] - right_box[1]))
+                if abs(math.log(left_area / right_area)) / (end - start) > 0.10:
+                    continue
+                left_center = ((left_box[0] + left_box[2]) / 2.0, (left_box[1] + left_box[3]) / 2.0)
+                right_center = ((right_box[0] + right_box[2]) / 2.0, (right_box[1] + right_box[3]) / 2.0)
+                scale = math.sqrt((left_area + right_area) / 2.0)
+                normalized_motion = math.dist(left_center, right_center) / scale / (end - start)
+                if normalized_motion > max_normalized_motion_per_frame:
+                    continue
             for frame in range(start + 1, end):
                 item = lookup.get(frame)
                 if item is not None and isinstance(item.get("bbox_observed"), list):
@@ -124,7 +144,7 @@ def _smooth_short_gaps(path: Path, max_gap: int) -> int:
                 item["box_source"] = "interpolated"
                 item["is_predicted"] = True
                 item["bbox_observed"] = None
-                item["interpolation"] = {"left_frame": start, "right_frame": end}
+                item["interpolation"] = {"left_frame": start, "right_frame": end, "long_gap": long_gap}
                 changed += 1
 
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -167,6 +187,29 @@ def _windows(frame_tracks: Dict[int, List[int]], frame_count: int, fps: int, siz
     return output
 
 
+def _prune_short_tracks(frame_outputs: Dict[int, Dict[int, Dict[str, Any]]], min_observations: int) -> int:
+    """Remove startup-grace OC-SORT tracks never confirmed by enough detections.
+
+    The official core can emit a new class backend during its first
+    ``min_hits`` updates even when a detection never appears again. Pruning
+    after tracking preserves the core and its head-padding behavior while
+    keeping those one-off detections out of downstream relation windows.
+    """
+
+    if min_observations <= 1:
+        return 0
+    observed: Dict[int, set[int]] = {}
+    for frame, tracks in frame_outputs.items():
+        for track_id, track in tracks.items():
+            if isinstance(track.get("bbox_observed"), list):
+                observed.setdefault(track_id, set()).add(frame)
+    rejected = {track_id for track_id, frames in observed.items() if len(frames) < min_observations}
+    for tracks in frame_outputs.values():
+        for track_id in rejected:
+            tracks.pop(track_id, None)
+    return len(rejected)
+
+
 def track_video(
     *,
     video_path: Path,
@@ -197,6 +240,7 @@ def track_video(
         inertia=float(config.get("inertia", 0.2)),
         class_vote_window=int(config.get("class_vote_window", 12)),
         class_compatibility=config.get("class_compatibility", {}),
+        preserve_unique_local_ids=bool(config.get("preserve_unique_local_ids", True)),
     )
 
     tracks_path = out_dir / "tracks.jsonl"
@@ -231,6 +275,8 @@ def track_video(
     write_json(out_dir / "tracklets.json", {"schema": "tracklet-summary-v1", "tracklets": []})
     write_json(out_dir / "stitch_links.json", {"enabled": False, "links": []})
 
+    min_export_observations = max(1, int(config.get("min_export_observations", config.get("min_hits", 1))))
+    pruned = _prune_short_tracks(frame_outputs, min_export_observations)
     with tracks_path.open("w", encoding="utf-8") as handle:
         for frame in range(frame_count):
             tracks = [frame_outputs.get(frame, {})[key] for key in sorted(frame_outputs.get(frame, {}))]
@@ -242,7 +288,12 @@ def track_video(
                 + "\n"
             )
 
-    interpolated = _smooth_short_gaps(tracks_path, max(0, int(config.get("max_interpolation_gap", 8))))
+    interpolated = _smooth_short_gaps(
+        tracks_path,
+        max(0, int(config.get("max_interpolation_gap", 8))),
+        adaptive_max_gap=max(0, round(fps * float(config.get("adaptive_interpolation_max_seconds", 0.0) or 0.0))),
+        max_normalized_motion_per_frame=float(config.get("max_interpolation_motion_per_frame", 0.15) or 0.15),
+    )
     frame_tracks = {
         int(row.get("frame", 0)): [int(track["track_id"]) for track in row.get("tracks", [])]
         for row in iter_jsonl(tracks_path)
@@ -266,7 +317,7 @@ def track_video(
     )
     (out_dir / "run.log").write_text(
         f"mode={algorithm}\nframes={frame_count}\nanchors={len(anchor_frames)}\n"
-        f"interpolated={interpolated}\nerrors={len(errors)}\n"
+        f"interpolated={interpolated}\npruned_short_tracks={pruned}\nerrors={len(errors)}\n"
         + "\n".join(errors[:20]),
         encoding="utf-8",
     )

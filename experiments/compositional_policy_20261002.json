@@ -1,0 +1,17 @@
+{
+  "policy": "subject_reference_compositional_checks_v1",
+  "baseline": "qwen38_axis_reserve",
+  "config": "configs/experimental_compositional.json",
+  "change": "correct object role from acted-on entity to reference entity; independently inspect subject locomotion/posture and spatial component in both directions; camera following warning",
+  "prediction_uses_gold": false,
+  "automatic_relation_composition": false,
+  "candidate_budget": 24,
+  "final_review": false,
+  "same_model": "qwen3.8-flash",
+  "enable_thinking": false,
+  "development_videos": [
+    "ILSVRC2015_train_00119033",
+    "ILSVRC2015_train_00177003"
+  ],
+  "status": "fixed_before_live_comparison"
+}

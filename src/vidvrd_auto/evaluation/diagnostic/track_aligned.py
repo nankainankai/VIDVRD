@@ -68,6 +68,86 @@ def align_trajectories(
     return mapping, matches
 
 
+def clear_mot_on_gold_frames(
+    gold: Sequence[Dict[str, Any]], pred: Sequence[Dict[str, Any]], threshold: float = 0.5
+) -> Dict[str, Any]:
+    """Compute transparent CLEAR-MOT diagnostics on frames annotated by Gold.
+
+    VidVRD tubes are sparse outside annotated relation intervals, so this is
+    deliberately named a diagnostic rather than an official full-video MOTA.
+    False positives are counted only on frames where Gold has at least one box.
+    """
+
+    gold_by_frame: Dict[int, List[Tuple[int, str, Sequence[float]]]] = defaultdict(list)
+    pred_by_frame: Dict[int, List[Tuple[int, str, Sequence[float]]]] = defaultdict(list)
+    for item in gold:
+        track_id = int(item["track_id"])
+        category = normalize_object(str(item.get("category", "unknown")))
+        for frame, box in item.get("trajectory", {}).items():
+            gold_by_frame[int(frame)].append((track_id, category, box))
+    annotated_frames = sorted(gold_by_frame)
+    annotated_set = set(annotated_frames)
+    for item in pred:
+        track_id = int(item["track_id"])
+        category = normalize_object(str(item.get("category", "unknown")))
+        for frame, box in item.get("trajectory", {}).items():
+            frame_index = int(frame)
+            if frame_index in annotated_set:
+                pred_by_frame[frame_index].append((track_id, category, box))
+
+    false_negatives = false_positives = id_switches = matches = 0
+    iou_sum = 0.0
+    previous_matches: Dict[int, Tuple[int, int]] = {}
+    for frame in annotated_frames:
+        gold_items = gold_by_frame[frame]
+        pred_items = pred_by_frame.get(frame, [])
+        matrix = np.zeros((len(gold_items), len(pred_items)), dtype=float)
+        for gold_index, (_, gold_category, gold_box) in enumerate(gold_items):
+            for pred_index, (_, pred_category, pred_box) in enumerate(pred_items):
+                if gold_category != pred_category:
+                    continue
+                intersection, union = _box_iou(gold_box, pred_box)
+                matrix[gold_index, pred_index] = intersection / union if union > 0 else 0.0
+        accepted: List[Tuple[int, int, float]] = []
+        if matrix.size:
+            gold_indices, pred_indices = linear_sum_assignment(-matrix)
+            accepted = [
+                (gold_index, pred_index, float(matrix[gold_index, pred_index]))
+                for gold_index, pred_index in zip(gold_indices.tolist(), pred_indices.tolist())
+                if matrix[gold_index, pred_index] >= threshold
+            ]
+        false_negatives += len(gold_items) - len(accepted)
+        false_positives += len(pred_items) - len(accepted)
+        matches += len(accepted)
+        for gold_index, pred_index, iou in accepted:
+            gold_id = gold_items[gold_index][0]
+            pred_id = pred_items[pred_index][0]
+            previous = previous_matches.get(gold_id)
+            if previous is not None and previous[0] == frame - 1 and previous[1] != pred_id:
+                id_switches += 1
+            previous_matches[gold_id] = (frame, pred_id)
+            iou_sum += iou
+
+    groundtruth_detections = sum(len(values) for values in gold_by_frame.values())
+    mota = (
+        1.0 - (false_negatives + false_positives + id_switches) / groundtruth_detections
+        if groundtruth_detections
+        else 0.0
+    )
+    return {
+        "scope": "gold_annotated_frames",
+        "iou_threshold": threshold,
+        "annotated_frame_count": len(annotated_frames),
+        "groundtruth_detections": groundtruth_detections,
+        "matches": matches,
+        "false_negatives": false_negatives,
+        "false_positives": false_positives,
+        "id_switches": id_switches,
+        "mota": mota,
+        "motp": iou_sum / matches if matches else 0.0,
+    }
+
+
 def _relation_items(obj: Any) -> List[Dict[str, Any]]:
     output: List[Dict[str, Any]] = []
     for video_id, values in obj.items() if isinstance(obj, dict) else []:
@@ -197,6 +277,7 @@ def run_track_aligned_diagnostic(
     metrics_path: Path,
     track_viou_threshold: float = 0.3,
     relation_tiou_threshold: float = 0.5,
+    mot_iou_threshold: float = 0.5,
     video_ids: Sequence[str] | None = None,
 ) -> Dict[str, Any]:
     gold_tracks_obj = read_json(gold_trajectories)
@@ -219,12 +300,16 @@ def run_track_aligned_diagnostic(
     pred_tracks = {video: values for video, values in pred_tracks.items() if video in prediction_videos}
     mappings: Dict[str, Dict[int, int]] = {}
     match_rows: Dict[str, List[Dict[str, Any]]] = {}
+    mot_by_video: Dict[str, Dict[str, Any]] = {}
     for video in sorted(set(gold_tracks) | set(pred_tracks)):
         mapping, matches = align_trajectories(
             gold_tracks.get(video, []), pred_tracks.get(video, []), track_viou_threshold
         )
         mappings[video] = mapping
         match_rows[video] = matches
+        mot_by_video[video] = clear_mot_on_gold_frames(
+            gold_tracks.get(video, []), pred_tracks.get(video, []), mot_iou_threshold
+        )
 
     scoped_gold_relations = (
         {video: values for video, values in gold_relations_obj.items() if video in prediction_videos}
@@ -260,12 +345,36 @@ def run_track_aligned_diagnostic(
     matched_tracks = sum(len(values) for values in match_rows.values())
     gold_track_count = sum(len(values) for values in gold_tracks.values())
     pred_track_count = sum(len(values) for values in pred_tracks.values())
+    mot_totals = {
+        key: sum(int(values[key]) for values in mot_by_video.values())
+        for key in (
+            "annotated_frame_count", "groundtruth_detections", "matches",
+            "false_negatives", "false_positives", "id_switches",
+        )
+    }
+    total_gt = mot_totals["groundtruth_detections"]
+    total_matches = mot_totals["matches"]
+    weighted_iou = sum(values["motp"] * values["matches"] for values in mot_by_video.values())
+    diagnostic_mot = {
+        "scope": "gold_annotated_frames",
+        "iou_threshold": mot_iou_threshold,
+        **mot_totals,
+        "mota": 1.0 - (
+            mot_totals["false_negatives"] + mot_totals["false_positives"] + mot_totals["id_switches"]
+        ) / total_gt if total_gt else 0.0,
+        "motp": weighted_iou / total_matches if total_matches else 0.0,
+        "per_video": mot_by_video,
+    }
     metrics: Dict[str, Any] = {
         "evaluator": "diagnostic_track_aligned_v2",
         "metric_namespace": "diagnostic",
         "evaluated_videos": sorted(prediction_videos),
         "evaluated_video_count": len(prediction_videos),
-        "thresholds": {"track_gold_supported_iou": track_viou_threshold, "relation_tiou": relation_tiou_threshold},
+        "thresholds": {
+            "track_gold_supported_iou": track_viou_threshold,
+            "relation_tiou": relation_tiou_threshold,
+            "mot_frame_iou": mot_iou_threshold,
+        },
         "diagnostic_tracks": {
             "gold": gold_track_count,
             "predicted": pred_track_count,
@@ -277,6 +386,7 @@ def run_track_aligned_diagnostic(
             "matches": match_rows,
         },
         "diagnostic_relation_summary": overall,
+        "diagnostic_mot": diagnostic_mot,
         "diagnostic_predicate_macro_ap": mean_ap,
         "diagnostic_splits": split_metrics,
         "diagnostic_per_predicate": per_predicate,
@@ -295,6 +405,7 @@ def run_track_aligned_diagnostic(
         f"- Relation matching: tIoU >= {relation_tiou_threshold:.2f}",
         f"- Evaluator: `diagnostic_track_aligned_v2`",
         f"- Tracks: {matched_tracks}/{gold_track_count} matched, mean Gold-supported IoU={metrics['diagnostic_tracks']['mean_gold_supported_iou']:.4f}",
+        f"- Gold-frame MOTA={diagnostic_mot['mota']:.4f}, MOTP={diagnostic_mot['motp']:.4f}, ID switches={diagnostic_mot['id_switches']}",
         "",
         "## Overall",
         "",

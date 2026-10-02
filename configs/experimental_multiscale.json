@@ -1,0 +1,7 @@
+{
+  "global_relation": {
+    "temporal_proposal_mode": "multiscale",
+    "max_merged_span_frames": 30,
+    "secondary_proposal_decay": 0.5
+  }
+}

@@ -23,6 +23,7 @@ dependencies = [
 [project.scripts]
 vidvrd-auto = "vidvrd_auto.cli:main"
 vidvrd-build-gold = "vidvrd_auto.evaluation.gold:main"
+vidvrd-evaluate = "vidvrd_auto.evaluation.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -128,6 +128,8 @@ def detect_video(
     interval = max(1, int(config.get("detection_interval", 5)))
     min_interval = min(interval, max(1, int(config.get("min_detection_interval", 2))))
     scene_threshold = max(0.0, float(config.get("scene_change_threshold", 0.2)))
+    show_progress = bool(config.get("show_progress", True))
+    progress_every_batches = max(1, int(config.get("progress_every_batches", 1)))
 
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
@@ -151,10 +153,27 @@ def detect_video(
         cap.release()
         if writer is not None:
             writer.release()
+        close = getattr(detector, "close", None)
+        if callable(close):
+            close()
         raise
     errors: List[str] = []
     frame_count = 0
     anchor_count = 0
+
+    def report_progress(current_batch_id: int, *, final: bool = False) -> None:
+        if not show_progress or (not final and current_batch_id % progress_every_batches != 0):
+            return
+        if sampling_mode == "fixed_sparse":
+            expected_anchors = 0 if total_frames <= 0 else ((total_frames - 1) // interval) + 1
+            anchor_progress = f"{anchor_count}/{expected_anchors}"
+        else:
+            anchor_progress = str(anchor_count)
+        print(
+            f"DETECT progress anchors={anchor_progress} "
+            f"frames={frame_count}/{total_frames} batches={current_batch_id}",
+            flush=True,
+        )
 
     def write_row(handle: Any, frame_index: int, frame: Any, objects: List[Dict[str, Any]], batch: Dict[str, Any] | None = None) -> None:
         row: Dict[str, Any] = {
@@ -204,17 +223,24 @@ def detect_video(
                     batch_id = _flush_records(
                         handle, pending, pending_anchors, batch_id, detector, write_row, errors, interval
                     )
+                    report_progress(batch_id)
                     pending = []
                     pending_anchors = []
 
             if pending:
-                _flush_records(handle, pending, pending_anchors, batch_id, detector, write_row, errors, interval)
+                batch_id = _flush_records(
+                    handle, pending, pending_anchors, batch_id, detector, write_row, errors, interval
+                )
+                report_progress(batch_id, final=True)
     finally:
         cap.release()
         if writer is not None:
             writer.release()
+        detector_stats = detector.get_stats()
+        close = getattr(detector, "close", None)
+        if callable(close):
+            close()
 
-    detector_stats = detector.get_stats()
     meta = {
         "video": {
             "path": str(video_path),

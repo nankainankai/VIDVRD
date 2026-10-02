@@ -1,0 +1,6 @@
+{
+  "relations": {
+    "candidate_limit": 32,
+    "expanded_candidate_limit": 40
+  }
+}

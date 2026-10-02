@@ -12,9 +12,11 @@ from vidvrd_auto.agents import validate_review_actions
 from vidvrd_auto.prompts.templates import relation_verify_prompt
 from vidvrd_auto.relations.object_candidates import normalize_category
 from vidvrd_auto.relations.taxonomy import coupling_inverse, mutex_pairs, predicate_defs
+from vidvrd_auto.relations.track_risk import split_frames_on_track_jumps
 from vidvrd_auto.core.ontology import predicate_components
 from vidvrd_auto.core.schema import serialize_relation_artifact
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
+from vidvrd_auto.utils.model_output import parse_json_object
 
 
 COUPLING_INVERSE: Dict[str, str] = {
@@ -63,6 +65,8 @@ def _box_weight(track: Dict[str, Any], predicted_weight: float, interpolated_wei
     if source == "predicted":
         return predicted_weight
     if source == "interpolated":
+        if bool((track.get("interpolation") or {}).get("long_gap")):
+            return min(interpolated_weight, 0.35)
         return interpolated_weight
     return 1.0
 
@@ -128,6 +132,8 @@ def generate_rule_relations(
     min_observed_pair_frames = max(0, int(config.get("min_observed_pair_frames", 1) or 0))
     min_evidence_frames = max(1, int(config.get("min_evidence_frames", 2) or 2))
     evidence_max_gap = max(0, int(config.get("evidence_max_gap", 0) or 0))
+    blocked_track_ids = {int(value) for value in config.get("blocked_track_ids", [])}
+    jump_frames = config.get("track_jump_frames", {})
 
     relations: List[Dict[str, Any]] = []
     for wi, w in enumerate(windows):
@@ -139,6 +145,7 @@ def generate_rule_relations(
         if end < start:
             start, end = end, start
         track_ids = [int(tid) for tid in (w.get("track_ids", []) or []) if str(tid).strip()]
+        track_ids = [track_id for track_id in track_ids if track_id not in blocked_track_ids]
         if len(track_ids) < 2:
             continue
         if max_track_ids_per_window > 0:
@@ -196,7 +203,11 @@ def generate_rule_relations(
                 continue
             available = pair_frames[(subject_id, object_id)]
             for predicate, support_by_frame in sorted(predicates.items()):
-                for evidence_frames in _frame_runs(support_by_frame, evidence_max_gap):
+                for evidence_frames in (
+                    piece
+                    for run in _frame_runs(support_by_frame, evidence_max_gap)
+                    for piece in split_frames_on_track_jumps(run, (subject_id, object_id), jump_frames)
+                ):
                     if len(evidence_frames) < min_evidence_frames:
                         continue
                     relation_start, relation_end = evidence_frames[0], evidence_frames[-1]
@@ -487,7 +498,7 @@ def _relevant_storyboards(directory: Path | None, items: Sequence[Dict[str, Any]
         pairs.add(tuple(pair))
     selected: List[Path] = []
     for path in sorted(directory.glob("*.jpg")):
-        match = re.search(r"_A(\d+)_B(\d+)\.jpg$", path.name)
+        match = re.search(r"_A(\d+)_B(\d+)(?:_s\d+)?\.jpg$", path.name)
         if match and tuple(sorted((int(match.group(1)), int(match.group(2))))) in pairs:
             selected.append(path)
             if len(selected) >= limit:
@@ -602,15 +613,16 @@ def verify_relations(
         client_cfg = {
             "model": strong_model or "qwen-vl-max",
             "api_key_env": str(config.get("api_key_env", "DASHSCOPE_API_KEY") or "DASHSCOPE_API_KEY"),
-            "retries": int(config.get("strong_model_retries", 2) or 2),
+            "retries": int(config.get("strong_model_retries", 2)),
             "backoff_sec": float(config.get("strong_model_backoff_sec", 2.0) or 2.0),
             "sleep_sec": float(config.get("strong_model_sleep_sec", 0.0) or 0.0),
+            "request_timeout_sec": int(config.get("strong_model_request_timeout_sec", 180) or 180),
             "dry_run": strong_model_dry_run,
         }
         image_paths = _relevant_storyboards(storyboards_dir, review_items, int(config.get("max_review_storyboards", 8) or 8))
         image_pairs = set()
         for path in image_paths:
-            match = re.search(r"_A(\d+)_B(\d+)\.jpg$", path.name)
+            match = re.search(r"_A(\d+)_B(\d+)(?:_s\d+)?\.jpg$", path.name)
             if match:
                 image_pairs.add(tuple(sorted((int(match.group(1)), int(match.group(2))))))
         evidenced_items = []
@@ -625,19 +637,21 @@ def verify_relations(
         if not evidenced_items:
             review_result = {"state": "skipped_no_visual_evidence", "image_paths": []}
         else:
-            vl_result = DashScopeProvider(client_cfg, api_key=api_key).call(
+            review_provider = DashScopeProvider(client_cfg, api_key=api_key)
+            vl_result = review_provider.call(
                 prompt=relation_verify_prompt(evidenced_items, issues),
                 image_paths=image_paths,
                 dry_run=strong_model_dry_run,
             )
+            print(f"VERIFY relations={len(evidenced_items)} images={len(image_paths)} ok={vl_result.ok}", flush=True)
             review_result = {**vl_result.to_dict(), "state": "succeeded" if vl_result.ok else "failed", "image_paths": [str(path) for path in image_paths], "deferred_relation_ids": deferred_ids}
+            review_result["provider"] = review_provider.stats.to_dict()
             if vl_result.ok:
-                try:
-                    parsed = json.loads(vl_result.text)
-                except Exception:
-                    parsed = {}
+                parsed = parse_json_object(vl_result.text, required_key="actions")
                 if isinstance(parsed.get("actions"), list):
                     final_actions, rejected_agent_actions = validate_review_actions(parsed["actions"], evidenced_items)
+                else:
+                    review_result["state"] = "invalid_response"
 
     track_main_classes, track_frames = _collect_track_main_classes(tracks_jsonl)
 
@@ -706,4 +720,6 @@ def verify_relations(
         {video_id: [serialize_relation_artifact(item) for item in final_items]},
     )
     write_json(out_qc_json, qc)
+    if review_result.get("state") in {"failed", "invalid_response"}:
+        raise RuntimeError(f"visual relation review incomplete: {review_result['state']}; see {out_qc_json}")
     return qc

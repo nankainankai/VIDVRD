@@ -9,6 +9,7 @@ from vidvrd_auto.pipeline.stage import StageRunner
 from vidvrd_auto.relations import generate_rule_relations, merge_relations, verify_relations
 from vidvrd_auto.utils.hashing import sha256_file
 from vidvrd_auto.utils.io import read_json
+from pathlib import Path
 
 
 def run_relations(
@@ -22,7 +23,17 @@ def run_relations(
 ) -> None:
     """Run rule, semantic, merge, global, verify, and export stages."""
 
+    track_qc = read_json(files.track_report) if files.track_report.exists() else {}
+    blocked_track_ids = list(track_qc.get("blocked_track_ids", []))
+    track_quality = dict(track_qc.get("track_quality", {}))
+    track_jump_frames = {
+        str(track_id): list(values.get("jump_frames", []))
+        for track_id, values in track_quality.items() if isinstance(values, dict)
+    }
+
     rule_cfg = config.section("relation_rule").to_dict()
+    rule_cfg["blocked_track_ids"] = blocked_track_ids
+    rule_cfg["track_jump_frames"] = track_jump_frames
     stages.run(
         "rule",
         {"tracks": sha256_file(files.tracks), "windows": sha256_file(files.windows), "config": rule_cfg},
@@ -37,8 +48,17 @@ def run_relations(
     )
 
     semantic_cfg = config.section("relations").to_dict()
+    semantic_cfg["blocked_track_ids"] = blocked_track_ids
+    semantic_cfg["track_jump_frames"] = track_jump_frames
+    prior_path = str(semantic_cfg.get("candidate_prior_path", "") or "").strip()
+    if prior_path:
+        prior_file = Path(prior_path)
+        if not prior_file.is_absolute():
+            prior_file = paths.repo_dir / prior_file
+        semantic_cfg["candidate_prior_path"] = str(prior_file)
+        semantic_cfg["candidate_prior_sha256"] = sha256_file(prior_file)
     semantic_cfg["prompt_version"] = config.section("project").get(
-        "prompt_version", "main-v7-batched-direction-schema"
+        "prompt_version", "main-v8-calibrated-composite-routing"
     )
     dry_run = bool(stages.args.dry_run_relations) or bool(semantic_cfg.get("dry_run", False))
     stages.run(
@@ -76,6 +96,11 @@ def run_relations(
     )
 
     global_cfg = config.section("global_relation").to_dict()
+    scoring_cfg = config.section("relation_scoring").to_dict()
+    global_cfg["track_quality"] = track_quality
+    global_cfg["track_jump_frames"] = track_jump_frames
+    global_cfg["source_coefficients"] = scoring_cfg.get("source_coefficients", {})
+    global_cfg["score_version"] = scoring_cfg.get("version", "explicit_risk_flag_v2")
     stages.run(
         "global",
         {"relations": sha256_file(files.merged), "config": global_cfg},
@@ -90,10 +115,10 @@ def run_relations(
 
     verify_cfg = config.section("relation_verify").to_dict()
     verify_cfg["prompt_version"] = config.section("project").get(
-        "prompt_version", "main-v7-batched-direction-schema"
+        "prompt_version", "main-v8-calibrated-composite-routing"
     )
     if files.track_report.exists():
-        verify_cfg["risk_track_ids"] = read_json(files.track_report).get("risk_track_ids", [])
+        verify_cfg["risk_track_ids"] = track_qc.get("risk_track_ids", [])
     stages.run(
         "verify",
         {
@@ -114,9 +139,10 @@ def run_relations(
         ),
     )
 
+    export_cfg = config.section("relation_export").to_dict()
     stages.run(
         "export",
-        {"relations": sha256_file(files.verified), "tracks": sha256_file(files.tracks)},
+        {"relations": sha256_file(files.verified), "tracks": sha256_file(files.tracks), "config": export_cfg},
         [files.relations, files.trajectories],
         lambda: export_video_outputs(
             verified_path=files.verified,
@@ -125,5 +151,6 @@ def run_relations(
             video_id=video_id,
             relations_path=files.relations,
             trajectories_path=files.trajectories,
+            config=export_cfg,
         ),
     )

@@ -25,7 +25,17 @@ def image_to_data_uri(path: Path) -> str:
 def _response_text(response: Any) -> str:
     """Extract text from both known DashScope message content shapes."""
 
-    content = response.output.choices[0].message.content
+    output = getattr(response, "output", None)
+    choices = getattr(output, "choices", None)
+    if not choices:
+        raise RuntimeError(
+            "DashScope returned no choices: "
+            f"status={getattr(response, 'status_code', None)} "
+            f"code={getattr(response, 'code', None)} "
+            f"message={getattr(response, 'message', None)}"
+            f" request_id={getattr(response, 'request_id', None)}"
+        )
+    content = choices[0].message.content
     if isinstance(content, str):
         return content.strip()
     if isinstance(content, list):
@@ -36,7 +46,7 @@ def _response_text(response: Any) -> str:
 
 
 class DashScopeProvider:
-    """Qwen-VL client with retries, dry-run support, and local call stats."""
+    """DashScope multimodal client with retries, dry-run support, and local call stats."""
 
     def __init__(self, config: Dict[str, Any] | None = None, *, api_key: str = "") -> None:
         cfg = config or {}
@@ -46,10 +56,17 @@ class DashScopeProvider:
         retries = cfg.get("retries", 2)
         backoff_sec = cfg.get("backoff_sec", 1.5)
         sleep_sec = cfg.get("sleep_sec", 0.0)
+        request_timeout_sec = cfg.get("request_timeout_sec", 180)
         self.retries = max(0, int(2 if retries is None else retries))
         self.backoff_sec = max(0.0, float(1.5 if backoff_sec is None else backoff_sec))
         self.sleep_sec = max(0.0, float(0.0 if sleep_sec is None else sleep_sec))
+        self.request_timeout_sec = max(1, int(180 if request_timeout_sec is None else request_timeout_sec))
         self.dry_run = bool(cfg.get("dry_run", False))
+        self.inference_options = {}
+        if "enable_thinking" in cfg:
+            if not isinstance(cfg["enable_thinking"], bool):
+                raise ValueError("enable_thinking must be a boolean")
+            self.inference_options["enable_thinking"] = cfg["enable_thinking"]
         self.stats = VLStats()
 
     def call(
@@ -103,12 +120,36 @@ class DashScopeProvider:
             try:
                 if self.sleep_sec > 0:
                     time.sleep(self.sleep_sec)
-                response = MultiModalConversation.call(model=self.model, messages=messages)
+                started = time.perf_counter()
+                try:
+                    response = MultiModalConversation.call(
+                        model=self.model, messages=messages, request_timeout=self.request_timeout_sec,
+                        **self.inference_options,
+                    )
+                finally:
+                    self.stats.elapsed_sec += time.perf_counter() - started
                 text = _response_text(response)
+                usage = getattr(response, "usage", None)
+                def token_count(name: str) -> int | None:
+                    value = usage.get(name) if isinstance(usage, dict) else getattr(usage, name, None)
+                    return int(value) if isinstance(value, (int, float)) else None
+                input_tokens, output_tokens = token_count("input_tokens"), token_count("output_tokens")
+                if input_tokens is not None or output_tokens is not None:
+                    self.stats.usage_reported_calls += 1
+                    self.stats.input_tokens += input_tokens or 0
+                    self.stats.output_tokens += output_tokens or 0
                 self.stats.succeeded += 1
-                return VLResult(ok=True, text=text, model=self.model, attempts=attempt)
+                return VLResult(ok=True, text=text, model=self.model, attempts=attempt,
+                                elapsed_sec=time.perf_counter() - started,
+                                input_tokens=input_tokens, output_tokens=output_tokens)
             except Exception as exc:
                 last_error = str(exc)
+                if any(code in last_error for code in (
+                    "DataInspectionFailed", "AllocationQuota", "InsufficientBalance",
+                    "InvalidApiKey", "InvalidAPIKey", "ModelNotFound",
+                    "status=401", "status=402", "status=403", "status=404",
+                )):
+                    return self._failure(last_error, attempts=attempt)
                 if attempt < max_attempts and self.backoff_sec > 0:
                     time.sleep(self.backoff_sec * attempt)
 

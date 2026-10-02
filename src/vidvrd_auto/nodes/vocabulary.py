@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 import cv2
 import numpy as np
 
-from vidvrd_auto.core.ontology import normalize_vocabulary, object_names
+from vidvrd_auto.core.ontology import normalize_object, normalize_vocabulary, object_names
 from vidvrd_auto.providers import DashScopeProvider
 from vidvrd_auto.utils.io import write_json
 
@@ -96,7 +96,27 @@ def build_vocabulary(
         else:
             review["fallback"] = "vidvrd_base_vocabulary"
 
-    entries = normalize_vocabulary([*base, *extras, *discovered])
+    discovery_aliases = {
+        str(key).strip().lower(): str(value).strip().lower()
+        for key, value in (config.get("discovery_aliases", {}) if discovery_enabled else {}).items()
+    }
+    entries = normalize_vocabulary([*base, *extras])
+    raw_names = {str(entry["raw_label"]).strip().lower() for entry in entries}
+    for raw in discovered:
+        raw_name = str(raw).strip()
+        if not raw_name or raw_name.lower() in raw_names:
+            continue
+        canonical = normalize_object(raw_name, discovery_aliases)
+        if bool(config.get("ontology_only_discovery", False)) and canonical not in base:
+            continue
+        # Keep visual aliases as additional Rex query terms even when their
+        # canonical category already exists in the 35-class VidVRD ontology.
+        entries.append({
+            "raw_label": raw_name,
+            "canonical_label": canonical,
+            "ontology_source": "discovered",
+        })
+        raw_names.add(raw_name.lower())
     categories = [entry["raw_label"] for entry in entries]
     label_map = {entry["raw_label"].lower(): entry["canonical_label"] for entry in entries}
     result = {

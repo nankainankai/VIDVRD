@@ -44,7 +44,7 @@ def semantic_relation_prompt(packet: EvidencePacket, *, supplemental: bool = Fal
 
 
 def semantic_relation_batch_prompt(
-    packets: List[EvidencePacket], *, supplemental: bool = False
+    packets: List[EvidencePacket], *, supplemental: bool = False, compositional_checks: bool = False
 ) -> str:
     if supplemental:
         stage = (
@@ -70,12 +70,27 @@ def semantic_relation_batch_prompt(
         }
         for index, packet in enumerate(packets, 1)
     ]
+    object_role = (
+        "the reference entity named by the relation, which need not be acted on. "
+        if compositional_checks else "the acted-on entity. "
+    )
+    component_checks = (
+        "Evaluate both listed subject/object directions independently. A composite action+spatial predicate "
+        "describes the subject's own action or posture relative to the reference object; it does not require "
+        "the subject to act upon that object. Check the subject's body or vehicle motion and the spatial "
+        "component separately, then accept their combination only when both are visually supported and "
+        "the combined predicate is in that direction's candidate list. A following camera can keep a "
+        "moving subject nearly stationary in screen coordinates: use limb cycles, posture changes, "
+        "ground contact and scene-relative movement rather than box displacement alone. An interaction "
+        "in one direction does not rule out an independently supported motion or posture in the other. "
+        if compositional_checks else ""
+    )
     return (
         "You are a bounded video-relation proposal agent. The attached storyboard images and EvidencePackets all "
         "belong to the same unordered track pair in consecutive time windows. Image order matches image_index. "
         "A and B are neutral display labels, not subject/object roles. Choose direction from the semantic action: "
         "the subject_track_id must be the actor named as the subject in the reason, and object_track_id must be "
-        "the acted-on entity. For example, if A is horse ID1 and B is person ID2, 'person rides horse' is "
+        f"{object_role}For example, if A is horse ID1 and B is person ID2, 'person rides horse' is "
         "subject_track_id=2 and object_track_id=1. Judge every packet independently; do not move evidence or "
         "relations between packets. You cannot change "
         "tracks, inspect unlisted frames, or invent predicates. "
@@ -84,6 +99,11 @@ def semantic_relation_batch_prompt(
         "action field. accept_relation requires action=accept_relation, subject_track_id, predicate, "
         "object_track_id, inclusive start_frame/end_frame, evidence_frames chosen "
         f"only from that packet's displayed_frames, agent_score, and reason. {request_rules}"
+        "Return every independently supported label for each direction: action and action+spatial "
+        "labels may coexist. A prominent interaction does not replace other supported labels. "
+        f"{component_checks}"
+        "Use the first/last displayed frames to check relation boundaries; do not assume a relation "
+        "fills the window. Request more available frames when a boundary or action is uncertain. "
         "For bite, require visible mouth/head contact; ordinary proximity supports touch at most. For kick, require "
         "visible foot impact. For hold, require sustained control rather than brief contact; for feed, require visible "
         "transfer toward a mouth. If no relation is supported, return an empty actions array for that packet. "

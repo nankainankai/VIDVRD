@@ -3,7 +3,9 @@ from __future__ import annotations
 """Evidence-ranked, open-object predicate routing."""
 
 import math
-from typing import Any, Collection
+from typing import Any, Collection, Mapping
+
+from vidvrd_auto.relations.candidate_priors import predicate_prior_scores
 
 from vidvrd_auto.relations.predicate_hierarchy import (
     confusion_siblings,
@@ -50,15 +52,24 @@ def _spatial_support(spatial: str, evidence: dict[str, Any]) -> float:
     if spatial == "next_to":
         return max(0.0, 1.0 - float(evidence["distance_min"]))
     if spatial == "with":
-        return max(0.0, float(evidence["motion_alignment"]))
-    return 0.25
+        # Co-occurrence can be meaningful even when both objects are stationary.
+        proximity = max(0.0, 1.0 - float(evidence["edge_gap_min"]))
+        return max(0.25, float(evidence["motion_alignment"]) * proximity)
+    if spatial in {"front", "behind", "inside"}:
+        # 2-D boxes cannot establish depth; keep both hypotheses for visual review.
+        return 0.30
+    return 0.10
 
 
 def _action_support(action: str, evidence: dict[str, Any]) -> float:
     speed = float(evidence["subject_speed"])
     if action in {"lie", "sit", "stand", "stop"}:
         return max(0.0, 1.0 - speed * 8.0)
-    if action in {"creep", "fly", "jump", "move", "run", "swim", "walk"}:
+    if action == "jump":
+        vertical = float(evidence.get("subject_vertical_speed", 0.0))
+        reversals = int(evidence.get("subject_vertical_direction_changes", 0))
+        return min(1.0, speed * 5.0 + vertical * 10.0 + min(0.35, reversals * 0.2))
+    if action in {"creep", "fly", "move", "run", "swim", "walk"}:
         return min(1.0, speed * 8.0)
     if action in {"chase", "follow"}:
         return min(
@@ -71,9 +82,13 @@ def _action_support(action: str, evidence: dict[str, Any]) -> float:
 
 
 def route_predicates(
-    evidence: dict[str, Any], *, split: str = "all", limit: int = 14, exclude: Collection[str] = ()
+    evidence: dict[str, Any], *, split: str = "all", limit: int = 14, exclude: Collection[str] = (),
+    subject_category: str = "unknown", object_category: str = "unknown",
+    predicate_priors: Mapping[str, Any] | None = None,
+    axis_motion_reserve: bool = False,
 ) -> dict[str, Any]:
     scores = family_scores(evidence)
+    priors = predicate_prior_scores(predicate_priors, subject_category, object_category)
     ranked: list[tuple[float, str, list[str]]] = []
     records = [record for record in predicate_records(split) if record["name"] not in exclude]
     for record in records:
@@ -83,38 +98,129 @@ def route_predicates(
         family_score = min(scores[family] for family in record["families"])
         spatial_score = _spatial_support(str(components.get("spatial", "")), evidence)
         action_score = _action_support(str(components.get("action", "")), evidence)
-        score = 0.60 * family_score + 0.25 * spatial_score + 0.15 * action_score
+        jump_bonus = (
+            min(0.12, float(evidence.get("subject_vertical_speed", 0.0)) * 0.8)
+            if str(components.get("action", "")) == "jump"
+            else 0.0
+        )
+        geometric_score = 0.60 * family_score + 0.25 * spatial_score + 0.15 * action_score + jump_bonus
+        score = 0.72 * geometric_score + 0.28 * priors.get(str(record["name"]), 0.0)
         ranked.append((score, str(record["name"]), list(record["families"])))
     ranked.sort(key=lambda item: (-item[0], item[1]))
 
-    selected: list[str] = []
     selected_families = [name for name, _ in sorted(scores.items(), key=lambda item: (-item[1], item[0]))[:3]]
-    selected_family_set = set(selected_families)
-    eligible = [
-        (score, name, families)
-        for score, name, families in ranked
-        if set(families).issubset(selected_family_set)
-    ]
-    for family in selected_families:
-        family_candidates = [name for _, name, families in eligible if family in families]
-        selected.extend(family_candidates[:2])
-    selected = list(dict.fromkeys(selected))
-    for predicate in list(selected):
-        for sibling in confusion_siblings(predicate):
-            if sibling not in selected and any(record["name"] == sibling for record in records):
-                selected.append(sibling)
-    selected.extend(name for _, name, _ in eligible)
+    by_name = {str(record["name"]): record for record in records}
+
+    def composite(record: dict[str, Any]) -> bool:
+        components = record["components"]
+        return sum(bool(components.get(key)) for key in ("action", "spatial", "comparative")) >= 2
+
+    # Family routing is descriptive, not a hard gate: a visually supported
+    # semantic action must not disappear because its family ranked fourth.
+    atomic_ranked = [name for _, name, _ in ranked if not composite(by_name[name])]
+    composite_ranked_all = []
+    for _, name, _ in ranked:
+        record = by_name[name]
+        if not composite(record):
+            continue
+        components = record["components"]
+        action = str(components.get("action", ""))
+        spatial = str(components.get("spatial", ""))
+        # Screen-space speed is not body motion (e.g. camera following a walker).
+        # Use action support to rank hypotheses, not to forbid visual verification.
+        if spatial and _spatial_support(spatial, evidence) < 0.12:
+            continue
+        composite_ranked_all.append(name)
+
+    # Avoid exhausting the composite quota on alphabetical variants of one
+    # action/spatial cue. This is candidate diversity, not a prediction.
+    composite_ranked: list[str] = []
+    remaining = list(composite_ranked_all)
+    ranked_scores = {name: score for score, name, _ in ranked}
+    while remaining:
+        action_counts = {name: sum(
+            by_name[item]["components"].get("action") == name for item in composite_ranked
+        ) for name in {by_name[item]["components"].get("action") for item in remaining}}
+        spatial_counts = {name: sum(
+            by_name[item]["components"].get("spatial") == name for item in composite_ranked
+        ) for name in {by_name[item]["components"].get("spatial") for item in remaining}}
+        choice = max(remaining, key=lambda name: (
+            ranked_scores[name]
+            - 0.08 * action_counts.get(by_name[name]["components"].get("action"), 0)
+            - (0.10 if by_name[name]["components"].get("spatial") == "with" else 0.01)
+            * spatial_counts.get(by_name[name]["components"].get("spatial"), 0),
+            ranked_scores[name], name,
+        ))
+        composite_ranked.append(choice)
+        remaining.remove(choice)
+
+    posture_actions = {"lie", "sit", "stand", "stop"}
+    motion_actions = {"creep", "fly", "jump", "move", "run", "swim", "walk"}
+    posture = [name for name in composite_ranked if by_name[name]["components"].get("action") in posture_actions]
+    posture_priority = {"sit": 3, "stand": 2, "lie": 1, "stop": 0}
+    posture.sort(key=lambda name: (
+        -ranked_scores[name],
+        -posture_priority[by_name[name]["components"]["action"]],
+        name,
+    ))
+    motion = [name for name in composite_ranked if by_name[name]["components"].get("action") in motion_actions]
+    # Preserve both posture and locomotion hypotheses even when boxes alone
+    # cannot distinguish them. These are candidates, never automatic outputs.
+    axis = max(("left", "right", "above", "beneath"), key=lambda spatial: _spatial_support(spatial, evidence))
+    axis_hypotheses: list[str] = []
+    if _spatial_support(axis, evidence) >= 0.12:
+        for alternatives in (posture, motion):
+            supported = [name for name in alternatives if by_name[name]["components"].get("spatial") == axis]
+            axis_hypotheses.extend(supported[:1])
+    composite_ranked = list(dict.fromkeys(axis_hypotheses + posture[:2] + motion[:2] + composite_ranked))
+
+    motion_reserve: list[str] = []
+    if axis_motion_reserve and _spatial_support(axis, evidence) >= 0.12:
+        # A following camera can leave walking/running objects nearly stationary
+        # in screen space. Preserve every ontology locomotion hypothesis on the
+        # supported axis rather than letting ties choose one arbitrary action.
+        motion_reserve = [name for name in composite_ranked
+                          if by_name[name]["components"].get("action") in motion_actions
+                          and by_name[name]["components"].get("spatial") == axis]
+        posture_reserve = [name for name in posture
+                           if by_name[name]["components"].get("spatial") == axis][:2]
+        composite_ranked = list(dict.fromkeys(motion_reserve + posture_reserve + composite_ranked))
+
+    atomic_quota = min(6, limit)
+    composite_quota = min(4, max(0, limit - atomic_quota))
+    if motion_reserve:
+        composite_quota = min(max(4, len(motion_reserve) + len(posture_reserve)), max(0, limit - atomic_quota))
+    confusion_quota = min(2, max(0, limit - atomic_quota - composite_quota))
+    selected = list(dict.fromkeys(atomic_ranked[:atomic_quota] + composite_ranked[:composite_quota]))
+    confusion: list[str] = []
+    sibling_lists = [confusion_siblings(predicate) for predicate in composite_ranked[:composite_quota] + atomic_ranked[:atomic_quota]]
+    for sibling_index in range(max((len(values) for values in sibling_lists), default=0)):
+        for siblings in sibling_lists:
+            if sibling_index >= len(siblings):
+                continue
+            sibling = siblings[sibling_index]
+            if sibling not in selected and sibling not in confusion and sibling in by_name:
+                confusion.append(sibling)
+    selected.extend(confusion[:confusion_quota])
+    supplemental = [name for _, name, _ in ranked if name not in selected]
+    selected.extend(supplemental[: max(0, limit - len(selected))])
     selected = list(dict.fromkeys(selected))[:limit]
-    selected = selected[:limit]
     expandable = neighboring_families(selected_families)
     return {
-        "candidate_policy": "hierarchical_predicate_v1",
+        "candidate_policy": "axis_motion_reserve_v4" if axis_motion_reserve else "quota_composite_predicate_v3_train_prior",
         "candidate_predicates": selected,
         "candidate_families": selected_families,
         "family_scores": {name: round(value, 4) for name, value in sorted(scores.items())},
         "family_descriptions": {name: family_descriptions()[name] for name in selected_families},
         "expandable_families": expandable,
         "ranked_predicates": [name for _, name, _ in ranked],
+        "candidate_buckets": {
+            "atomic": [name for name in selected if name in atomic_ranked[:atomic_quota]],
+            "composite": [name for name in selected if name in composite_ranked[:composite_quota]],
+            "confusion": [name for name in selected if name in confusion[:confusion_quota]],
+            "supplemental": [name for name in selected if name in supplemental],
+            "axis_motion_reserve": [name for name in selected if name in motion_reserve],
+        },
     }
 
 

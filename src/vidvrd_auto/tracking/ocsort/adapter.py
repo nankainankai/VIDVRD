@@ -10,7 +10,7 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 
 from ..third_party.oc_sort.association import iou_batch, linear_assignment
-from ..third_party.oc_sort.ocsort import OCSort
+from ..third_party.oc_sort.ocsort import KalmanBoxTracker, OCSort
 
 
 def _name(value: object) -> str:
@@ -79,6 +79,7 @@ class ObjectTracker:
         inertia: float = 0.2,
         class_vote_window: int = 12,
         class_compatibility: Mapping[str, Sequence[str]] | None = None,
+        preserve_unique_local_ids: bool = True,
     ) -> None:
         self.iou_threshold = float(iou_threshold)
         self.max_age = int(max_age)
@@ -88,6 +89,7 @@ class ObjectTracker:
         self.inertia = float(inertia)
         self.class_aware = bool(class_aware)
         self.class_vote_window = max(1, int(class_vote_window))
+        self.preserve_unique_local_ids = bool(preserve_unique_local_ids)
         self._groups = self._compatibility_groups(class_compatibility or {})
         self._backends: dict[str, OCSort] = {}
         self._steps: dict[str, list[tuple[int, list[tuple[dict[str, Any], np.ndarray, float]]]]] = defaultdict(list)
@@ -96,7 +98,14 @@ class ObjectTracker:
         self._next_id = 1
 
     def _new_backend(self) -> OCSort:
-        return OCSort(
+        # The vendored OC-SORT constructor resets the process-wide
+        # ``KalmanBoxTracker.count``.  We keep one backend per compatibility
+        # group, so creating a backend for a newly seen class must not make an
+        # existing backend reuse one of its local IDs.  Reuse would collapse
+        # two same-class objects onto the same project track ID.  The flag is
+        # retained for controlled end-to-end ablation against historical runs.
+        next_local_id = KalmanBoxTracker.count
+        backend = OCSort(
             det_thresh=self.det_threshold,
             max_age=self.max_age,
             min_hits=self.min_hits,
@@ -105,6 +114,9 @@ class ObjectTracker:
             inertia=self.inertia,
             use_byte=False,
         )
+        if self.preserve_unique_local_ids:
+            KalmanBoxTracker.count = next_local_id
+        return backend
 
     @staticmethod
     def _compatibility_groups(mapping: Mapping[str, Sequence[str]]) -> dict[str, str]:
@@ -201,7 +213,8 @@ class ObjectTracker:
             )
 
         for group in grouped:
-            self._backends.setdefault(group, self._new_backend())
+            if group not in self._backends:
+                self._backends[group] = self._new_backend()
 
         output: list[dict[str, Any]] = []
         for group, backend in list(self._backends.items()):

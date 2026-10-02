@@ -14,7 +14,7 @@ ingest -> vocabulary -> detect -> track -> track_qc
 - `vocabulary`：正式路线固定使用完整 35 类；开放对象发现代码保留，但默认不启用。
 - `detect`：正式路线固定每 3 帧调用一次 Rex-Omni。DINO-X + Rex 混合检测作为独立实验组件保留，不在主链路自动启用。
 - `track`：主路线和参照路线都使用仓库内冻结的 OC-SORT 核心。主路线只在 Rex 检测锚点调用 OC-SORT，并在相邻真实观测之间补齐短缺口；项目代码只负责调度、字段转换、类别记录和产物导出。
-- `semantic`：先用轨迹证据把 132 个官方谓词路由为每方向最多 14 个对比候选，再围绕接近、重叠等事件帧生成“全景 + 对象对近景”的连续帧证据。同一对象对的最多 6 个连续窗口合并为一次千问请求，但每个窗口仍独立输出和校验；Agent 最多触发一次补帧或邻接谓词族扩展。
+- `semantic`：先用轨迹证据把 132 个官方谓词路由为每方向最多 24 个对比候选，给原子、组合和易混谓词预留配额。故事板先保留窗口头、中、尾，再补事件帧。同一对象对的最多 6 个连续窗口合并为一次千问请求，每个窗口独立输出和校验；Agent 最多触发一次补帧或邻接谓词族扩展。
 - `verify`：仅对低排序分、互斥冲突或风险轨迹关系做带图复核；动作经过关系 ID、谓词、证据和区间校验后才应用。
 - `evaluate`：官方兼容层直接按类别三元组与关系 tube vIoU 计算逐视频 mAP、Recall@50/100 和 tagging P@1/5/10；原有全轨迹匈牙利对齐只保留为单独的内部诊断。
 
@@ -54,6 +54,8 @@ vidvrd-auto --video path/to/video.mp4 --run-dir runs/exp001 --config configs/mai
 
 主链路不需要 DINO-X Token。若运行混合检测对照，使用 `configs/experimental_hybrid_dinox.json`，并在项目根目录 `.env` 中配置 `DDS_API_TOKEN`。密钥不会写入运行产物。
 
+当前关系模型为 `qwen3.8-flash`，通过 DashScope 普通多模态接口调用，设置 `relations.enable_thinking=false` 以降低等待时间与输出 token 开销，视觉复核仍使用 `qwen-vl-max`。API key 从环境变量或项目 `.env` 加载。思考模式会影响预测结果，语义缓存按该参数分别保存。
+
 固定官方词表并在 Gold 上评测：
 
 ```powershell
@@ -79,9 +81,26 @@ vidvrd-build-gold --annotations sample_folder/sample_vidvrd/anno --out-dir gold
 - `runs/<run>/pred/trajectories.json`：全视频预测轨迹。
 - `runs/<run>/reports/official_vidvrd.md|json`：官方协议兼容报告及指标。
 - `runs/<run>/reports/diagnostic_track_aligned.md|json`：项目内部轨迹对齐诊断。
+- `runs/<run>/reports/presence_instance.json`：固定片段内按对象实例对计算的 Presence P/R/F1；现有稀疏 Gold 默认仅作诊断。
+- `runs/<run>/reports/known_label_coverage.md|json`：每视频最多 10 个类别关系标签的已标注标签覆盖率；不要求实例和时空定位准确，不能当作 mAP 或完整标注准确率。
+- `runs/<run>/reports/runtime.json`：完成率、API 调用、重试、服务端 token 使用量及耗时；实际账单费用未提供时为 null。
 - `runs/<run>/run_manifest.json`：阶段状态、配置哈希和产物清单。
 
 详细设计见 [架构](docs/ARCHITECTURE.md)、[数据格式](docs/SCHEMAS.md) 和 [Gold 说明](gold/README.md)。MASA/hybrid 仅作为未接入主流程的实验模块保存在 [实验模块说明](docs/MASA_SETUP.md)。算法来源与工程适配见 [算法登记](docs/algorithm_registry.md)。
+
+2026-10-02 的修正与验证见 [性能回归记录](docs/performance_validation_20261002.md)。主配置将跨窗口合并限制为 30 帧，保留窗口级标注边界；设 `global_relation.max_merged_span_frames=0` 可恢复连续事件聚合。此限制只控制合并，不切割已有模型输出。API 配额、权限或复核响应异常会保留失败产物并返回非零退出码。
+
+已有预测可离线评测，无需再次调用模型：
+
+```powershell
+python -m vidvrd_auto.evaluation.cli --pred-relations runs/exp001/pred/relations.json --pred-trajectories runs/exp001/pred/trajectories.json --out-dir runs/exp001/reports --scope requested --split train
+```
+
+固定开发/测试清单及消融命令见 [实验说明](experiments/README.md)。正式 Presence 评测需要独立完整标注的固定片段清单；使用 `--presence-clips clips.json`，不能只换一个宽松指标后将分数解释成泛化提升。
+
+面向辅助标注的固定标签预算指标、真实对照结果和独立片段抽样见 [结项评测与优化](docs/evaluation_for_completion.md)。当前新增策略保留为实验方案，默认配置未替换。
+
+增加三个完整测试视频后的成绩、类别与关系漏项、五视频汇总及耗时见 [追加测试分析](docs/additional_test3_analysis.md)。运行完成率与轨迹/关系非空输出率分别记录，子集标签报告不会替代完整 Gold 范围报告。
 
 ## 验证
 

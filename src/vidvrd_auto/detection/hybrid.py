@@ -19,6 +19,11 @@ class HybridDetector:
         self.dinox.load_model()
         self.rex.load_model()
 
+    def close(self) -> None:
+        close = getattr(self.rex, "close", None)
+        if callable(close):
+            close()
+
     def detect_batch(self, frames_bgr: Sequence[np.ndarray]) -> List[List[Dict[str, Any]]]:
         return self.rex.detect_batch(frames_bgr)
 

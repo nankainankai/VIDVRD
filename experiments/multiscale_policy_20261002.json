@@ -1,0 +1,17 @@
+{
+  "policy": "multiscale_v1",
+  "status": "fixed_before_offline_comparison",
+  "annotation_input_to_prediction_policy": false,
+  "proposal_spans": "existing capped-30 aggregation plus uncapped coherent aggregation",
+  "secondary_proposal_decay": 0.5,
+  "selection": "one highest calibrated score per coherent pair-predicate event at full score, retain other spans with fixed discount",
+  "track_jump_and_evidence_gap_constraints": "unchanged",
+  "additional_api_calls": 0,
+  "review": "disabled in both comparison arms; cached window predictions reused",
+  "development_source": "runs/performance_validation_20261002/revised",
+  "seen_test_source": "runs/performance_validation_20261002/qwen38_flash_smoke",
+  "test_status": "already inspected two-video regression sample, not a fresh blind test",
+  "evaluation_primary_label_budget": 10,
+  "official_viou_threshold": 0.5,
+  "official_evaluator": "unchanged"
+}

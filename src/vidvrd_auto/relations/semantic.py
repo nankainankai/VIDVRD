@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 from collections import Counter
 from dataclasses import replace
 from pathlib import Path
@@ -12,7 +11,7 @@ from typing import Any, Dict, Iterable, List
 import cv2
 import numpy as np
 
-from vidvrd_auto.providers import DashScopeProvider
+from vidvrd_auto.providers import DashScopeProvider, VLResult
 from vidvrd_auto.agents import EvidencePacket, validate_semantic_actions
 from vidvrd_auto.core.ontology import predicate_components
 from vidvrd_auto.core.schema import serialize_relation_artifact
@@ -20,7 +19,10 @@ from vidvrd_auto.prompts.templates import semantic_relation_batch_prompt
 from vidvrd_auto.relations.candidate_router import expand_route, route_predicates
 from vidvrd_auto.relations.evidence_features import trajectory_evidence
 from vidvrd_auto.relations.object_candidates import GEOMETRY_PREDICATES, normalize_category
+from vidvrd_auto.relations.track_risk import split_frames_on_track_jumps
 from vidvrd_auto.utils.io import iter_jsonl, read_json, write_json
+from vidvrd_auto.utils.hashing import sha256_file, stable_hash
+from vidvrd_auto.utils.model_output import parse_json_object
 
 
 def _tracks(path: Path) -> Dict[int, List[Dict[str, Any]]]:
@@ -68,14 +70,21 @@ def _sample(values: List[int], count: int) -> List[int]:
 
 
 def _event_sample(values: List[int], evidences: Iterable[Dict[str, Any]], count: int, burst_size: int) -> List[int]:
+    if not values:
+        return []
+    values = sorted(set(values))
+    budget = min(max(1, count), len(values))
+    # Reserve temporal coverage before spending the remaining slots on events.
+    # Otherwise an interior burst can hide the beginning/end of a relation.
+    anchors = _sample(values, min(3, budget))
     events = list(dict.fromkeys(frame for evidence in evidences for frame in evidence.get("event_frames", [])))
-    priority: List[int] = []
+    priority: List[int] = list(anchors)
     radius = max(0, burst_size // 2)
     available = set(values)
     for event in events:
         priority.extend(frame for offset in range(-radius, radius + 1) if (frame := event + offset) in available)
     priority.extend(_sample(values, count))
-    return sorted(list(dict.fromkeys(priority))[: min(count, len(values))])
+    return sorted(list(dict.fromkeys(priority))[:budget])
 
 
 def _save_jpeg(path: Path, image: Any) -> None:
@@ -157,16 +166,6 @@ def _pair_storyboard(
     return cv2.vconcat(rows)
 
 
-def _parse_json(text: str) -> Dict[str, Any]:
-    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.IGNORECASE)
-    try:
-        value = json.loads(cleaned)
-    except json.JSONDecodeError:
-        start, end = cleaned.find("{"), cleaned.rfind("}")
-        value = json.loads(cleaned[start : end + 1]) if start >= 0 and end > start else {}
-    return value if isinstance(value, dict) else {}
-
-
 def _direction_routes(
     left: int,
     right: int,
@@ -174,13 +173,20 @@ def _direction_routes(
     visible: List[int],
     predicate_split: str,
     candidate_limit: int,
+    classes: Dict[int, str] | None = None,
+    predicate_priors: Dict[str, Any] | None = None,
+    axis_motion_reserve: bool = False,
 ) -> tuple[Dict[tuple[int, int], Dict[str, Any]], Dict[str, Any]]:
     routes: Dict[tuple[int, int], Dict[str, Any]] = {}
     evidence: Dict[str, Any] = {}
     for subject, obj in ((left, right), (right, left)):
         item = trajectory_evidence(tracks, visible, subject, obj)
         routes[(subject, obj)] = route_predicates(
-            item, split=predicate_split, limit=candidate_limit, exclude=GEOMETRY_PREDICATES
+            item, split=predicate_split, limit=candidate_limit, exclude=GEOMETRY_PREDICATES,
+            subject_category=(classes or {}).get(subject, "unknown"),
+            object_category=(classes or {}).get(obj, "unknown"),
+            predicate_priors=predicate_priors,
+            axis_motion_reserve=axis_motion_reserve,
         )
         evidence[f"{subject}->{obj}"] = item
     return routes, evidence
@@ -238,7 +244,7 @@ def _same_pair_batches(items: List[Dict[str, Any]], size: int) -> List[List[Dict
 
 
 def _packet_actions(text: str) -> Dict[str, List[Dict[str, Any]]]:
-    parsed = _parse_json(text)
+    parsed = parse_json_object(text, required_key="packet_results")
     packet_results = parsed.get("packet_results", [])
     if not isinstance(packet_results, list):
         return {}
@@ -251,6 +257,37 @@ def _packet_actions(text: str) -> Dict[str, List[Dict[str, Any]]]:
         if packet_id and isinstance(actions, list):
             output[packet_id] = [action for action in actions if isinstance(action, dict)]
     return output
+
+
+def _call_with_cache(
+    provider: DashScopeProvider, *, prompt: str, image_paths: List[Path],
+    expected_packet_ids: List[str], cache_dir: Path
+) -> tuple[VLResult, bool]:
+    """Persist successful batch responses so retries never repeat paid calls."""
+
+    identity = stable_hash({
+        "model": str(provider.model),
+        "inference_options": provider.inference_options,
+        "prompt": prompt,
+        "images": [sha256_file(path) for path in image_paths],
+    })
+    cache_path = cache_dir / f"{identity}.json"
+    if cache_path.exists():
+        try:
+            cached = read_json(cache_path)
+            if (
+                cached.get("identity") == identity
+                and isinstance(cached.get("text"), str)
+                and all(packet_id in _packet_actions(cached["text"]) for packet_id in expected_packet_ids)
+            ):
+                return VLResult(ok=True, text=cached["text"], model=str(provider.model)), True
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
+    result = provider.call(prompt=prompt, image_paths=image_paths)
+    if result.ok and all(packet_id in _packet_actions(result.text) for packet_id in expected_packet_ids):
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        write_json(cache_path, {"identity": identity, "model": result.model, "text": result.text})
+    return result, False
 
 
 def _append_relations(
@@ -327,11 +364,16 @@ def classify_relations(
     allow_more_frames = bool(config.get("allow_request_more_frames", True))
     max_additional_frames = max(0, int(config.get("max_additional_frames", 4) or 0))
     candidate_limit = max(1, int(config.get("candidate_limit", 14) or 14))
+    blocked_track_ids = {int(value) for value in config.get("blocked_track_ids", [])}
+    jump_frames = config.get("track_jump_frames", {})
+    prior_path = str(config.get("candidate_prior_path", "") or "").strip()
+    predicate_priors = read_json(Path(prior_path)) if prior_path else None
     expanded_candidate_limit = max(
         candidate_limit, int(config.get("expanded_candidate_limit", 24) or 24)
     )
     event_burst_size = max(1, int(config.get("event_burst_size", 5) or 5))
     batch_size = max(1, int(config.get("batch_windows_per_call", 6) or 6))
+    max_failed_packets = max(0, int(config.get("max_failed_packets", 0) or 0))
     video_meta = windows_obj.get("video", {}) if isinstance(windows_obj, dict) else {}
     fps = float(video_meta.get("fps", 0.0) or 0.0)
     if max_windows > 0:
@@ -344,7 +386,10 @@ def classify_relations(
             continue
         start = int(window.get("start_frame", 0))
         end = int(window.get("end_frame", start))
-        track_ids = sorted({int(value) for value in window.get("track_ids", [])})
+        track_ids = sorted({
+            int(value) for value in window.get("track_ids", [])
+            if int(value) not in blocked_track_ids
+        })
         pairs: List[tuple[int, int, List[int]]] = []
         for position, left in enumerate(track_ids):
             for right in track_ids[position + 1 :]:
@@ -354,8 +399,9 @@ def classify_relations(
                     if _box(_by_id(tracks.get(frame, [])).get(left)) is not None
                     and _box(_by_id(tracks.get(frame, [])).get(right)) is not None
                 ]
-                if len(visible) >= min_pair_frames:
-                    pairs.append((left, right, visible))
+                for fragment in split_frames_on_track_jumps(visible, (left, right), jump_frames):
+                    if len(fragment) >= min_pair_frames:
+                        pairs.append((left, right, fragment))
         pairs.sort(key=lambda item: len(item[2]), reverse=True)
         selected_pairs = pairs if max_pairs <= 0 else pairs[:max_pairs]
         deferred_pairs = pairs[len(selected_pairs) :]
@@ -368,7 +414,12 @@ def classify_relations(
             }
         )
 
+        fragment_counts = Counter((left, right) for left, right, _ in selected_pairs)
+        fragment_indices: Counter[tuple[int, int]] = Counter()
         for left, right, visible in selected_pairs:
+            fragment_indices[(left, right)] += 1
+            fragment_index = fragment_indices[(left, right)]
+            suffix = f"_s{fragment_index}" if fragment_counts[(left, right)] > 1 else ""
             routes, directional_evidence = _direction_routes(
                 left,
                 right,
@@ -376,6 +427,9 @@ def classify_relations(
                 visible,
                 predicate_split,
                 candidate_limit,
+                classes,
+                predicate_priors,
+                bool(config.get("axis_motion_reserve", False)),
             )
             frames = _event_sample(
                 visible,
@@ -384,11 +438,11 @@ def classify_relations(
                 event_burst_size,
             )
             packet = EvidencePacket(
-                packet_id=f"{video_id}:w{int(window.get('window_id', window_index))}:A{left}:B{right}",
+                packet_id=f"{video_id}:w{int(window.get('window_id', window_index))}:A{left}:B{right}{suffix}",
                 video_id=video_id,
                 window_id=int(window.get("window_id", window_index)),
-                start_frame=start,
-                end_frame=end,
+                start_frame=visible[0],
+                end_frame=visible[-1],
                 fps=fps,
                 displayed_frames=frames,
                 available_frames=visible,
@@ -399,13 +453,13 @@ def classify_relations(
                 candidate_directions=_candidate_directions(routes, classes),
                 track_evidence=_track_evidence(tracks, visible, left, right),
                 trajectory_evidence=directional_evidence,
-                candidate_policy="hierarchical_predicate_v1",
+                candidate_policy=next(iter(routes.values()))["candidate_policy"],
                 evidence_mode="event_burst_dual_view",
                 max_additional_frames=max_additional_frames,
             )
             evidence_packets.append(packet.to_dict())
             image = _pair_storyboard(video_path, frames, tracks, left, right, classes)
-            image_path = storyboards_dir / f"window_{window_index:04d}_A{left}_B{right}.jpg"
+            image_path = storyboards_dir / f"window_{window_index:04d}_A{left}_B{right}{suffix}.jpg"
             _save_jpeg(image_path, image)
             if dry_run or not routes:
                 agent_audit.append({"packet_id": packet.packet_id, "state": "dry_run" if dry_run else "no_candidates"})
@@ -413,6 +467,7 @@ def classify_relations(
             work_items.append(
                 {
                     "window_index": window_index,
+                    "fragment_suffix": suffix,
                     "left": left,
                     "right": right,
                     "frames": frames,
@@ -427,15 +482,44 @@ def classify_relations(
     batch_audit: List[Dict[str, Any]] = []
     supplemental_items: List[Dict[str, Any]] = []
 
+    def fail_batch() -> None:
+        write_json(out_path.parent / "evidence_packets.json", {"video_id": video_id, "packets": evidence_packets})
+        (out_path.parent / "run.log").write_text(
+            json.dumps({
+                "provider": provider.stats.to_dict(),
+                "batch_windows_per_call": batch_size,
+                "batch_audit": batch_audit,
+                "errors": errors,
+                "pair_coverage": coverage,
+                "agent_audit": agent_audit,
+                "state": "failed",
+            }, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        raise RuntimeError(
+            f"semantic relation inference stopped after {len(errors)} packet error(s); "
+            f"see {out_path.parent / 'run.log'}"
+        )
+
+    def tolerable_errors() -> bool:
+        return len(errors) <= max_failed_packets and all(
+            "DataInspectionFailed" in str(item.get("error", "")) for item in errors
+        )
+
     for batch_index, batch in enumerate(_same_pair_batches(work_items, batch_size), 1):
         batch_id = f"initial-{batch_index:04d}"
         packets = [item["packet"] for item in batch]
-        result = provider.call(
-            prompt=semantic_relation_batch_prompt(packets),
+        result, cached = _call_with_cache(
+            provider,
+            prompt=semantic_relation_batch_prompt(packets, compositional_checks=bool(config.get("compositional_checks", False))),
             image_paths=[item["image_path"] for item in batch],
+            expected_packet_ids=[packet.packet_id for packet in packets],
+            cache_dir=out_path.parent / "api_cache",
         )
+        print(f"SEMANTIC initial batch={batch_index} packets={len(batch)} ok={result.ok} cached={cached}", flush=True)
         batch_audit.append(
-            {"batch_id": batch_id, "packet_ids": [packet.packet_id for packet in packets], "response": result.to_dict()}
+            {"batch_id": batch_id, "packet_ids": [packet.packet_id for packet in packets],
+             "image_paths": [str(item["image_path"]) for item in batch], "cached": cached, "response": result.to_dict()}
         )
         if not result.ok:
             for item in batch:
@@ -447,6 +531,8 @@ def classify_relations(
                     "state": "provider_failed",
                     "supplemental_call_count": 0,
                 }
+            if not tolerable_errors():
+                fail_batch()
             continue
         actions_by_packet = _packet_actions(result.text)
         for item in batch:
@@ -499,7 +585,7 @@ def classify_relations(
             )
             evidence_packets.append(supplemental_packet.to_dict())
             supplemental_path = storyboards_dir / (
-                f"window_{item['window_index']:04d}_A{item['left']}_B{item['right']}_supplemental.jpg"
+                f"window_{item['window_index']:04d}_A{item['left']}_B{item['right']}{item['fragment_suffix']}_supplemental.jpg"
             )
             _save_jpeg(
                 supplemental_path,
@@ -516,15 +602,22 @@ def classify_relations(
                 }
             )
 
+        if not tolerable_errors():
+            fail_batch()
+
     for batch_index, batch in enumerate(_same_pair_batches(supplemental_items, batch_size), 1):
         batch_id = f"supplemental-{batch_index:04d}"
         packets = [item["packet"] for item in batch]
-        result = provider.call(
-            prompt=semantic_relation_batch_prompt(packets, supplemental=True),
+        result, cached = _call_with_cache(
+            provider,
+            prompt=semantic_relation_batch_prompt(packets, supplemental=True, compositional_checks=bool(config.get("compositional_checks", False))),
             image_paths=[item["image_path"] for item in batch],
+            expected_packet_ids=[packet.packet_id for packet in packets],
+            cache_dir=out_path.parent / "api_cache",
         )
+        print(f"SEMANTIC supplemental batch={batch_index} packets={len(batch)} ok={result.ok} cached={cached}", flush=True)
         batch_audit.append(
-            {"batch_id": batch_id, "packet_ids": [packet.packet_id for packet in packets], "response": result.to_dict()}
+            {"batch_id": batch_id, "packet_ids": [packet.packet_id for packet in packets], "cached": cached, "response": result.to_dict()}
         )
         actions_by_packet = _packet_actions(result.text) if result.ok else {}
         for item in batch:
@@ -535,11 +628,18 @@ def classify_relations(
             actions = actions_by_packet.get(packet.packet_id)
             if actions is None:
                 audit["supplemental_state"] = "provider_failed" if not result.ok else "missing_batch_result"
+                errors.append({
+                    "window": packet.window_id,
+                    "pair": [item["left"], item["right"]],
+                    "error": result.error if not result.ok else "supplemental packet missing from batch response",
+                })
                 continue
             validation = validate_semantic_actions(actions, packet, request_budget_available=False)
             audit["supplemental_state"] = "validated"
             audit["supplemental_validation"] = validation
             accepted_by_packet.setdefault(parent_id, []).extend(validation["accepted_relations"])
+        if not tolerable_errors():
+            fail_batch()
 
     for item in work_items:
         packet = item["packet"]
@@ -563,6 +663,8 @@ def classify_relations(
                 "batch_windows_per_call": batch_size,
                 "batch_audit": batch_audit,
                 "errors": errors,
+                "max_failed_packets": max_failed_packets,
+                "state": "succeeded_with_packet_errors" if errors else "succeeded",
                 "pair_coverage": coverage,
                 "agent_audit": agent_audit,
             },
@@ -571,3 +673,8 @@ def classify_relations(
         ),
         encoding="utf-8",
     )
+    if not tolerable_errors() and not dry_run:
+        raise RuntimeError(
+            f"semantic relation inference incomplete: {len(errors)} packet error(s); "
+            f"see {out_path.parent / 'run.log'}"
+        )

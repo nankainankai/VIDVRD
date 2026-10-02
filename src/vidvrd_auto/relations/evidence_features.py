@@ -64,6 +64,7 @@ def trajectory_evidence(
         )
 
     subject_speeds: list[float] = []
+    subject_vertical_velocities: list[float] = []
     object_speeds: list[float] = []
     motion_cosines: list[float] = []
     approach_rates: list[float] = []
@@ -83,6 +84,7 @@ def trajectory_evidence(
         subject_speed = math.hypot(*subject_velocity)
         object_speed = math.hypot(*object_velocity)
         subject_speeds.append(subject_speed)
+        subject_vertical_velocities.append(subject_velocity[1])
         object_speeds.append(object_speed)
         if subject_speed > 0 and object_speed > 0:
             motion_cosines.append(
@@ -123,6 +125,10 @@ def trajectory_evidence(
         "iou_max": max(ious),
         "approach_rate": median(approach_rates) if approach_rates else 0.0,
         "subject_speed": median(subject_speeds) if subject_speeds else 0.0,
+        "subject_vertical_speed": median(abs(value) for value in subject_vertical_velocities) if subject_vertical_velocities else 0.0,
+        "subject_vertical_direction_changes": sum(
+            left * right < 0 for left, right in zip(subject_vertical_velocities, subject_vertical_velocities[1:])
+        ),
         "object_speed": median(object_speeds) if object_speeds else 0.0,
         "relative_motion": median(abs(value) for value in approach_rates) if approach_rates else 0.0,
         "motion_alignment": median(motion_cosines) if motion_cosines else 0.0,

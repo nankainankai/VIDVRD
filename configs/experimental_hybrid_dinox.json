@@ -8,7 +8,7 @@
   },
   "vocabulary": {
     "discovery_enabled": false,
-    "discovery_model": "qwen3.7-plus"
+    "discovery_model": "qwen3.8-flash"
   },
   "detector": {
     "detector_backend": "hybrid_rex_dinox",
@@ -35,7 +35,7 @@
     "max_interpolation_gap": 6
   },
   "relations": {
-    "api_model": "qwen3.7-plus",
+    "api_model": "qwen3.8-flash",
     "dry_run": false,
     "max_windows": 0,
     "max_pairs_per_window": 0,
@@ -45,7 +45,8 @@
     "candidate_limit": 14,
     "expanded_candidate_limit": 24,
     "allow_request_more_frames": true,
-    "max_additional_frames": 4
+    "max_additional_frames": 4,
+    "enable_thinking": false
   },
   "relation_verify": {
     "strong_model_review_enabled": true,
@@ -54,5 +55,7 @@
     "apply_coupling": false,
     "category_constraints_enabled": false
   },
-  "evaluate": {"enabled": false}
+  "evaluate": {
+    "enabled": false
+  }
 }
